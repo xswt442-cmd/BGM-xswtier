@@ -19,7 +19,7 @@
    双轴视觉 · 配色轴：三个配色方案
    ============================================================ */
 :root,
-.theme-warm {
+.theme-sun {
 	--radius: 8px;
 	--grid-line: oklch(0.3 0.05 255 / 0.14);
 
@@ -140,7 +140,7 @@
    背景：每主题一张图（src/lib/assets/sun|night|sky）+ 半透明格子纸
    ============================================================ */
 :root body,
-.theme-warm body {
+.theme-sun body {
 	background-color: var(--background);
 	background-image:
 		repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 26px),

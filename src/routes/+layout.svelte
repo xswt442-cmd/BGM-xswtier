@@ -20,10 +20,10 @@
 <div class="flex min-h-svh flex-col">
 	{#if page.url.pathname !== '/'}
 		<header
-			class="sticky top-0 z-40 flex h-14 items-center justify-between border-b-2 border-border bg-background/90 px-4 backdrop-blur"
+			class="neon-border sticky top-0 z-40 flex h-14 items-center justify-between border-b-2 border-border bg-background/90 px-4 backdrop-blur"
 		>
 			<a href="/" class="font-pixel text-xs tracking-wider text-foreground">BGM-xswtier</a>
-			<StatusBar />
+			<StatusBar showToggle />
 		</header>
 	{/if}
 	<main class="flex-1">

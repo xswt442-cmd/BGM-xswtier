@@ -1,16 +1,16 @@
 // 双轴视觉：配色轴（color scheme）× 特效轴（effects），两轴独立 $state + 独立持久化，任意组合合法。
-export type ColorScheme = 'warm' | 'dark' | 'sky';
+export type ColorScheme = 'sun' | 'dark' | 'sky';
 export type Effects = 'none' | 'neon';
 
 const SCHEME_KEY = 'bgmtier-scheme';
 const EFFECTS_KEY = 'bgmtier-effects';
-const SCHEMES: ColorScheme[] = ['warm', 'dark', 'sky'];
+const SCHEMES: ColorScheme[] = ['sun', 'dark', 'sky'];
 const EFFECTS_LIST: Effects[] = ['none', 'neon'];
 
 function loadScheme(): ColorScheme {
-	if (typeof localStorage === 'undefined') return 'warm';
+	if (typeof localStorage === 'undefined') return 'sun';
 	const stored = localStorage.getItem(SCHEME_KEY);
-	return SCHEMES.includes(stored as ColorScheme) ? (stored as ColorScheme) : 'warm';
+	return SCHEMES.includes(stored as ColorScheme) ? (stored as ColorScheme) : 'sun';
 }
 
 function loadEffects(): Effects {
@@ -25,7 +25,7 @@ let effects = $state<Effects>(loadEffects());
 // 把两轴类挂到 <html>。只在浏览器调用（prerender 阶段无 document）。
 export function applyTheme() {
 	const root = document.documentElement;
-	root.classList.remove('theme-warm', 'theme-dark', 'theme-sky');
+	root.classList.remove('theme-sun', 'theme-dark', 'theme-sky');
 	root.classList.add(`theme-${colorScheme}`);
 	root.classList.remove('effects-none', 'effects-neon');
 	root.classList.add(`effects-${effects}`);

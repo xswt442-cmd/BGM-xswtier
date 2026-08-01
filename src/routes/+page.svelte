@@ -6,46 +6,44 @@
 	let started = $state(false);
 </script>
 
-<div class="flex min-h-svh items-center justify-center px-4 py-10">
-	<div class="w-full max-w-md">
-		<!-- 顶部 ==== 装饰线 -->
-		<div class="border-t-4 border-double border-border"></div>
+<!-- 整页即一块游戏屏幕：上/下 ==== 双线横贯，内容居中悬浮于主题背景上 -->
+<div class="flex min-h-svh flex-col">
+	<!-- 顶部 ==== 屏幕边框 -->
+	<div class="border-t-4 border-double border-foreground/50"></div>
 
-		<!-- 开机屏主体 -->
-		<div class="pixel-border border-t-0 bg-card px-6 py-8 text-center">
-			<!-- 盒装像素标题 -->
-			<div class="pixel-border inline-block bg-chart-2 px-6 py-3">
-				<h1 class="font-pixel text-lg text-black sm:text-xl">BGM-XSWTIER</h1>
-			</div>
-
-			<!-- 闪烁光标 + 标语 -->
-			<p class="mt-4 font-pixel text-[9px] text-muted-foreground">
-				<span class="blink">▮</span> {m.app_description()}
-			</p>
-
-			<!-- 状态栏徽章条 -->
-			<div class="pixel-border mt-6 bg-background/40 px-3 py-2">
-				<StatusBar />
-			</div>
-
-			<!-- PRESS START / 输入区 -->
-			<div class="mt-8">
-				{#if !started}
-					<button
-						onclick={() => (started = true)}
-						class="font-pixel border-2 border-dashed border-foreground px-6 py-4 text-[10px] text-foreground transition-colors hover:bg-foreground hover:text-background sm:text-xs"
-					>
-						<span class="blink">▶</span> {m.press_start()}
-					</button>
-				{:else}
-					<div class="animate-in fade-in slide-in-from-bottom-2 text-left">
-						<Entry />
-					</div>
-				{/if}
-			</div>
+	<div class="flex flex-1 flex-col items-center justify-center gap-9 px-4 py-10">
+		<!-- 盒装像素标题 -->
+		<div class="pixel-border neon-border bg-chart-2 px-10 py-4">
+			<h1 class="font-pixel neon-text text-xl text-black sm:text-2xl">BGM-XSWTIER</h1>
 		</div>
 
-		<!-- 底部 ==== 装饰线 -->
-		<div class="border-b-4 border-double border-border"></div>
+		<!-- 闪烁光标 + 标语 -->
+		<p class="font-pixel neon-text text-xs text-foreground sm:text-sm">
+			<span class="blink text-accent">▮</span> {m.app_description()}
+		</p>
+
+		<!-- 状态栏徽章条（横贯居中） -->
+		<div class="pixel-border neon-border w-full max-w-2xl bg-background/60 px-4 py-2.5">
+			<StatusBar />
+		</div>
+
+		<!-- PRESS START / 输入区 -->
+		<div class="w-full max-w-2xl text-center">
+			{#if !started}
+				<button
+					onclick={() => (started = true)}
+					class="font-pixel neon-text neon-border border-4 border-dashed border-foreground px-10 py-5 text-sm text-foreground transition-colors hover:bg-foreground hover:text-background sm:text-base"
+				>
+					<span class="blink">▶</span> {m.press_start()}
+				</button>
+			{:else}
+				<div class="animate-in fade-in slide-in-from-bottom-2 text-left">
+					<Entry />
+				</div>
+			{/if}
+		</div>
 	</div>
+
+	<!-- 底部 ==== 屏幕边框 -->
+	<div class="border-b-4 border-double border-foreground/50"></div>
 </div>

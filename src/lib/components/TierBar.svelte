@@ -67,7 +67,7 @@
 </script>
 
 <!-- 8-bit 等级块：紧凑名称框（左、约 1/3、居中文字、随字数右扩）+ 贴纸区 -->
-<section class="group pixel-border pixel-shadow mb-4 overflow-hidden rounded-lg bg-card">
+<section class="group neon-border pixel-border pixel-shadow mb-4 overflow-hidden rounded-lg bg-card">
 	<div class="flex flex-wrap items-center gap-2 p-2">
 		<div
 			class="relative flex items-center justify-center rounded-md px-3 py-1.5"

@@ -10,7 +10,7 @@
 
 <span
 	class={cn(
-		'font-pixel inline-flex items-center gap-1 whitespace-nowrap border-2 border-border bg-card px-2 py-1 text-[9px] leading-none',
+		'font-pixel inline-flex items-center gap-1 whitespace-nowrap border-2 border-border bg-card px-2.5 py-1.5 text-[11px] leading-none',
 		className
 	)}
 >

@@ -33,7 +33,7 @@
 		}}
 		class="grid gap-1.5"
 	>
-		<Label for="index-id" class="font-pixel text-[10px]">{m.entry_index_label()}</Label>
+		<Label for="index-id" class="font-pixel text-xs">{m.entry_index_label()}</Label>
 		<div class="flex gap-2">
 			<Input
 				id="index-id"
@@ -55,7 +55,7 @@
 		}}
 		class="grid gap-1.5"
 	>
-		<Label for="username" class="font-pixel text-[10px]">{m.entry_user_label()}</Label>
+		<Label for="username" class="font-pixel text-xs">{m.entry_user_label()}</Label>
 		<div class="flex gap-2">
 			<Input
 				id="username"

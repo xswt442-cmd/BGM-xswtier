@@ -5,11 +5,11 @@
 	import { theme, type ColorScheme } from '$lib/states/theme.svelte';
 	import { m } from '$lib/paraglide/messages';
 
-	const schemes: ColorScheme[] = ['warm', 'dark', 'sky'];
-	const SCHEME_BADGE: Record<ColorScheme, string> = { warm: 'WARM-SUN', dark: 'NIGHT', sky: 'SKY' };
+	const schemes: ColorScheme[] = ['sun', 'dark', 'sky'];
+	const SCHEME_BADGE: Record<ColorScheme, string> = { sun: 'SUN', dark: 'NIGHT', sky: 'SKY' };
 
 	function schemeLabel(s: ColorScheme) {
-		return s === 'warm' ? m.scheme_warm() : s === 'dark' ? m.scheme_dark() : m.scheme_sky();
+		return s === 'sun' ? m.scheme_sun() : s === 'dark' ? m.scheme_dark() : m.scheme_sky();
 	}
 </script>
 

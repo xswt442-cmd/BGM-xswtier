@@ -39,7 +39,7 @@
 		<div class="mb-6 flex items-center gap-2">
 			<span class="icon-[pixelarticons--notebook] h-5 w-5 text-accent"></span>
 			<span
-				class="font-pixel rounded-md px-2.5 py-1 text-[11px] text-black"
+				class="neon-text font-pixel rounded-md px-2.5 py-1 text-xs text-black"
 				style="background: var(--chart-2);"
 			>
 				TIER LIST
