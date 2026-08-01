@@ -53,9 +53,11 @@ AGENTS.md
 .mcp.json
 
 # References
+testplace/
 dev-docs/
 tokenacc.md
 REBUILD.md
-# Playwright 本地产物
+
+# Playwright
 .playwright-mcp/
 *.png
