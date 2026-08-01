@@ -17,6 +17,9 @@
 	let tags = $state<string[]>([]);
 	let airDateFrom = $state('');
 	let airDateTo = $state('');
+	let ratingFrom = $state(''); // 评分下界（0.0–10.0）
+	let ratingTo = $state(''); // 评分上界（半开 <to）
+	let ratingCountMin = $state(''); // 评分人数下界（无上界）
 	let platform = $state(''); // 分类（单选）
 	let source = $state(''); // 来源（单选 meta_tags）
 	let type = $state(''); // 类型（单选 meta_tags）
@@ -104,6 +107,12 @@
 		tags = tags.filter((x) => x !== t);
 	}
 
+	/** 空串 / NaN → undefined；否则转 number（评分区间传数值，空则不筛选） */
+	function toNum(v: string): number | undefined {
+		const n = Number(v);
+		return v.trim() !== '' && Number.isFinite(n) ? n : undefined;
+	}
+
 	function buildSearchParams(offset = 0): SearchParams {
 		// 来源 + 类型 + 区域合并进 meta_tags（区域默认日本，可切换）
 		const metaTags = [
@@ -111,7 +120,18 @@
 			...(type ? [type] : []),
 			...(region ? [region] : [])
 		];
-		return { keyword, tags, platform, metaTags, airDateFrom, airDateTo, offset };
+		return {
+			keyword,
+			tags,
+			platform,
+			metaTags,
+			airDateFrom,
+			airDateTo,
+			ratingFrom: toNum(ratingFrom),
+			ratingTo: toNum(ratingTo),
+			ratingCountMin: toNum(ratingCountMin),
+			offset
+		};
 	}
 
 	async function runSearch() {
@@ -303,6 +323,55 @@
 			<Input id="air-date-from" type="date" class="min-w-0 w-full" bind:value={airDateFrom} />
 			<Label for="air-date-to" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_to()}</Label>
 			<Input id="air-date-to" type="date" class="min-w-0 w-full" bind:value={airDateTo} />
+		</div>
+	</div>
+
+	<!-- 评分（0.0–10.0 区间，照抄开播时间布局）-->
+	<div class="grid gap-1.5">
+		<Label class="font-pixel text-xs">{m.filter_rating_label()}</Label>
+		<div
+			class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)]"
+		>
+			<Label for="rating-from" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_from()}</Label>
+			<Input
+				id="rating-from"
+				type="number"
+				step="0.1"
+				min="0"
+				max="10"
+				placeholder={m.rating_from_placeholder()}
+				class="min-w-0 w-full"
+				bind:value={ratingFrom}
+			/>
+			<Label for="rating-to" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_to()}</Label>
+			<Input
+				id="rating-to"
+				type="number"
+				step="0.1"
+				min="0"
+				max="10"
+				placeholder={m.rating_to_placeholder()}
+				class="min-w-0 w-full"
+				bind:value={ratingTo}
+			/>
+		</div>
+	</div>
+
+	<!-- 评分人数（仅下界，上界 ∞ 无上限）-->
+	<div class="grid gap-1.5">
+		<Label for="rating-count-min" class="font-pixel text-xs">{m.filter_rating_count_label()}</Label>
+		<div class="flex min-w-0 items-center gap-2">
+			<Label for="rating-count-min" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_from()}</Label>
+			<Input
+				id="rating-count-min"
+				type="number"
+				step="1"
+				min="0"
+				placeholder={m.rating_count_min_placeholder()}
+				class="min-w-0 flex-1"
+				bind:value={ratingCountMin}
+			/>
+			<span class="font-pixel text-[10px] text-muted-foreground" title="∞">∞</span>
 		</div>
 	</div>
 
