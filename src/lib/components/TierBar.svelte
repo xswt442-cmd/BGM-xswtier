@@ -64,12 +64,9 @@
 	}
 </script>
 
-<section class="relative mb-5 rounded-lg">
-	<!-- 和纸胶带标签（顶置，替代 legacy 左侧色块列） -->
-	<div
-		class="washi-tape absolute -top-3 left-3 z-10 flex rotate-[-1.2deg] items-center gap-1"
-		style="background-color: {color};"
-	>
+<!-- 8-bit 等级块：彩色头带 + 像素边框贴纸区 -->
+<section class="group pixel-border pixel-shadow mb-4 overflow-hidden rounded-lg bg-card">
+	<div class="flex items-center gap-2 px-3 py-1.5" style="background-color: {color};">
 		<input
 			type="text"
 			value={draftLabel}
@@ -79,11 +76,11 @@
 			}}
 			onblur={commitRename}
 			class="font-pixel min-w-10 bg-transparent text-center font-bold text-black outline-none"
-			style="font-size: {fontSize}; line-height: 1.7;"
+			style="font-size: {fontSize}; line-height: 1.8;"
 			placeholder="?"
 		/>
 		<Popover>
-			<PopoverTrigger class="rounded opacity-0 transition-opacity group-hover:opacity-100">
+			<PopoverTrigger class="ml-auto rounded opacity-0 transition-opacity group-hover:opacity-100">
 				<Button variant="ghost" size="icon" class="h-5 w-5 text-black">
 					<span class="icon-[lucide--settings-2] h-3 w-3"></span>
 				</Button>
@@ -143,8 +140,7 @@
 		</Popover>
 	</div>
 
-	<!-- 虚线裁剪框 + 贴纸区 -->
-	<div class="cut-lines relative min-h-28 rounded-lg bg-card/70">
+	<div class="relative min-h-24">
 		{#if items.length === 0}
 			<div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-40">
 				<span class="text-sm" style="color: var(--drop-here-color);">{m.drop_here()}</span>
@@ -154,10 +150,10 @@
 			use:dndzone={{ items, flipDurationMs }}
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}
-			class="flex flex-wrap content-start gap-2 p-3 pt-4"
+			class="flex flex-wrap content-start gap-2 p-2"
 		>
 			{#each items as item (item.id)}
-				<div animate:flip={{ duration: flipDurationMs }} class="sticker-scatter">
+				<div animate:flip={{ duration: flipDurationMs }}>
 					<ItemCard {item} />
 				</div>
 			{/each}

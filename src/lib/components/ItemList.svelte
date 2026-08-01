@@ -38,7 +38,7 @@
 				class="flex flex-wrap content-start gap-2 p-3"
 			>
 				{#each items as item (item.id)}
-					<div animate:flip={{ duration: flipDurationMs }} class="sticker-scatter">
+					<div animate:flip={{ duration: flipDurationMs }}>
 						<ItemCard {item} />
 					</div>
 				{/each}

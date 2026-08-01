@@ -25,15 +25,15 @@
 	}
 </script>
 
-<div class="w-full max-w-md rounded-xl border bg-card p-6 shadow-md">
+<div class="grid gap-5">
 	<form
 		onsubmit={(e) => {
 			e.preventDefault();
 			submitIndex();
 		}}
-		class="grid gap-2"
+		class="grid gap-1.5"
 	>
-		<Label for="index-id">{m.entry_index_label()}</Label>
+		<Label for="index-id" class="font-pixel text-[10px]">{m.entry_index_label()}</Label>
 		<div class="flex gap-2">
 			<Input
 				id="index-id"
@@ -42,23 +42,20 @@
 				placeholder={m.entry_index_placeholder()}
 				bind:value={indexId}
 			/>
-			<Button type="submit" disabled={isIndexLoading}>
+			<Button type="submit" size="icon" disabled={isIndexLoading}>
 				<span class="icon-[lucide--arrow-right] h-4 w-4"></span>
 			</Button>
 		</div>
-		<a href="https://bgm.tv/index" target="_blank" class="text-xs text-muted-foreground hover:underline">
-			{m.index_plaza()}
-		</a>
 	</form>
-	<Separator class="my-4" />
+	<Separator class="my-1" />
 	<form
 		onsubmit={(e) => {
 			e.preventDefault();
 			submitUser();
 		}}
-		class="grid gap-2"
+		class="grid gap-1.5"
 	>
-		<Label for="username">{m.entry_user_label()}</Label>
+		<Label for="username" class="font-pixel text-[10px]">{m.entry_user_label()}</Label>
 		<div class="flex gap-2">
 			<Input
 				id="username"
@@ -66,10 +63,9 @@
 				placeholder={m.entry_user_placeholder()}
 				bind:value={username}
 			/>
-			<Button type="submit" disabled={isUserLoading}>
+			<Button type="submit" size="icon" disabled={isUserLoading}>
 				<span class="icon-[lucide--arrow-right] h-4 w-4"></span>
 			</Button>
 		</div>
-		<p class="text-xs text-muted-foreground">{m.username_instruction()}</p>
 	</form>
 </div>

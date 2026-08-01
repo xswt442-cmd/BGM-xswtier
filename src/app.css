@@ -8,7 +8,7 @@
 @custom-variant dark (&:is(.theme-dark *));
 
 /* ============================================================
-   像素手帐 · 像素标题字体（拉丁/数字；中文回退系统体）
+   8-bit · 像素标题字体（拉丁/数字；中文回退系统体）
    ============================================================ */
 .font-pixel {
 	font-family: 'Press Start 2P', ui-monospace, 'Cascadia Mono', 'Courier New', monospace;
@@ -16,17 +16,16 @@
 }
 
 /* ============================================================
-   双轴视觉 · 配色轴：像素手帐三纸面
-   奶油横线本（warm 默认）/ 深夜描图纸（dark）/ 蓝方格坐标纸（sky）
+   双轴视觉 · 配色轴：三个配色方案
    ============================================================ */
 :root,
 .theme-warm {
 	--radius: 8px;
-	--paper-line: oklch(0.78 0.04 90 / 0.45);
+	--grid-line: oklch(0.3 0.05 255 / 0.14);
 
 	--background: oklch(0.965 0.02 90);
 	--foreground: oklch(0.27 0.05 255);
-	--card: oklch(0.995 0.008 90);
+	--card: oklch(0.995 0.008 90 / 0.92);
 	--card-foreground: oklch(0.27 0.05 255);
 	--popover: oklch(0.995 0.008 90);
 	--popover-foreground: oklch(0.27 0.05 255);
@@ -61,11 +60,11 @@
 
 .theme-dark {
 	--radius: 8px;
-	--paper-line: oklch(0.35 0.02 255 / 0.4);
+	--grid-line: oklch(0.95 0.02 85 / 0.12);
 
 	--background: oklch(0.15 0.02 255);
 	--foreground: oklch(0.9 0.02 85);
-	--card: oklch(0.19 0.02 255);
+	--card: oklch(0.19 0.02 255 / 0.9);
 	--card-foreground: oklch(0.9 0.02 85);
 	--popover: oklch(0.19 0.02 255);
 	--popover-foreground: oklch(0.9 0.02 85);
@@ -100,11 +99,11 @@
 
 .theme-sky {
 	--radius: 8px;
-	--paper-line: oklch(0.7 0.06 240 / 0.35);
+	--grid-line: oklch(0.3 0.06 250 / 0.12);
 
 	--background: oklch(0.97 0.01 245);
 	--foreground: oklch(0.32 0.06 255);
-	--card: oklch(0.995 0.004 245);
+	--card: oklch(0.995 0.004 245 / 0.92);
 	--card-foreground: oklch(0.32 0.06 255);
 	--popover: oklch(0.995 0.004 245);
 	--popover-foreground: oklch(0.32 0.06 255);
@@ -138,74 +137,53 @@
 }
 
 /* ============================================================
-   纸面纹理（挂在 body）
+   背景：cover 图 + 半透明格子纸（凸显区块结构）
    ============================================================ */
 :root body,
-.theme-warm body {
-	background-color: var(--background);
-	background-image: repeating-linear-gradient(
-		to bottom,
-		transparent 0 30px,
-		var(--paper-line) 30px 31px
-	);
-}
+.theme-warm body,
 .theme-sky body {
 	background-color: var(--background);
 	background-image:
-		repeating-linear-gradient(to right, transparent 0 24px, var(--paper-line) 24px 25px),
-		repeating-linear-gradient(to bottom, transparent 0 24px, var(--paper-line) 24px 25px);
+		repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 26px),
+		repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 26px),
+		linear-gradient(rgb(15 18 28 / 0.34), rgb(15 18 28 / 0.34)),
+		url('/cover.jpg');
+	background-size:
+		auto,
+		auto,
+		cover,
+		cover;
+	background-attachment: fixed;
 }
 .theme-dark body {
 	background-color: var(--background);
-	background-image: repeating-linear-gradient(
-		to bottom,
-		transparent 0 32px,
-		var(--paper-line) 32px 33px
-	);
+	background-image:
+		repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 26px),
+		repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 26px),
+		linear-gradient(rgb(5 8 16 / 0.55), rgb(5 8 16 / 0.55)),
+		url('/cover-night.jpg');
+	background-size:
+		auto,
+		auto,
+		cover,
+		cover;
+	background-attachment: fixed;
 }
 
-/* 贴纸点阵底 */
+/* 贴纸点阵底（集合面板） */
 .bg-dotted {
-	background-image: radial-gradient(circle, var(--paper-line) 1.5px, transparent 1.5px);
+	background-image: radial-gradient(circle, var(--grid-line) 1.5px, transparent 1.5px);
 	background-size: 14px 14px;
 }
 
 /* ============================================================
-   像素手帐工具类
+   8-bit 工具类
    ============================================================ */
 .pixel-border {
 	border: 2px solid var(--border);
 }
 .pixel-shadow {
 	box-shadow: 3px 3px 0 var(--border);
-}
-.cut-lines {
-	border: 2px dashed var(--border);
-}
-/* 和纸胶带：半透明色带 + 齿边纹理 */
-.washi-tape {
-	position: relative;
-	padding: 0.4rem 1rem;
-	border-radius: 3px;
-	box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
-}
-.washi-tape::after {
-	content: '';
-	position: absolute;
-	inset: 0;
-	border-radius: 3px;
-	background: repeating-linear-gradient(
-		90deg,
-		transparent 0 9px,
-		rgb(255 255 255 / 0.3) 9px 11px
-	);
-}
-/* 贴纸轻微错位（手帐散贴感） */
-.sticker-scatter:nth-child(3n) {
-	transform: rotate(1.2deg);
-}
-.sticker-scatter:nth-child(3n + 1) {
-	transform: rotate(-0.8deg);
 }
 
 /* ============================================================
@@ -255,7 +233,7 @@
 }
 
 /* ============================================================
-   Tailwind 主题映射：bg-background 等工具类跟随主题变量
+   Tailwind 主题映射
    ============================================================ */
 @theme inline {
 	--color-background: var(--background);
