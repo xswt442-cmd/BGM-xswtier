@@ -8,122 +8,204 @@
 @custom-variant dark (&:is(.theme-dark *));
 
 /* ============================================================
-   双轴视觉 · 配色轴（Color Scheme）
-   主题类挂在 <html> 上，只设 CSS 变量，与特效轴独立组合
+   像素手帐 · 像素标题字体（拉丁/数字；中文回退系统体）
+   ============================================================ */
+.font-pixel {
+	font-family: 'Press Start 2P', ui-monospace, 'Cascadia Mono', 'Courier New', monospace;
+	letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   双轴视觉 · 配色轴：像素手帐三纸面
+   奶油横线本（warm 默认）/ 深夜描图纸（dark）/ 蓝方格坐标纸（sky）
    ============================================================ */
 :root,
 .theme-warm {
-	--radius: 10px;
+	--radius: 8px;
+	--paper-line: oklch(0.78 0.04 90 / 0.45);
 
-	--background: oklch(0.97 0.04 90);
-	--foreground: oklch(0.2 0.02 85);
-	--card: oklch(0.99 0.02 90);
-	--card-foreground: oklch(0.15 0.02 85);
-	--popover: oklch(0.99 0.02 90);
-	--popover-foreground: oklch(0.2 0.02 85);
-	--primary: oklch(0.72 0.18 70);
-	--primary-foreground: oklch(0.15 0.02 85);
-	--secondary: oklch(0.92 0.04 90);
-	--secondary-foreground: oklch(0.25 0.03 85);
-	--muted: oklch(0.94 0.03 90);
-	--muted-foreground: oklch(0.5 0.04 85);
-	--accent: oklch(0.8 0.2 90);
-	--accent-foreground: oklch(0.15 0.02 85);
-	--destructive: oklch(0.58 0.22 25);
+	--background: oklch(0.965 0.02 90);
+	--foreground: oklch(0.27 0.05 255);
+	--card: oklch(0.995 0.008 90);
+	--card-foreground: oklch(0.27 0.05 255);
+	--popover: oklch(0.995 0.008 90);
+	--popover-foreground: oklch(0.27 0.05 255);
+	--primary: oklch(0.52 0.16 250);
+	--primary-foreground: oklch(0.98 0.01 90);
+	--secondary: oklch(0.92 0.03 90);
+	--secondary-foreground: oklch(0.35 0.05 255);
+	--muted: oklch(0.93 0.02 90);
+	--muted-foreground: oklch(0.55 0.04 255);
+	--accent: oklch(0.68 0.16 45);
+	--accent-foreground: oklch(0.98 0.01 90);
+	--destructive: oklch(0.6 0.2 25);
 	--destructive-foreground: oklch(0.98 0.01 90);
-	--border: oklch(0.85 0.02 90);
-	--input: oklch(0.85 0.02 90);
-	--ring: oklch(0.72 0.18 70);
+	--border: oklch(0.4 0.06 255);
+	--input: oklch(0.4 0.06 255);
+	--ring: oklch(0.52 0.16 250);
 
-	--neon: oklch(0.72 0.22 85);
-	--neon-glow: oklch(0.82 0.18 90);
+	--neon: oklch(0.6 0.18 45);
+	--neon-glow: oklch(0.7 0.14 60);
 
-	--chart-1: oklch(0.62 0.22 45);
-	--chart-2: oklch(0.68 0.2 65);
-	--chart-3: oklch(0.78 0.18 95);
-	--chart-4: oklch(0.65 0.16 160);
-	--chart-5: oklch(0.6 0.2 300);
-	--chart-6: oklch(0.62 0.18 10);
-	--chart-7: oklch(0.55 0.16 140);
-	--chart-8: oklch(0.5 0.15 280);
+	--chart-1: oklch(0.6 0.2 25);
+	--chart-2: oklch(0.68 0.18 50);
+	--chart-3: oklch(0.78 0.15 85);
+	--chart-4: oklch(0.62 0.16 145);
+	--chart-5: oklch(0.6 0.12 190);
+	--chart-6: oklch(0.55 0.15 250);
+	--chart-7: oklch(0.55 0.16 290);
+	--chart-8: oklch(0.65 0.16 330);
 
-	--drop-here-color: var(--foreground);
+	--drop-here-color: oklch(0.55 0.04 255 / 0.5);
 }
 
 .theme-dark {
-	--radius: 10px;
+	--radius: 8px;
+	--paper-line: oklch(0.35 0.02 255 / 0.4);
 
-	--background: oklch(0.14 0.01 260);
-	--foreground: oklch(0.88 0.01 260);
-	--card: oklch(0.18 0.01 260);
-	--card-foreground: oklch(0.9 0.01 260);
-	--popover: oklch(0.18 0.01 260);
-	--popover-foreground: oklch(0.9 0.01 260);
-	--primary: oklch(0.65 0.14 250);
-	--primary-foreground: oklch(0.15 0.02 260);
-	--secondary: oklch(0.24 0.02 260);
-	--secondary-foreground: oklch(0.9 0.01 260);
-	--muted: oklch(0.22 0.02 260);
-	--muted-foreground: oklch(0.65 0.02 260);
-	--accent: oklch(0.6 0.12 240);
-	--accent-foreground: oklch(0.95 0.01 260);
-	--destructive: oklch(0.65 0.2 25);
+	--background: oklch(0.15 0.02 255);
+	--foreground: oklch(0.9 0.02 85);
+	--card: oklch(0.19 0.02 255);
+	--card-foreground: oklch(0.9 0.02 85);
+	--popover: oklch(0.19 0.02 255);
+	--popover-foreground: oklch(0.9 0.02 85);
+	--primary: oklch(0.6 0.16 285);
+	--primary-foreground: oklch(0.98 0.01 90);
+	--secondary: oklch(0.24 0.02 255);
+	--secondary-foreground: oklch(0.9 0.02 85);
+	--muted: oklch(0.24 0.02 255);
+	--muted-foreground: oklch(0.65 0.02 255);
+	--accent: oklch(0.58 0.14 200);
+	--accent-foreground: oklch(0.98 0.01 90);
+	--destructive: oklch(0.62 0.2 25);
 	--destructive-foreground: oklch(0.98 0.01 90);
-	--border: oklch(0.3 0.02 260);
-	--input: oklch(0.3 0.02 260);
-	--ring: oklch(0.65 0.14 250);
+	--border: oklch(0.42 0.03 255);
+	--input: oklch(0.42 0.03 255);
+	--ring: oklch(0.6 0.16 285);
 
-	--neon: oklch(0.65 0.14 240);
-	--neon-glow: oklch(0.7 0.1 245);
+	--neon: oklch(0.7 0.2 300);
+	--neon-glow: oklch(0.75 0.15 200);
 
-	--chart-1: oklch(0.45 0.1 240);
-	--chart-2: oklch(0.47 0.08 220);
-	--chart-3: oklch(0.5 0.06 200);
-	--chart-4: oklch(0.43 0.06 180);
-	--chart-5: oklch(0.46 0.1 260);
-	--chart-6: oklch(0.35 0.08 10);
-	--chart-7: oklch(0.3 0.08 140);
-	--chart-8: oklch(0.32 0.1 280);
+	--chart-1: oklch(0.68 0.2 15);
+	--chart-2: oklch(0.72 0.18 45);
+	--chart-3: oklch(0.78 0.16 85);
+	--chart-4: oklch(0.68 0.16 150);
+	--chart-5: oklch(0.7 0.14 200);
+	--chart-6: oklch(0.65 0.16 260);
+	--chart-7: oklch(0.66 0.16 300);
+	--chart-8: oklch(0.72 0.16 340);
 
-	--drop-here-color: oklch(0.95 0 0);
+	--drop-here-color: oklch(0.9 0.02 85 / 0.4);
 }
 
 .theme-sky {
-	--radius: 10px;
+	--radius: 8px;
+	--paper-line: oklch(0.7 0.06 240 / 0.35);
 
-	--background: oklch(0.95 0.03 240);
-	--foreground: oklch(0.18 0.03 250);
-	--card: oklch(0.98 0.02 240);
-	--card-foreground: oklch(0.15 0.03 250);
-	--popover: oklch(0.98 0.02 240);
-	--popover-foreground: oklch(0.18 0.03 250);
-	--primary: oklch(0.6 0.15 250);
-	--primary-foreground: oklch(0.98 0.02 240);
-	--secondary: oklch(0.9 0.03 240);
-	--secondary-foreground: oklch(0.2 0.03 250);
-	--muted: oklch(0.93 0.02 240);
-	--muted-foreground: oklch(0.5 0.04 250);
-	--accent: oklch(0.72 0.15 240);
-	--accent-foreground: oklch(0.15 0.03 250);
-	--destructive: oklch(0.58 0.2 25);
+	--background: oklch(0.97 0.01 245);
+	--foreground: oklch(0.32 0.06 255);
+	--card: oklch(0.995 0.004 245);
+	--card-foreground: oklch(0.32 0.06 255);
+	--popover: oklch(0.995 0.004 245);
+	--popover-foreground: oklch(0.32 0.06 255);
+	--primary: oklch(0.55 0.15 255);
+	--primary-foreground: oklch(0.98 0.01 90);
+	--secondary: oklch(0.92 0.02 245);
+	--secondary-foreground: oklch(0.4 0.06 255);
+	--muted: oklch(0.94 0.015 245);
+	--muted-foreground: oklch(0.58 0.04 255);
+	--accent: oklch(0.7 0.13 210);
+	--accent-foreground: oklch(0.98 0.01 90);
+	--destructive: oklch(0.6 0.2 25);
 	--destructive-foreground: oklch(0.98 0.01 90);
-	--border: oklch(0.86 0.02 240);
-	--input: oklch(0.86 0.02 240);
-	--ring: oklch(0.6 0.15 250);
+	--border: oklch(0.45 0.07 250);
+	--input: oklch(0.45 0.07 250);
+	--ring: oklch(0.55 0.15 255);
 
-	--neon: oklch(0.68 0.18 235);
-	--neon-glow: oklch(0.75 0.14 240);
+	--neon: oklch(0.6 0.16 250);
+	--neon-glow: oklch(0.68 0.12 230);
 
-	--chart-1: oklch(0.72 0.12 250);
-	--chart-2: oklch(0.75 0.1 230);
-	--chart-3: oklch(0.78 0.08 210);
-	--chart-4: oklch(0.72 0.08 190);
-	--chart-5: oklch(0.74 0.12 270);
-	--chart-6: oklch(0.68 0.14 10);
-	--chart-7: oklch(0.62 0.12 140);
-	--chart-8: oklch(0.6 0.12 280);
+	--chart-1: oklch(0.6 0.18 25);
+	--chart-2: oklch(0.68 0.16 50);
+	--chart-3: oklch(0.76 0.13 85);
+	--chart-4: oklch(0.6 0.14 150);
+	--chart-5: oklch(0.58 0.12 200);
+	--chart-6: oklch(0.52 0.15 255);
+	--chart-7: oklch(0.55 0.15 290);
+	--chart-8: oklch(0.64 0.15 330);
 
-	--drop-here-color: oklch(0.55 0.15 160);
+	--drop-here-color: oklch(0.58 0.04 255 / 0.5);
+}
+
+/* ============================================================
+   纸面纹理（挂在 body）
+   ============================================================ */
+:root body,
+.theme-warm body {
+	background-color: var(--background);
+	background-image: repeating-linear-gradient(
+		to bottom,
+		transparent 0 30px,
+		var(--paper-line) 30px 31px
+	);
+}
+.theme-sky body {
+	background-color: var(--background);
+	background-image:
+		repeating-linear-gradient(to right, transparent 0 24px, var(--paper-line) 24px 25px),
+		repeating-linear-gradient(to bottom, transparent 0 24px, var(--paper-line) 24px 25px);
+}
+.theme-dark body {
+	background-color: var(--background);
+	background-image: repeating-linear-gradient(
+		to bottom,
+		transparent 0 32px,
+		var(--paper-line) 32px 33px
+	);
+}
+
+/* 贴纸点阵底 */
+.bg-dotted {
+	background-image: radial-gradient(circle, var(--paper-line) 1.5px, transparent 1.5px);
+	background-size: 14px 14px;
+}
+
+/* ============================================================
+   像素手帐工具类
+   ============================================================ */
+.pixel-border {
+	border: 2px solid var(--border);
+}
+.pixel-shadow {
+	box-shadow: 3px 3px 0 var(--border);
+}
+.cut-lines {
+	border: 2px dashed var(--border);
+}
+/* 和纸胶带：半透明色带 + 齿边纹理 */
+.washi-tape {
+	position: relative;
+	padding: 0.4rem 1rem;
+	border-radius: 3px;
+	box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+}
+.washi-tape::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: 3px;
+	background: repeating-linear-gradient(
+		90deg,
+		transparent 0 9px,
+		rgb(255 255 255 / 0.3) 9px 11px
+	);
+}
+/* 贴纸轻微错位（手帐散贴感） */
+.sticker-scatter:nth-child(3n) {
+	transform: rotate(1.2deg);
+}
+.sticker-scatter:nth-child(3n + 1) {
+	transform: rotate(-0.8deg);
 }
 
 /* ============================================================

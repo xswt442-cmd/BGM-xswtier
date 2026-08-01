@@ -31,16 +31,10 @@
 		draftLabel = title;
 	});
 
-	// 自定义字号（rem）；null = 按字数自动缩放
+	// 自定义字号（rem）；null = 按字数自动缩放（像素体字号偏小）
 	let customSize = $state<number | null>(null);
 	const autoFont = $derived(
-		draftLabel.length <= 2
-			? 2
-			: draftLabel.length <= 3
-				? 1.5
-				: draftLabel.length <= 5
-					? 1.1
-					: 0.85
+		draftLabel.length <= 2 ? 0.9 : draftLabel.length <= 3 ? 0.75 : draftLabel.length <= 5 ? 0.6 : 0.5
 	);
 	const fontSize = $derived(customSize !== null ? `${customSize}rem` : `${autoFont}rem`);
 
@@ -70,8 +64,12 @@
 	}
 </script>
 
-<div class="group mb-2 flex w-full overflow-hidden rounded-xl border shadow-sm">
-	<div class="relative flex w-20 shrink-0 items-center justify-center sm:w-24" style="background-color: {color}">
+<section class="relative mb-5 rounded-lg">
+	<!-- 和纸胶带标签（顶置，替代 legacy 左侧色块列） -->
+	<div
+		class="washi-tape absolute -top-3 left-3 z-10 flex rotate-[-1.2deg] items-center gap-1"
+		style="background-color: {color};"
+	>
 		<input
 			type="text"
 			value={draftLabel}
@@ -80,12 +78,12 @@
 				if (e.key === 'Enter') e.currentTarget.blur();
 			}}
 			onblur={commitRename}
-			class="w-full bg-transparent text-center font-black text-black outline-none"
-			style="font-size: {fontSize};"
+			class="font-pixel min-w-10 bg-transparent text-center font-bold text-black outline-none"
+			style="font-size: {fontSize}; line-height: 1.7;"
 			placeholder="?"
 		/>
 		<Popover>
-			<PopoverTrigger class="absolute right-1 top-1 rounded opacity-0 transition-opacity group-hover:opacity-100">
+			<PopoverTrigger class="rounded opacity-0 transition-opacity group-hover:opacity-100">
 				<Button variant="ghost" size="icon" class="h-5 w-5 text-black">
 					<span class="icon-[lucide--settings-2] h-3 w-3"></span>
 				</Button>
@@ -98,13 +96,13 @@
 							{#each PRESETS as p (p)}
 								<button
 									type="button"
-									class="h-6 w-6 rounded-full border"
+									class="pixel-border h-6 w-6 rounded-full"
 									style="background: {p};"
 									aria-label={p}
 									onclick={() => onColorChange?.(p)}
 								></button>
 							{/each}
-							<label class="relative h-6 w-6 cursor-pointer overflow-hidden rounded-full border">
+							<label class="pixel-border relative h-6 w-6 cursor-pointer overflow-hidden rounded-full">
 								<input
 									type="color"
 									class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
@@ -119,7 +117,7 @@
 							variant="outline"
 							size="sm"
 							class="h-6 w-6 p-0"
-							onclick={() => (customSize = Math.max(0.5, (customSize ?? autoFont) - 0.15))}
+							onclick={() => (customSize = Math.max(0.3, (customSize ?? autoFont) - 0.1))}
 						>
 							−
 						</Button>
@@ -127,7 +125,7 @@
 							variant="outline"
 							size="sm"
 							class="h-6 w-6 p-0"
-							onclick={() => (customSize = (customSize ?? autoFont) + 0.15)}
+							onclick={() => (customSize = (customSize ?? autoFont) + 0.1)}
 						>
 							+
 						</Button>
@@ -144,23 +142,25 @@
 			{/snippet}
 		</Popover>
 	</div>
-	<div class="relative min-h-28 flex-1 bg-background/60">
+
+	<!-- 虚线裁剪框 + 贴纸区 -->
+	<div class="cut-lines relative min-h-28 rounded-lg bg-card/70">
 		{#if items.length === 0}
-			<div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-30">
-				<span style="color: var(--drop-here-color);">{m.drop_here()}</span>
+			<div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-40">
+				<span class="text-sm" style="color: var(--drop-here-color);">{m.drop_here()}</span>
 			</div>
 		{/if}
 		<section
 			use:dndzone={{ items, flipDurationMs }}
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}
-			class="flex flex-wrap content-start gap-2 p-2"
+			class="flex flex-wrap content-start gap-2 p-3 pt-4"
 		>
 			{#each items as item (item.id)}
-				<div animate:flip={{ duration: flipDurationMs }}>
+				<div animate:flip={{ duration: flipDurationMs }} class="sticker-scatter">
 					<ItemCard {item} />
 				</div>
 			{/each}
 		</section>
 	</div>
-</div>
+</section>

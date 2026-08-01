@@ -16,9 +16,9 @@
 
 <div class="flex min-h-svh flex-col">
 	<header
-		class="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur"
+		class="sticky top-0 z-40 flex h-14 items-center justify-between border-b-2 border-border bg-background/90 px-4 backdrop-blur"
 	>
-		<a href="/" class="text-lg font-black tracking-tight">BGM-xswtier</a>
+		<a href="/" class="font-pixel text-xs tracking-wider text-foreground">BGM-xswtier</a>
 		<UtilBar />
 	</header>
 	<main class="flex-1">
