@@ -1,23 +1,36 @@
 import { pubClient } from './clients.svelte';
+import type { Subject, SlimSubject, LegacySubjectSmall } from '$lib/schemas/bgm-public-api';
 import type { ItemData, ItemIdentity } from '$lib/schemas/item';
+
+/** 任意 Subject 变体（完整 Subject / SlimSubject / Legacy_SubjectSmall）→ ItemData */
+export type SubjectLike = Pick<Partial<Subject>, 'id' | 'name' | 'name_cn' | 'date' | 'images' | 'eps'> &
+	Partial<Pick<SlimSubject, 'score'>> &
+	Partial<Pick<LegacySubjectSmall, 'air_date' | 'eps_count'>> & {
+		rating?: { score?: number; total?: number };
+	};
+
+export function subjectLikeToItemData(s: SubjectLike): ItemData | undefined {
+	if (!s.id) return undefined;
+	return {
+		bgm_id: s.id,
+		category: 'subject',
+		id: `subject:${s.id}`,
+		name: s.name || 'Unknown',
+		name_cn: s.name_cn || undefined,
+		image: s.images?.small,
+		score: s.score ?? s.rating?.score, // SlimSubject 顶层 score；Subject/Legacy 用 rating.score
+		rating_total: s.rating?.total,
+		eps: s.eps ?? s.eps_count,
+		air_date: s.date ?? s.air_date
+	};
+}
 
 export async function fetchSubject(subject_id: number): Promise<ItemData | undefined> {
 	const { data, error } = await pubClient.GET('/v0/subjects/{subject_id}', {
 		params: { path: { subject_id } }
 	});
 	if (error || !data) return undefined;
-	return {
-		bgm_id: data.id,
-		category: 'subject',
-		id: `subject:${data.id}`,
-		name: data.name || 'Unknown',
-		name_cn: data.name_cn || undefined,
-		image: data.images?.small,
-		score: data.rating?.score,
-		rating_total: data.rating?.total,
-		eps: data.eps || undefined,
-		air_date: data.date
-	};
+	return subjectLikeToItemData(data);
 }
 
 /** 策略分发：按 category 路由到具体端点（MVP 仅 subject） */

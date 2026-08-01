@@ -80,6 +80,66 @@ export interface Paged_UserCollection {
 	data: UserSubjectCollection[];
 }
 
+// ===== 搜索 / 日历 / 热门（搜索筛选功能新增）=====
+
+export interface SearchSubjectFilter {
+	type?: SubjectType[]; // 2=动画，或关系
+	tag?: string[]; // 且关系
+	meta_tags?: string[];
+	air_date?: string[]; // 如 [">=2024-07-01", "<2024-10-01"]，且关系
+	rating?: string[];
+	rating_count?: string[];
+	rank?: string[];
+	nsfw?: boolean;
+}
+
+export interface SearchSubjectRequest {
+	keyword: string;
+	sort?: 'match' | 'heat' | 'rank' | 'score';
+	filter?: SearchSubjectFilter;
+}
+
+export interface Paged_Subject {
+	total: number;
+	limit: number;
+	offset: number;
+	data: Subject[]; // 完整 Subject（含 date）
+}
+
+/** /calendar 每日放送（legacy 根路径，字段全部可选） */
+export interface LegacySubjectSmall {
+	id?: number;
+	url?: string;
+	type?: SubjectType;
+	name?: string;
+	name_cn?: string;
+	summary?: string;
+	air_date?: string;
+	air_weekday?: number;
+	images?: Images;
+	eps?: number;
+	eps_count?: number;
+	rating?: { total?: number; count?: Record<number, number>; score?: number };
+}
+
+export interface CalendarWeekday {
+	en?: string;
+	cn?: string;
+	ja?: string;
+	id?: number;
+}
+export type CalendarDay = { weekday?: CalendarWeekday; items?: LegacySubjectSmall[] };
+
+/** /p1/trending/subjects */
+export interface TrendingSubject {
+	subject: SlimSubject;
+	count: number;
+}
+export interface TrendingSubjectResponse {
+	data: TrendingSubject[];
+	total: number;
+}
+
 export interface paths {
 	'/v0/subjects/{subject_id}': {
 		get: {
@@ -109,6 +169,30 @@ export interface paths {
 			// 官方 spec 该端点 200 无 content schema，用本地类型兜底
 			responses: {
 				200: { content: { 'application/json': Paged_IndexSubject } };
+			};
+		};
+	};
+	'/v0/search/subjects': {
+		post: {
+			parameters: { query?: { limit?: number; offset?: number } };
+			requestBody: { content: { 'application/json': SearchSubjectRequest } };
+			responses: {
+				200: { content: { 'application/json': Paged_Subject } };
+			};
+		};
+	};
+	'/calendar': {
+		get: {
+			responses: {
+				200: { content: { 'application/json': CalendarDay[] } };
+			};
+		};
+	};
+	'/p1/trending/subjects': {
+		get: {
+			parameters: { query: { type: SubjectType; limit?: number; offset?: number } };
+			responses: {
+				200: { content: { 'application/json': TrendingSubjectResponse } };
 			};
 		};
 	};

@@ -1,6 +1,7 @@
 import pLimit from 'p-limit';
 import { QueryClient } from '@tanstack/svelte-query';
 import { fetchItemByIdentity } from '$lib/api/bgmFetchers.svelte';
+import { tierData } from '$lib/states/tierData.svelte';
 import type { ItemData, ItemIdentity } from '$lib/schemas/item';
 
 // 限流：未认证 ~30 req/min，带 token ~300 req/min → 并发压 6、批次 15
@@ -31,6 +32,16 @@ export class BatchLoader {
 	addItems(list: ItemIdentity[]) {
 		this.queue.push(...list);
 		this.totalQueued += list.length;
+	}
+
+	/** 直接注入已映射的完整条目（搜索/本季/热门路径，无需再 fetchSubject）。内部去重。 */
+	seedLoaded(items: ItemData[]) {
+		const seen = new Set<string>();
+		this.loadedItems = items.filter((i) => (seen.has(i.id) ? false : (seen.add(i.id), true)));
+		this.totalQueued = this.loadedItems.length; // 全量已入池，无队列
+		this.loadedCount = this.loadedItems.length;
+		this.queue = [];
+		this.isLoading = false;
 	}
 
 	async loadBatch(batch = BATCH_SIZE_DEFAULT) {
@@ -78,3 +89,19 @@ export class BatchLoader {
 }
 
 export const itemLoader = new BatchLoader();
+
+// 已加载条目 → tier 集合桥接：增量合并，按 id 去重
+// （collection + 所有 tier 已含的 id 不再追加 → 拖进 tier 的条目不会回流）
+$effect.root(() => {
+	$effect(() => {
+		const loaded = itemLoader.loadedItems;
+		const col = tierData.collection;
+		const tiers = tierData.tiers;
+		const seen = new Set<string>([
+			...col.map((i) => i.id),
+			...tiers.flatMap((t) => t.items.map((i) => i.id))
+		]);
+		const fresh = loaded.filter((i) => !seen.has(i.id));
+		if (fresh.length > 0) tierData.collection = [...col, ...fresh];
+	});
+});
