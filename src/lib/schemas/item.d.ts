@@ -24,6 +24,8 @@ export type ItemData = ItemIdentity & {
 	platform?: string;
 	/** BGM meta_tags（来源/类型/地区），今日更新按「日本」过滤用 */
 	meta_tags?: string[];
+	/** svelte-dnd-action 拖拽中插入的 shadow 占位符标记（必须过滤，勿持久化） */
+	isDndShadowItem?: boolean;
 };
 
 export interface TierDef {

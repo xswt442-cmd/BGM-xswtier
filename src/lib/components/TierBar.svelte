@@ -58,6 +58,8 @@
 	}
 
 	const flipDurationMs = 300;
+	// svelte-dnd-action 跨容器拖拽：consider/finalize 都直接用原始 items
+	// （含 shadow 占位符，渲染时用 data-is-dnd-shadow-item-hint 处理，持久化时过滤）
 	function handleDndConsider(e: CustomEvent) {
 		items = e.detail.items;
 	}
@@ -161,10 +163,13 @@
 			use:dndzone={{ items, flipDurationMs }}
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}
-			class="flex flex-wrap content-start gap-2 p-2 pt-1"
+			class="flex min-h-20 flex-wrap content-start gap-2 p-2 pt-1"
 		>
 			{#each items as item (item.id)}
-				<div animate:flip={{ duration: flipDurationMs }}>
+				<div
+					animate:flip={{ duration: flipDurationMs }}
+					data-is-dnd-shadow-item-hint={item.isDndShadowItem}
+				>
 					<ItemCard {item} />
 				</div>
 			{/each}

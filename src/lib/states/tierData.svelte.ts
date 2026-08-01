@@ -28,9 +28,18 @@ let collection = $state<ItemData[]>(get(storage).collectionTierItems);
 
 // JSON.stringify 遍历全部嵌套属性，任何深变更都触发重写。
 // $effect.root 允许在模块作用域创建 effect（模块顶层直接 $effect 会报 effect_orphan）
+// 持久化前过滤 dnd shadow 占位符（isDndShadowItem），避免污染 localStorage
+function stripShadow<T extends { isDndShadowItem?: boolean }>(list: T[]): T[] {
+	return list.filter((i) => !i.isDndShadowItem);
+}
 $effect.root(() => {
 	$effect(() => {
-		storage.set(JSON.parse(JSON.stringify({ version: 1, tiers, collectionTierItems: collection })));
+		const clean = {
+			version: 1,
+			tiers: tiers.map((t) => ({ ...t, items: stripShadow(t.items) })),
+			collectionTierItems: stripShadow(collection)
+		};
+		storage.set(JSON.parse(JSON.stringify(clean)));
 	});
 });
 
