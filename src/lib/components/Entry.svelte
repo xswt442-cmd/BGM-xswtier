@@ -43,7 +43,7 @@
 				bind:value={indexId}
 			/>
 			<Button type="submit" size="icon" disabled={isIndexLoading}>
-				<span class="icon-[lucide--arrow-right] h-4 w-4"></span>
+				<span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span>
 			</Button>
 		</div>
 	</form>
@@ -64,7 +64,7 @@
 				bind:value={username}
 			/>
 			<Button type="submit" size="icon" disabled={isUserLoading}>
-				<span class="icon-[lucide--arrow-right] h-4 w-4"></span>
+				<span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span>
 			</Button>
 		</div>
 	</form>

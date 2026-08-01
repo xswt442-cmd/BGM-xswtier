@@ -39,6 +39,9 @@ importers:
       '@iconify-json/meteor-icons':
         specifier: ^1.2.3
         version: 1.2.3
+      '@iconify-json/pixelarticons':
+        specifier: ^1.2.7
+        version: 1.2.7
       '@iconify-json/ri':
         specifier: ^1.2.10
         version: 1.2.10
@@ -284,6 +287,9 @@ packages:
 
   '@iconify-json/meteor-icons@1.2.3':
     resolution: {integrity: sha512-2GD1r2cLwPn2XXXkOAcI1sdc7ikDfB/eUkV4lj/mHi4panvsgq6c9ge1St+wO7Jr4LORLJgmZItkL1QAlk2pdA==}
+
+  '@iconify-json/pixelarticons@1.2.7':
+    resolution: {integrity: sha512-81h/yovmRFsHC5xYsDPnZibiofVKU/97PaA5rR//8sfgTFOQ/r3M3nhGCQU3HLWv0C5knMrsp6CFXAZ2qv7O1w==}
 
   '@iconify-json/ri@1.2.10':
     resolution: {integrity: sha512-WWMhoncVVM+Xmu9T5fgu2lhYRrKTEWhKk3Com0KiM111EeEsRLiASjpsFKnC/SrB6covhUp95r2mH8tGxhgd5Q==}
@@ -730,10 +736,6 @@ packages:
 
   consola@3.4.0:
     resolution: {integrity: sha512-EiPU8G6dQG0GFHNR8ljnZFki/8a+cQwEQ+7wpxdChl02Q8HXlwEZWD5lqAF8vC2sEC3Tehr8hy7vErz88LHyUA==}
-    engines: {node: ^14.18.0 || >=16.10.0}
-
-  consola@3.4.2:
-    resolution: {integrity: sha512-5IKcdX0nnYavi6G7TtOhwkYzyjfJlatbjMjuLSfE2kYT5pMDOilZ4OvMhi637CcDICTmz3wARPoyhqyX1Y+XvA==}
     engines: {node: ^14.18.0 || >=16.10.0}
 
   cookie@0.6.0:
@@ -1517,6 +1519,10 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
+  '@iconify-json/pixelarticons@1.2.7':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify-json/ri@1.2.10':
     dependencies:
       '@iconify/types': 2.0.0
@@ -1618,7 +1624,7 @@ snapshots:
 
   '@mapbox/node-pre-gyp@2.0.3':
     dependencies:
-      consola: 3.4.2
+      consola: 3.4.0
       detect-libc: 2.1.2
       https-proxy-agent: 7.0.6
       node-fetch: 2.7.0
@@ -1926,8 +1932,6 @@ snapshots:
       esprima: 4.0.1
 
   consola@3.4.0: {}
-
-  consola@3.4.2: {}
 
   cookie@0.6.0: {}
 

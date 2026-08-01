@@ -37,7 +37,7 @@
 <div class="mx-auto grid min-h-svh w-full max-w-7xl lg:grid-cols-[minmax(0,1fr)_340px]">
 	<main class="p-4 pt-6 pb-32 lg:pb-4">
 		<div class="mb-6 flex items-center gap-2">
-			<span class="icon-[lucide--notebook-text] h-5 w-5 text-accent"></span>
+			<span class="icon-[pixelarticons--notebook] h-5 w-5 text-accent"></span>
 			<span
 				class="font-pixel rounded-md px-2.5 py-1 text-[11px] text-black"
 				style="background: var(--chart-2);"
@@ -57,7 +57,7 @@
 			/>
 		{/each}
 		<Button variant="outline" class="w-full" onclick={() => tierData.addTier()}>
-			<span class="icon-[lucide--plus] mr-1 h-4 w-4"></span>
+			<span class="icon-[pixelarticons--plus] mr-1 h-4 w-4"></span>
 			{m.add_tier()}
 		</Button>
 	</main>

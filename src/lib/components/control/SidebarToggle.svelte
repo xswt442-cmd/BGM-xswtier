@@ -5,5 +5,5 @@
 </script>
 
 <Button variant="ghost" size="icon" class="lg:hidden" onclick={() => sidebar.toggle()} aria-label={m.open_collection()}>
-	<span class="icon-[lucide--panel-right-open] h-5 w-5"></span>
+	<span class="icon-[pixelarticons--arrow-bar-right] h-5 w-5"></span>
 </Button>

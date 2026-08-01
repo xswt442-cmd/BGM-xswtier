@@ -17,6 +17,6 @@
 	)}
 	{...rest}
 >
-	<span class="icon-[lucide--x] h-4 w-4"></span>
+	<span class="icon-[pixelarticons--close] h-4 w-4"></span>
 	{@render children?.()}
 </DialogPrimitive.Close>

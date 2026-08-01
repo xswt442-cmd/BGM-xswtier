@@ -90,7 +90,7 @@
 			<Popover>
 				<PopoverTrigger class="rounded opacity-0 transition-opacity group-hover:opacity-100">
 					<Button variant="ghost" size="icon" class="h-6 w-6 text-muted-foreground">
-						<span class="icon-[lucide--settings-2] h-3.5 w-3.5"></span>
+						<span class="icon-[pixelarticons--settings-2] h-3.5 w-3.5"></span>
 					</Button>
 				</PopoverTrigger>
 				{#snippet content()}
