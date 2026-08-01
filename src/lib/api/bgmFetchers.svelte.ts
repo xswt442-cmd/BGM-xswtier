@@ -1,0 +1,67 @@
+import { pubClient } from './clients.svelte';
+import type { ItemData, ItemIdentity } from '$lib/schemas/item';
+
+export async function fetchSubject(subject_id: number): Promise<ItemData | undefined> {
+	const { data, error } = await pubClient.GET('/v0/subjects/{subject_id}', {
+		params: { path: { subject_id } }
+	});
+	if (error || !data) return undefined;
+	return {
+		bgm_id: data.id,
+		category: 'subject',
+		id: `subject:${data.id}`,
+		name: data.name || 'Unknown',
+		name_cn: data.name_cn || undefined,
+		image: data.images?.small,
+		score: data.rating?.score,
+		rating_total: data.rating?.total,
+		eps: data.eps || undefined,
+		air_date: data.date
+	};
+}
+
+/** 策略分发：按 category 路由到具体端点（MVP 仅 subject） */
+export async function fetchItemByIdentity(item: ItemIdentity): Promise<ItemData | undefined> {
+	if (item.category === 'subject') return fetchSubject(item.bgm_id);
+	return undefined;
+}
+
+/**
+ * 用户名模式：拉取该用户「当前年已看完」的动画收藏（type=2 看过, subject_type=2 动画）
+ * 分页：先取首页拿 total，再并发拉剩余页
+ */
+export async function fetchUserCollection(
+	username: string,
+	year: number = new Date().getFullYear()
+): Promise<ItemIdentity[]> {
+	const limit = 50;
+	const query = { type: 2, subject_type: 2, limit, offset: 0 } as const;
+	const { data: firstPage } = await pubClient.GET('/v0/users/{username}/collections', {
+		params: { path: { username }, query }
+	});
+	const total = firstPage?.total ?? 0;
+	const items: ItemIdentity[] = [];
+
+	function collect(page: { data?: { subject_id: number; subject?: { date?: string } }[] } | undefined) {
+		for (const c of page?.data ?? []) {
+			const date = c.subject?.date;
+			if (date && date.startsWith(String(year))) {
+				items.push({ bgm_id: c.subject_id, category: 'subject' });
+			}
+		}
+	}
+	collect(firstPage);
+
+	if (total > limit) {
+		const pageCount = Math.ceil(total / limit) - 1;
+		const pages = await Promise.all(
+			Array.from({ length: pageCount }, (_, i) =>
+				pubClient.GET('/v0/users/{username}/collections', {
+					params: { path: { username }, query: { ...query, offset: (i + 1) * limit } }
+				}).then((r) => r.data)
+			)
+		);
+		for (const p of pages) collect(p);
+	}
+	return items;
+}
