@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { cn } from '$lib/utils';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
@@ -39,6 +38,12 @@
 	const hasMore = $derived(mode === 'search' && rawFetched < total);
 	const isSelected = (id: string) => selectedIds.has(id);
 
+	const REGION_OPTIONS = [
+		{ value: '日本', label: '日本' },
+		{ value: '中国', label: '中国' },
+		{ value: '韩国', label: '韩国' },
+		{ value: '', label: m.filter_region_all() }
+	];
 	const PLATFORM_OPTIONS = [
 		{ value: '', label: m.filter_platform_all },
 		{ value: 'TV', label: m.filter_platform_tv },
@@ -186,24 +191,17 @@
 		/>
 	</div>
 
-	<!-- ② 区域（默认锁日本）-->
+	<!-- ② 区域（可调节，默认日本）-->
 	<div class="grid gap-1.5">
 		<Label class="font-pixel text-xs">{m.filter_region_label()}</Label>
-		<div class="flex flex-wrap items-center gap-2">
-			<button
-				type="button"
-				onclick={() => (region = region === '日本' ? '' : '日本')}
-				class={cn(
-					'font-pixel border-2 px-2.5 py-1.5 text-[11px] leading-none',
-					region === '日本'
-						? 'border-border bg-card text-foreground'
-						: 'border-border/40 bg-transparent text-muted-foreground'
-				)}
-			>
-				[日本]
-			</button>
-			<span class="font-pixel text-[9px] text-muted-foreground">{m.filter_region_default()}</span>
-		</div>
+		<select
+			class="font-pixel h-8 w-full cursor-pointer appearance-none border-2 border-border bg-card px-1 text-[10px] text-foreground outline-none"
+			bind:value={region}
+		>
+			{#each REGION_OPTIONS as opt}
+				<option value={opt.value}>{opt.label}</option>
+			{/each}
+		</select>
 	</div>
 
 	<!-- ③ 快捷入口 -->
