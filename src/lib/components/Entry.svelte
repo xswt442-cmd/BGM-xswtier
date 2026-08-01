@@ -5,6 +5,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Separator } from '$lib/components/ui/separator';
 	import { m } from '$lib/paraglide/messages';
+	import SearchPanel from './SearchPanel.svelte';
 
 	let indexId = $state('');
 	let username = $state('');
@@ -68,4 +69,6 @@
 			</Button>
 		</div>
 	</form>
+	<Separator class="my-1" />
+	<SearchPanel />
 </div>

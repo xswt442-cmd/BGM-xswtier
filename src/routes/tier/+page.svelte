@@ -17,8 +17,14 @@
 	onMount(async () => {
 		const index = Number(page.url.searchParams.get('index'));
 		const user = page.url.searchParams.get('user');
-		if (!index && !user) {
+		const source = page.url.searchParams.get('source'); // search | season | trending
+		if (!index && !user && !source) {
 			goto('/');
+			return;
+		}
+		// 搜索/本季/热门入口：条目已由首页 seed 进 itemLoader.loadedItems，无需 clear/fetch
+		if (source) {
+			if (itemLoader.loadedItems.length === 0) goto('/'); // 深链/刷新兜底
 			return;
 		}
 		itemLoader.clear();
