@@ -2,6 +2,7 @@
 	import { Popover, PopoverTrigger } from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
+	import StatusChip from './StatusChip.svelte';
 	import { apiToken } from '$lib/states/token.svelte';
 	import { m } from '$lib/paraglide/messages';
 
@@ -9,10 +10,8 @@
 </script>
 
 <Popover>
-	<PopoverTrigger>
-		<Button variant="ghost" size="icon" aria-label={m.access_token()}>
-			<span class="icon-[lucide--key-round] h-5 w-5"></span>
-		</Button>
+	<PopoverTrigger class="rounded-sm transition-opacity hover:opacity-80">
+		<StatusChip label="KEY" value={apiToken.hasToken ? 'TOKEN SET' : 'NO TOKEN'} />
 	</PopoverTrigger>
 	{#snippet content()}
 		<div class="grid gap-3">

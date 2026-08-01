@@ -1,13 +1,15 @@
 <script lang="ts">
+	import ColorControl from './control/ColorControl.svelte';
+	import EffectsControl from './control/EffectsControl.svelte';
 	import LanguageSwitch from './control/LanguageSwitch.svelte';
-	import VisualSettings from './control/VisualSettings.svelte';
 	import TokenSettings from './control/TokenSettings.svelte';
 	import SidebarToggle from './control/SidebarToggle.svelte';
 </script>
 
-<div class="flex items-center gap-0.5">
+<div class="flex flex-wrap items-center gap-1.5">
+	<ColorControl />
+	<EffectsControl />
 	<LanguageSwitch />
-	<VisualSettings />
 	<TokenSettings />
 	<SidebarToggle />
 </div>
