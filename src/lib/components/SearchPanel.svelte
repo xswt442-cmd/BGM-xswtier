@@ -42,6 +42,7 @@
 		{ value: '日本', label: '日本' },
 		{ value: '中国', label: '中国' },
 		{ value: '韩国', label: '韩国' },
+		{ value: '欧美', label: '欧美' },
 		{ value: '', label: m.filter_region_all() }
 	];
 	const PLATFORM_OPTIONS = [
