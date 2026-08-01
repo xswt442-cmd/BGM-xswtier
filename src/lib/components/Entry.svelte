@@ -47,6 +47,16 @@
 				<span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span>
 			</Button>
 		</div>
+		<div class="text-right">
+			<a
+				href="https://bgm.tv/index/create"
+				target="_blank"
+				rel="noreferrer"
+				class="font-pixel text-[9px] text-primary hover:underline"
+			>
+				{m.entry_index_create_link()} ↗
+			</a>
+		</div>
 	</form>
 	<Separator class="my-1" />
 	<form
@@ -68,6 +78,7 @@
 				<span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span>
 			</Button>
 		</div>
+		<p class="font-pixel text-[9px] text-muted-foreground">{m.entry_user_hint()}</p>
 	</form>
 	<Separator class="my-1" />
 	<SearchPanel />

@@ -24,6 +24,8 @@ export interface Subject {
 	name_cn: string;
 	summary: string;
 	date?: string; // YYYY-MM-DD
+	platform?: string; // 分类：'TV'|'WEB'|'OVA'|'剧场版'|'动态漫画'|...
+	meta_tags?: string[]; // 来源/类型/地区，如 ['原创','日本','科幻']
 	images: Images;
 	eps: number;
 	total_episodes: number;
@@ -84,8 +86,9 @@ export interface Paged_UserCollection {
 
 export interface SearchSubjectFilter {
 	type?: SubjectType[]; // 2=动画，或关系
+	platform?: string[]; // 分类：['TV']（组合筛选可能混入其他值 → 客户端二次过滤）
 	tag?: string[]; // 且关系
-	meta_tags?: string[];
+	meta_tags?: string[]; // 来源/类型/地区，精确
 	air_date?: string[]; // 如 [">=2024-07-01", "<2024-10-01"]，且关系
 	rating?: string[];
 	rating_count?: string[];

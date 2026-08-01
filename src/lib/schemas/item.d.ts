@@ -20,6 +20,10 @@ export type ItemData = ItemIdentity & {
 	eps?: number;
 	/** 播出日期 YYYY-MM-DD */
 	air_date?: string;
+	/** 分类 platform（'TV'|'WEB'|'OVA'|'剧场版'|'动态漫画'）→ 客户端二次过滤 */
+	platform?: string;
+	/** BGM meta_tags（来源/类型/地区），今日更新按「日本」过滤用 */
+	meta_tags?: string[];
 };
 
 export interface TierDef {

@@ -3,7 +3,10 @@ import type { Subject, SlimSubject, LegacySubjectSmall } from '$lib/schemas/bgm-
 import type { ItemData, ItemIdentity } from '$lib/schemas/item';
 
 /** 任意 Subject 变体（完整 Subject / SlimSubject / Legacy_SubjectSmall）→ ItemData */
-export type SubjectLike = Pick<Partial<Subject>, 'id' | 'name' | 'name_cn' | 'date' | 'images' | 'eps'> &
+export type SubjectLike = Pick<
+	Partial<Subject>,
+	'id' | 'name' | 'name_cn' | 'date' | 'images' | 'eps' | 'platform' | 'meta_tags'
+> &
 	Partial<Pick<SlimSubject, 'score'>> &
 	Partial<Pick<LegacySubjectSmall, 'air_date' | 'eps_count'>> & {
 		rating?: { score?: number; total?: number };
@@ -21,7 +24,9 @@ export function subjectLikeToItemData(s: SubjectLike): ItemData | undefined {
 		score: s.score ?? s.rating?.score, // SlimSubject 顶层 score；Subject/Legacy 用 rating.score
 		rating_total: s.rating?.total,
 		eps: s.eps ?? s.eps_count,
-		air_date: s.date ?? s.air_date
+		air_date: s.date ?? s.air_date,
+		platform: s.platform, // calendar 条目 LegacySubjectSmall 无此字段 → undefined
+		meta_tags: s.meta_tags
 	};
 }
 
