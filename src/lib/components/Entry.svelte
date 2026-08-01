@@ -27,6 +27,10 @@
 </script>
 
 <div class="grid gap-5">
+	<!-- 搜索功能块整体上移 -->
+	<SearchPanel />
+
+	<Separator class="my-1" />
 	<form
 		onsubmit={(e) => {
 			e.preventDefault();
@@ -78,8 +82,7 @@
 				<span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span>
 			</Button>
 		</div>
-		<p class="font-pixel text-[9px] text-muted-foreground">{m.entry_user_hint()}</p>
+		<!-- 与目录 ID 下方链接一致，右对齐 -->
+		<p class="font-pixel text-right text-[9px] text-muted-foreground">{m.entry_user_hint()}</p>
 	</form>
-	<Separator class="my-1" />
-	<SearchPanel />
 </div>
