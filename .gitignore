@@ -13,7 +13,6 @@ build/
 # Generated
 src/lib/paraglide/
 project.inlang/cache/
-src/lib/schemas/bgm-public-api.d.ts
 src/lib/schemas/bgm-index-api.d.ts
 
 # Env
