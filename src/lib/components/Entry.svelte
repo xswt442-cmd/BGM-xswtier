@@ -84,7 +84,16 @@
 				<span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span>
 			</Button>
 		</div>
-		<!-- 与目录 ID 下方链接一致，右对齐 -->
-		<p class="font-pixel text-right text-[9px] text-muted-foreground">{m.entry_user_hint()}</p>
+		<!-- 与目录 ID 下方链接一致，右对齐；不知道用户名 → 跳登录页查看主页 -->
+		<div class="text-right">
+			<a
+				href="https://bangumi.tv/login"
+				target="_blank"
+				rel="noreferrer"
+				class="font-pixel text-[9px] text-primary hover:underline"
+			>
+				{m.entry_user_hint()} ↗
+			</a>
+		</div>
 	</form>
 </div>
