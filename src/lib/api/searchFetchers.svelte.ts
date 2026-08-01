@@ -17,8 +17,9 @@ export interface SearchParams {
 	/** 评分下界（>=from）；to 会转成 `<to` 半开区间（0.0–10.0） */
 	ratingFrom?: number;
 	ratingTo?: number;
-	/** 评分人数下界（>=min），无上界 */
+	/** 评分人数区间：>=min 且 <max */
 	ratingCountMin?: number;
+	ratingCountMax?: number;
 	limit?: number;
 	offset?: number;
 	/** match 匹配度 | heat 收藏人数 | rank 排名 | score 评分 */
@@ -52,7 +53,7 @@ export async function searchSubjects(p: SearchParams): Promise<SearchResult> {
 	const air_date = buildAirDate(p.airDateFrom, p.airDateTo);
 	if (air_date.length) filter.air_date = air_date;
 
-	// 评分区间（半开 [from, to)）与评分人数下界，格式同 air_date：>=6 / <8
+	// 评分与评分人数区间均为半开 [from, to)，格式同 air_date：>=6 / <8
 	const rating: string[] = [];
 	if (p.ratingFrom != null && Number.isFinite(p.ratingFrom)) rating.push(`>=${p.ratingFrom}`);
 	if (p.ratingTo != null && Number.isFinite(p.ratingTo)) rating.push(`<${p.ratingTo}`);
@@ -61,12 +62,21 @@ export async function searchSubjects(p: SearchParams): Promise<SearchResult> {
 	const ratingCount: string[] = [];
 	if (p.ratingCountMin != null && Number.isFinite(p.ratingCountMin))
 		ratingCount.push(`>=${p.ratingCountMin}`);
+	if (p.ratingCountMax != null && Number.isFinite(p.ratingCountMax))
+		ratingCount.push(`<${p.ratingCountMax}`);
 	if (ratingCount.length) filter.rating_count = ratingCount;
 
-	const { data, error } = await pubClient.POST('/v0/search/subjects', {
-		params: { query: { limit: p.limit ?? 100, offset: p.offset ?? 0 } },
-		body: { keyword: p.keyword ?? '', filter, sort: p.sort }
-	});
+	let response;
+	try {
+		response = await pubClient.POST('/v0/search/subjects', {
+			params: { query: { limit: p.limit ?? 100, offset: p.offset ?? 0 } },
+			body: { keyword: p.keyword ?? '', filter, sort: p.sort },
+			signal: AbortSignal.timeout(15_000)
+		});
+	} catch {
+		return { items: [], rawCount: 0, total: 0 };
+	}
+	const { data, error } = response;
 	if (error || !data) return { items: [], rawCount: 0, total: 0 };
 
 	const raw = (data.data ?? []).map(subjectLikeToItemData).filter((i): i is ItemData => !!i);

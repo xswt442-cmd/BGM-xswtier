@@ -17,9 +17,10 @@
 	let tags = $state<string[]>([]);
 	let airDateFrom = $state('');
 	let airDateTo = $state('');
-	let ratingFrom = $state(''); // 评分下界（0.0–10.0）
-	let ratingTo = $state(''); // 评分上界（半开 <to）
-	let ratingCountMin = $state(''); // 评分人数下界（无上界）
+	let ratingFrom = $state('0.0'); // 评分下界（0.0–10.0）
+	let ratingTo = $state('10.0'); // 评分上界（半开 <to）
+	let ratingCountMin = $state('0'); // 评分人数下界
+	let ratingCountMax = $state('99999'); // 评分人数上界（半开 <max）
 	let platform = $state(''); // 分类（单选）
 	let source = $state(''); // 来源（单选 meta_tags）
 	let type = $state(''); // 类型（单选 meta_tags）
@@ -108,9 +109,10 @@
 	}
 
 	/** 空串 / NaN → undefined；否则转 number（评分区间传数值，空则不筛选） */
-	function toNum(v: string): number | undefined {
-		const n = Number(v);
-		return v.trim() !== '' && Number.isFinite(n) ? n : undefined;
+	function toNum(v: string | number): number | undefined {
+		const raw = String(v).trim();
+		const n = Number(raw);
+		return raw !== '' && Number.isFinite(n) ? n : undefined;
 	}
 
 	function buildSearchParams(offset = 0): SearchParams {
@@ -130,6 +132,7 @@
 			ratingFrom: toNum(ratingFrom),
 			ratingTo: toNum(ratingTo),
 			ratingCountMin: toNum(ratingCountMin),
+			ratingCountMax: toNum(ratingCountMax),
 			offset
 		};
 	}
@@ -138,38 +141,50 @@
 		mode = 'search';
 		hasSearched = true;
 		isLoading = true;
-		const r = await searchSubjects(buildSearchParams());
-		results = r.items;
-		rawFetched = r.rawCount;
-		total = r.total;
-		isLoading = false;
+		try {
+			const r = await searchSubjects(buildSearchParams());
+			results = r.items;
+			rawFetched = r.rawCount;
+			total = r.total;
+		} finally {
+			isLoading = false;
+		}
 	}
 	async function loadMore() {
 		if (mode !== 'search') return;
 		isLoading = true;
-		const r = await searchSubjects(buildSearchParams(rawFetched)); // 用原始条数递增，规避二次过滤跳页
-		results = [...results, ...r.items];
-		rawFetched += r.rawCount;
-		total = r.total;
-		isLoading = false;
+		try {
+			const r = await searchSubjects(buildSearchParams(rawFetched)); // 用原始条数递增，规避二次过滤跳页
+			results = [...results, ...r.items];
+			rawFetched += r.rawCount;
+			total = r.total;
+		} finally {
+			isLoading = false;
+		}
 	}
 	async function loadSeason() {
 		mode = 'season';
 		hasSearched = true;
 		isLoading = true;
-		results = await fetchSeason();
-		rawFetched = results.length;
-		total = results.length;
-		isLoading = false;
+		try {
+			results = await fetchSeason();
+			rawFetched = results.length;
+			total = results.length;
+		} finally {
+			isLoading = false;
+		}
 	}
 	async function loadToday() {
 		mode = 'today';
 		hasSearched = true;
 		isLoading = true;
-		results = await fetchToday();
-		rawFetched = results.length;
-		total = results.length;
-		isLoading = false;
+		try {
+			results = await fetchToday();
+			rawFetched = results.length;
+			total = results.length;
+		} finally {
+			isLoading = false;
+		}
 	}
 
 	function toggleSelect(item: ItemData) {
@@ -357,10 +372,12 @@
 		</div>
 	</div>
 
-	<!-- 评分人数（仅下界，上界 ∞ 无上限）-->
+	<!-- 评分人数（0–99999 区间）-->
 	<div class="grid gap-1.5">
-		<Label for="rating-count-min" class="font-pixel text-xs">{m.filter_rating_count_label()}</Label>
-		<div class="flex min-w-0 items-center gap-2">
+		<Label class="font-pixel text-xs">{m.filter_rating_count_label()}</Label>
+		<div
+			class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)]"
+		>
 			<Label for="rating-count-min" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_from()}</Label>
 			<Input
 				id="rating-count-min"
@@ -371,7 +388,17 @@
 				class="min-w-0 flex-1"
 				bind:value={ratingCountMin}
 			/>
-			<span class="font-pixel text-[10px] text-muted-foreground" title="∞">∞</span>
+			<Label for="rating-count-max" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_to()}</Label>
+			<Input
+				id="rating-count-max"
+				type="number"
+				step="1"
+				min="0"
+				max="99999"
+				placeholder={m.rating_count_max_placeholder()}
+				class="min-w-0 w-full"
+				bind:value={ratingCountMax}
+			/>
 		</div>
 	</div>
 

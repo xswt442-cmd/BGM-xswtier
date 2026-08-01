@@ -52,6 +52,7 @@
   "rating_from_placeholder": "0.0",
   "rating_to_placeholder": "10.0",
   "rating_count_min_placeholder": "例：500",
+  "rating_count_max_placeholder": "99999",
   "season_quick": "本季在播",
   "trending_quick": "本日更新",
   "results_count": "结果：{count}/{total}",
