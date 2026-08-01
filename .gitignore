@@ -56,3 +56,6 @@ AGENTS.md
 dev-docs/
 tokenacc.md
 REBUILD.md
+# Playwright 本地产物
+.playwright-mcp/
+*.png
