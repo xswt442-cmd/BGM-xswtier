@@ -26,17 +26,27 @@ const storage = persisted<TierStore>('tierData-v2', defaultStore(), { syncTabs: 
 let tiers = $state<TierDef[]>(get(storage).tiers);
 let collection = $state<ItemData[]>(get(storage).collectionTierItems);
 
-// JSON.stringify 遍历全部嵌套属性，任何深变更都触发重写
-$effect(() => {
-	storage.set(JSON.parse(JSON.stringify({ version: 1, tiers, collectionTierItems: collection })));
+// JSON.stringify 遍历全部嵌套属性，任何深变更都触发重写。
+// $effect.root 允许在模块作用域创建 effect（模块顶层直接 $effect 会报 effect_orphan）
+$effect.root(() => {
+	$effect(() => {
+		storage.set(JSON.parse(JSON.stringify({ version: 1, tiers, collectionTierItems: collection })));
+	});
 });
 
+// getter/setter 同时保证：读取响应式（getter 读 $state 变量）、bind 可赋值（setter 写 $state 变量）
 export const tierData = {
 	get tiers() {
 		return tiers;
 	},
+	set tiers(v: TierDef[]) {
+		tiers = v;
+	},
 	get collection() {
 		return collection;
+	},
+	set collection(v: ItemData[]) {
+		collection = v;
 	},
 	/** 添加新档，默认标签「新」，色取下一 chart 变量 */
 	addTier(label = '新') {
