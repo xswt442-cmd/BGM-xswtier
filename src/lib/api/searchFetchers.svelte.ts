@@ -80,17 +80,37 @@ export function currentSeasonRange(): [string, string] {
 	return [start, `${ey}-${pad(em)}-01`];
 }
 
-/** 本季在播：search + 本季 air_date + TV + 日本，客户端再滤 platform==='TV'。不传 keyword。 */
+/**
+ * 本季在播：search + 本季 air_date + tag:['TV'] + 日本，循环分页拉全。
+ * 注意：platform 服务端筛选不可靠（混入 WEB/剧场版），改用 tag:['TV']；
+ * API 一页实际只返回 20 条，需按 offset 循环直到取完。
+ */
 export async function fetchSeason(): Promise<ItemData[]> {
 	const [from, to] = currentSeasonRange();
-	const r = await searchSubjects({
-		metaTags: ['日本'],
-		platform: 'TV',
-		airDateFrom: from,
-		airDateTo: to,
-		limit: 100
-	});
-	return r.items.filter((i) => i.platform === 'TV');
+	const filter: NonNullable<SearchSubjectRequest['filter']> = {
+		type: [2],
+		tag: ['TV'],
+		meta_tags: ['日本'],
+		air_date: [`>=${from}`, `<${to}`]
+	};
+	const PAGE = 20;
+	const all: ItemData[] = [];
+	for (let offset = 0; offset < 300; offset += PAGE) {
+		const { data, error } = await pubClient.POST('/v0/search/subjects', {
+			params: { query: { limit: PAGE, offset } },
+			body: { keyword: '', filter, sort: 'rank' }
+		});
+		if (error || !data) break;
+		const items = (data.data ?? [])
+			.map(subjectLikeToItemData)
+			.filter((i): i is ItemData => !!i);
+		all.push(...items);
+		// total 可能不准，用返回为空兜底；最多拉 300 条防死循环
+		if (items.length < PAGE || offset >= (data.total ?? 0)) break;
+	}
+	// 去重（分页可能重叠）+ 客户端过滤 platform==='TV'（tag:['TV'] 基本精确但含少量非 TV）
+	const seen = new Set<string>();
+	return all.filter((i) => i.platform === 'TV' && (seen.has(i.id) ? false : (seen.add(i.id), true)));
 }
 
 /** JS getDay()(0=Sun) → BGM weekday.id(1=Mon..7=Sun) */

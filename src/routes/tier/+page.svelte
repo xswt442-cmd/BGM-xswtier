@@ -25,6 +25,8 @@
 		// 搜索/本季/热门入口：条目已由首页 seed 进 itemLoader.loadedItems，无需 clear/fetch
 		if (source) {
 			if (itemLoader.loadedItems.length === 0) goto('/'); // 深链/刷新兜底
+			// 排名池为核心变量：清空旧 collection，桥接 effect 会从 loadedItems 重建为当前池内容
+			tierData.collection = [];
 			return;
 		}
 		itemLoader.clear();
