@@ -137,17 +137,16 @@
 }
 
 /* ============================================================
-   背景：cover 图 + 半透明格子纸（凸显区块结构）
+   背景：每主题一张图（src/lib/assets/sun|night|sky）+ 半透明格子纸
    ============================================================ */
 :root body,
-.theme-warm body,
-.theme-sky body {
+.theme-warm body {
 	background-color: var(--background);
 	background-image:
 		repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 26px),
 		repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 26px),
-		linear-gradient(rgb(15 18 28 / 0.34), rgb(15 18 28 / 0.34)),
-		url('/cover.jpg');
+		linear-gradient(rgb(15 18 28 / 0.5), rgb(15 18 28 / 0.5)),
+		url('lib/assets/sun.jpg');
 	background-size:
 		auto,
 		auto,
@@ -160,8 +159,22 @@
 	background-image:
 		repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 26px),
 		repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 26px),
-		linear-gradient(rgb(5 8 16 / 0.55), rgb(5 8 16 / 0.55)),
-		url('/cover-night.jpg');
+		linear-gradient(rgb(5 8 16 / 0.62), rgb(5 8 16 / 0.62)),
+		url('lib/assets/night.jpg');
+	background-size:
+		auto,
+		auto,
+		cover,
+		cover;
+	background-attachment: fixed;
+}
+.theme-sky body {
+	background-color: var(--background);
+	background-image:
+		repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 26px),
+		repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 26px),
+		linear-gradient(rgb(15 18 28 / 0.5), rgb(15 18 28 / 0.5)),
+		url('lib/assets/sky.jpg');
 	background-size:
 		auto,
 		auto,
@@ -184,6 +197,19 @@
 }
 .pixel-shadow {
 	box-shadow: 3px 3px 0 var(--border);
+}
+
+/* 8-bit 字体一致性：占位符、按钮、标签、标题的拉丁字符统一走像素体 */
+::placeholder {
+	font-family: 'Press Start 2P', ui-monospace, monospace;
+	font-size: 0.7em;
+}
+button,
+label,
+h1,
+h2,
+h3 {
+	font-family: 'Press Start 2P', system-ui, 'Segoe UI', sans-serif;
 }
 
 /* ============================================================

@@ -22,7 +22,7 @@
 		/>
 		{#if item.score !== undefined}
 			<span
-				class="absolute bottom-0 right-0 px-1 text-[10px] font-bold text-white"
+				class="font-pixel absolute bottom-0 right-0 px-1 text-[8px] text-white"
 				style="background: var(--chart-6);"
 			>
 				★{item.score}

@@ -37,6 +37,8 @@
 		draftLabel.length <= 2 ? 0.9 : draftLabel.length <= 3 ? 0.75 : draftLabel.length <= 5 ? 0.6 : 0.5
 	);
 	const fontSize = $derived(customSize !== null ? `${customSize}rem` : `${autoFont}rem`);
+	// 名称框宽度：初始约 5rem（约 1/3），随字数自动右扩
+	const nameWidth = $derived(`${Math.max(5, draftLabel.length * 1.15 + 2)}rem`);
 
 	const PRESETS = [
 		'var(--chart-1)',
@@ -64,93 +66,102 @@
 	}
 </script>
 
-<!-- 8-bit 等级块：彩色头带 + 像素边框贴纸区 -->
+<!-- 8-bit 等级块：紧凑名称框（左、约 1/3、居中文字、随字数右扩）+ 贴纸区 -->
 <section class="group pixel-border pixel-shadow mb-4 overflow-hidden rounded-lg bg-card">
-	<div class="flex items-center gap-2 px-3 py-1.5" style="background-color: {color};">
-		<input
-			type="text"
-			value={draftLabel}
-			oninput={(e) => (draftLabel = e.currentTarget.value)}
-			onkeydown={(e) => {
-				if (e.key === 'Enter') e.currentTarget.blur();
-			}}
-			onblur={commitRename}
-			class="font-pixel min-w-10 bg-transparent text-center font-bold text-black outline-none"
-			style="font-size: {fontSize}; line-height: 1.8;"
-			placeholder="?"
-		/>
-		<Popover>
-			<PopoverTrigger class="ml-auto rounded opacity-0 transition-opacity group-hover:opacity-100">
-				<Button variant="ghost" size="icon" class="h-5 w-5 text-black">
-					<span class="icon-[lucide--settings-2] h-3 w-3"></span>
-				</Button>
-			</PopoverTrigger>
-			{#snippet content()}
-				<div class="grid gap-3">
-					<div class="grid gap-1.5">
-						<span class="text-xs font-semibold">{m.color_scheme()}</span>
-						<div class="flex flex-wrap items-center gap-1.5">
-							{#each PRESETS as p (p)}
-								<button
-									type="button"
-									class="pixel-border h-6 w-6 rounded-full"
-									style="background: {p};"
-									aria-label={p}
-									onclick={() => onColorChange?.(p)}
-								></button>
-							{/each}
-							<label class="pixel-border relative h-6 w-6 cursor-pointer overflow-hidden rounded-full">
-								<input
-									type="color"
-									class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-									onchange={(e) => onColorChange?.(e.currentTarget.value)}
-								/>
-							</label>
+	<div class="flex flex-wrap items-center gap-2 p-2">
+		<div
+			class="relative flex items-center justify-center rounded-md px-3 py-1.5"
+			style="background-color: {color}; width: {nameWidth};"
+		>
+			<input
+				type="text"
+				value={draftLabel}
+				oninput={(e) => (draftLabel = e.currentTarget.value)}
+				onkeydown={(e) => {
+					if (e.key === 'Enter') e.currentTarget.blur();
+				}}
+				onblur={commitRename}
+				class="font-pixel w-full bg-transparent text-center font-bold text-black outline-none"
+				style="font-size: {fontSize}; line-height: 1.8;"
+				placeholder="?"
+			/>
+		</div>
+		<div class="ml-auto flex items-center">
+			<Popover>
+				<PopoverTrigger class="rounded opacity-0 transition-opacity group-hover:opacity-100">
+					<Button variant="ghost" size="icon" class="h-6 w-6 text-muted-foreground">
+						<span class="icon-[lucide--settings-2] h-3.5 w-3.5"></span>
+					</Button>
+				</PopoverTrigger>
+				{#snippet content()}
+					<div class="grid gap-3">
+						<div class="grid gap-1.5">
+							<span class="text-xs font-semibold">{m.color_scheme()}</span>
+							<div class="flex flex-wrap items-center gap-1.5">
+								{#each PRESETS as p (p)}
+									<button
+										type="button"
+										class="pixel-border h-6 w-6 rounded-full"
+										style="background: {p};"
+										aria-label={p}
+										onclick={() => onColorChange?.(p)}
+									></button>
+								{/each}
+								<label class="pixel-border relative h-6 w-6 cursor-pointer overflow-hidden rounded-full">
+									<input
+										type="color"
+										class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+										onchange={(e) => onColorChange?.(e.currentTarget.value)}
+									/>
+								</label>
+							</div>
 						</div>
+						<div class="flex items-center gap-1.5">
+							<span class="text-xs font-semibold">{m.font_size()}</span>
+							<Button
+								variant="outline"
+								size="sm"
+								class="h-6 w-6 p-0"
+								onclick={() => (customSize = Math.max(0.3, (customSize ?? autoFont) - 0.1))}
+							>
+								−
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								class="h-6 w-6 p-0"
+								onclick={() => (customSize = (customSize ?? autoFont) + 0.1)}
+							>
+								+
+							</Button>
+							<Button variant="ghost" size="sm" class="h-6 px-1 text-xs" onclick={() => (customSize = null)}>
+								{m.reset()}
+							</Button>
+						</div>
+						{#if canDelete}
+							<Button variant="destructive" size="sm" onclick={onDelete}>
+								{m.delete_tier()}
+							</Button>
+						{/if}
 					</div>
-					<div class="flex items-center gap-1.5">
-						<span class="text-xs font-semibold">{m.font_size()}</span>
-						<Button
-							variant="outline"
-							size="sm"
-							class="h-6 w-6 p-0"
-							onclick={() => (customSize = Math.max(0.3, (customSize ?? autoFont) - 0.1))}
-						>
-							−
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							class="h-6 w-6 p-0"
-							onclick={() => (customSize = (customSize ?? autoFont) + 0.1)}
-						>
-							+
-						</Button>
-						<Button variant="ghost" size="sm" class="h-6 px-1 text-xs" onclick={() => (customSize = null)}>
-							{m.reset()}
-						</Button>
-					</div>
-					{#if canDelete}
-						<Button variant="destructive" size="sm" onclick={onDelete}>
-							{m.delete_tier()}
-						</Button>
-					{/if}
-				</div>
-			{/snippet}
-		</Popover>
+				{/snippet}
+			</Popover>
+		</div>
 	</div>
 
-	<div class="relative min-h-24">
+	<div class="relative min-h-20">
 		{#if items.length === 0}
 			<div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-40">
-				<span class="text-sm" style="color: var(--drop-here-color);">{m.drop_here()}</span>
+				<span class="font-pixel text-[10px]" style="color: var(--drop-here-color);">
+					{m.drop_here()}
+				</span>
 			</div>
 		{/if}
 		<section
 			use:dndzone={{ items, flipDurationMs }}
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}
-			class="flex flex-wrap content-start gap-2 p-2"
+			class="flex flex-wrap content-start gap-2 p-2 pt-1"
 		>
 			{#each items as item (item.id)}
 				<div animate:flip={{ duration: flipDurationMs }}>

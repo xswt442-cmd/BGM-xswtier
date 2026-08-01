@@ -22,14 +22,14 @@
 	<div class="flex items-center justify-between px-3 pb-2 pt-3">
 		<h2 class="font-pixel text-[10px] text-foreground">{m.unranked()}</h2>
 		{#if itemLoader.total > 0}
-			<span class="text-xs text-muted-foreground">
+			<span class="font-pixel text-[9px] text-muted-foreground">
 				{m.loading_progress({ loaded: itemLoader.loadedCount, total: itemLoader.total })}
 			</span>
 		{/if}
 	</div>
 	<div class="bg-dotted flex-1 overflow-y-auto">
 		{#if items.length === 0 && !itemLoader.isLoading}
-			<p class="p-6 text-center text-sm text-muted-foreground">{m.EMPTY()}</p>
+			<p class="font-pixel p-6 text-center text-[10px] text-muted-foreground">{m.EMPTY()}</p>
 		{:else}
 			<section
 				use:dndzone={{ items, flipDurationMs }}
