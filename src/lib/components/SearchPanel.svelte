@@ -39,11 +39,11 @@
 	const isSelected = (id: string) => selectedIds.has(id);
 
 	const REGION_OPTIONS = [
-		{ value: '日本', label: '日本' },
-		{ value: '中国', label: '中国' },
-		{ value: '韩国', label: '韩国' },
-		{ value: '欧美', label: '欧美' },
-		{ value: '', label: m.filter_region_all() }
+		{ value: '日本', label: m.filter_region_japan },
+		{ value: '中国', label: m.filter_region_china },
+		{ value: '韩国', label: m.filter_region_korea },
+		{ value: '欧美', label: m.filter_region_western },
+		{ value: '', label: m.filter_region_all }
 	];
 	const PLATFORM_OPTIONS = [
 		{ value: '', label: m.filter_platform_all },
@@ -197,11 +197,11 @@
 		<Label for="search-region" class="font-pixel text-xs">{m.filter_region_label()}</Label>
 		<select
 			id="search-region"
-			class="font-pixel h-8 w-full cursor-pointer appearance-none border-2 border-border bg-card px-1 text-[10px] text-foreground outline-none"
+			class="font-pixel h-10 w-full cursor-pointer appearance-none border-2 border-border bg-card px-2 py-1.5 text-[11px] leading-5 text-foreground outline-none"
 			bind:value={region}
 		>
 			{#each REGION_OPTIONS as opt}
-				<option value={opt.value}>{opt.label}</option>
+				<option value={opt.value}>{opt.label()}</option>
 			{/each}
 		</select>
 	</div>
@@ -224,7 +224,7 @@
 			<Label for="search-platform" class="font-pixel text-[10px]">{m.filter_platform_label()}</Label>
 			<select
 				id="search-platform"
-				class="font-pixel h-8 w-full cursor-pointer appearance-none border-2 border-border bg-card px-1 text-[10px] text-foreground outline-none"
+				class="font-pixel h-10 w-full cursor-pointer appearance-none border-2 border-border bg-card px-2 py-1.5 text-[11px] leading-5 text-foreground outline-none"
 				bind:value={platform}
 			>
 				{#each PLATFORM_OPTIONS as opt}
@@ -236,7 +236,7 @@
 			<Label for="search-source" class="font-pixel text-[10px]">{m.filter_source_label()}</Label>
 			<select
 				id="search-source"
-				class="font-pixel h-8 w-full cursor-pointer appearance-none border-2 border-border bg-card px-1 text-[10px] text-foreground outline-none"
+				class="font-pixel h-10 w-full cursor-pointer appearance-none border-2 border-border bg-card px-2 py-1.5 text-[11px] leading-5 text-foreground outline-none"
 				bind:value={source}
 			>
 				{#each SOURCE_OPTIONS as opt}
@@ -248,7 +248,7 @@
 			<Label for="search-type" class="font-pixel text-[10px]">{m.filter_type_label()}</Label>
 			<select
 				id="search-type"
-				class="font-pixel h-8 w-full cursor-pointer appearance-none border-2 border-border bg-card px-1 text-[10px] text-foreground outline-none"
+				class="font-pixel h-10 w-full cursor-pointer appearance-none border-2 border-border bg-card px-2 py-1.5 text-[11px] leading-5 text-foreground outline-none"
 				bind:value={type}
 			>
 				{#each TYPE_OPTIONS as opt}

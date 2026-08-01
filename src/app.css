@@ -7,12 +7,25 @@
 /* 让 shadcn 组件内的 dark: 变体响应我们的 theme-dark 类 */
 @custom-variant dark (&:is(.theme-dark *));
 
+/* Fusion Pixel: OFL-1.1, self-hosted for consistent CJK pixel glyphs. */
+@font-face {
+	font-family: 'Fusion Pixel 12px';
+	src: url('/fonts/fusion-pixel/fusion-pixel-12px-proportional-zh-hans.woff2') format('woff2');
+	font-display: swap;
+	font-style: normal;
+	font-weight: 400 700;
+}
+
 /* ============================================================
-   8-bit · 像素标题字体（拉丁/数字；中文回退系统体）
+   8-bit · 拉丁/数字使用 Press Start 2P，中文回退 Fusion Pixel
    ============================================================ */
 .font-pixel {
-	font-family: 'Press Start 2P', ui-monospace, 'Cascadia Mono', 'Courier New', monospace;
+	font-family: 'Press Start 2P', 'Fusion Pixel 12px', ui-monospace, 'Cascadia Mono', 'Courier New', monospace;
 	letter-spacing: 0.02em;
+}
+
+html[lang='zh'] body {
+	font-family: 'Fusion Pixel 12px', system-ui, sans-serif;
 }
 
 /* ============================================================
@@ -216,7 +229,7 @@
 
 /* 8-bit 字体一致性：占位符、按钮、标签、标题的拉丁字符统一走像素体 */
 ::placeholder {
-	font-family: 'Press Start 2P', ui-monospace, monospace;
+	font-family: 'Press Start 2P', 'Fusion Pixel 12px', ui-monospace, monospace;
 	font-size: 0.7em;
 }
 button,
@@ -224,7 +237,7 @@ label,
 h1,
 h2,
 h3 {
-	font-family: 'Press Start 2P', system-ui, 'Segoe UI', sans-serif;
+	font-family: 'Press Start 2P', 'Fusion Pixel 12px', system-ui, 'Segoe UI', sans-serif;
 }
 
 /* ============================================================

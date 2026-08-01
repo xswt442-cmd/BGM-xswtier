@@ -20,17 +20,17 @@
 			loading="lazy"
 			class="absolute inset-0 h-full w-full object-cover object-top"
 		/>
-		{#if item.score !== undefined}
-			<span
-				class="font-pixel absolute bottom-0 right-0 px-1 text-[8px] text-white"
-				style="background: var(--chart-6);"
-			>
-				★{item.score}
-			</span>
+			{#if item.score !== undefined}
+				<span
+					class="font-pixel absolute bottom-1 right-1 min-w-7 border border-white/70 bg-black/85 px-1 py-1 text-center text-[8px] leading-none tabular-nums text-white shadow-sm"
+					aria-label={`Score ${item.score}`}
+				>
+					{item.score.toFixed(1)}
+				</span>
 		{/if}
 	</div>
 	<div class="flex h-5 w-full items-center justify-center overflow-hidden bg-muted">
-		<span class="truncate px-1 text-[9px] font-bold leading-none" title={displayName}>
+		<span class="font-pixel truncate px-1 text-[9px] font-bold leading-none" title={displayName}>
 			{displayName}
 		</span>
 	</div>
