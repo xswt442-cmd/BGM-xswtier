@@ -26,7 +26,7 @@
 	}
 </script>
 
-<div class="grid gap-5">
+<div class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5">
 	<!-- 搜索功能块整体上移 -->
 	<SearchPanel />
 
@@ -39,13 +39,14 @@
 		class="grid gap-1.5"
 	>
 		<Label for="index-id" class="font-pixel text-xs">{m.entry_index_label()}</Label>
-		<div class="flex gap-2">
+		<div class="flex min-w-0 gap-2">
 			<Input
 				id="index-id"
 				type="text"
 				inputmode="numeric"
 				placeholder={m.entry_index_placeholder()}
 				bind:value={indexId}
+				class="min-w-0 flex-1"
 			/>
 			<Button type="submit" size="icon" disabled={isIndexLoading}>
 				<span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span>
@@ -71,12 +72,13 @@
 		class="grid gap-1.5"
 	>
 		<Label for="username" class="font-pixel text-xs">{m.entry_user_label()}</Label>
-		<div class="flex gap-2">
+		<div class="flex min-w-0 gap-2">
 			<Input
 				id="username"
 				type="text"
 				placeholder={m.entry_user_placeholder()}
 				bind:value={username}
+				class="min-w-0 flex-1"
 			/>
 			<Button type="submit" size="icon" disabled={isUserLoading}>
 				<span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span>

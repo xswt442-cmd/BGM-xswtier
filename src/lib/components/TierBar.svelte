@@ -69,7 +69,7 @@
 </script>
 
 <!-- 8-bit 等级块：紧凑名称框（左、约 1/3、居中文字、随字数右扩）+ 贴纸区 -->
-<section class="group neon-border pixel-border pixel-shadow mb-4 overflow-hidden rounded-lg bg-card">
+<section class="group neon-border pixel-border pixel-shadow mb-3 overflow-hidden rounded-lg bg-card">
 	<div class="flex flex-wrap items-center gap-2 p-2">
 		<div
 			class="relative flex items-center justify-center rounded-md px-3 py-1.5"
@@ -151,7 +151,7 @@
 		</div>
 	</div>
 
-	<div class="relative min-h-20">
+	<div class="relative min-h-16">
 		{#if items.length === 0}
 			<div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-40">
 				<span class="font-pixel text-[10px]" style="color: var(--drop-here-color);">
@@ -163,7 +163,7 @@
 			use:dndzone={{ items, flipDurationMs }}
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}
-			class="flex min-h-20 flex-wrap content-start gap-2 p-2 pt-1"
+			class="flex min-h-16 flex-wrap content-start gap-2 p-2 pt-1"
 		>
 			{#each items as item (item.id)}
 				<div

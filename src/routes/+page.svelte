@@ -11,7 +11,7 @@
 	<!-- 顶部 ==== 屏幕边框 -->
 	<div class="border-t-4 border-double border-foreground/50"></div>
 
-	<div class="flex flex-1 flex-col items-center justify-center gap-9 px-4 py-10">
+	<div class="flex min-w-0 flex-1 flex-col items-center justify-center gap-9 px-4 py-10">
 		<!-- 盒装像素标题 -->
 		<div class="pixel-border neon-border bg-chart-2 px-10 py-4">
 			<h1 class="font-pixel neon-text text-xl text-black sm:text-2xl">BGM-XSWTIER</h1>
@@ -24,11 +24,11 @@
 
 		<!-- 状态栏徽章条（横贯居中） -->
 		<div class="pixel-border neon-border w-full max-w-2xl bg-background/60 px-4 py-2.5">
-			<StatusBar />
+			<StatusBar centered />
 		</div>
 
 		<!-- PRESS START / 输入区 -->
-		<div class="w-full max-w-2xl text-center">
+		<div class="min-w-0 w-full max-w-2xl text-center">
 			{#if !started}
 				<button
 					onclick={() => (started = true)}
@@ -37,7 +37,9 @@
 					<span class="blink">▶</span> {m.press_start()}
 				</button>
 			{:else}
-				<div class="animate-in fade-in slide-in-from-bottom-2 text-left">
+				<div
+					class="animate-in fade-in slide-in-from-bottom-2 rounded-lg border border-border/70 bg-background/70 p-3 text-left shadow-sm backdrop-blur-[2px] sm:p-4"
+				>
 					<Entry />
 				</div>
 			{/if}

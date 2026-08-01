@@ -180,7 +180,7 @@
 	}
 </script>
 
-<div class="grid gap-3">
+<div class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3">
 	<!-- ① 直接搜索 -->
 	<div class="grid gap-1.5">
 		<Label for="search-keyword" class="font-pixel text-xs">{m.search_label()}</Label>
@@ -212,7 +212,7 @@
 			{m.season_quick()}
 		</Button>
 		<Button variant="outline" class="font-pixel text-[10px]" onclick={loadToday} disabled={isLoading}>
-			<span class="icon-[pixelarticons--flame] mr-1 h-4 w-4"></span>
+			<span class="icon-[pixelarticons--fire] mr-1 h-4 w-4"></span>
 			{m.trending_quick()}
 		</Button>
 	</div>
@@ -257,12 +257,13 @@
 	<!-- 标签（且关系）-->
 	<div class="grid gap-1.5">
 		<Label for="search-tags" class="font-pixel text-xs">{m.filter_tags_label()}</Label>
-		<div class="flex gap-2">
+		<div class="flex min-w-0 gap-2">
 			<Input
 				id="search-tags"
 				type="text"
 				placeholder={m.filter_tags_placeholder()}
 				bind:value={tagInput}
+				class="min-w-0 flex-1"
 				onkeydown={(e) => {
 					if (e.key === 'Enter') {
 						e.preventDefault();
@@ -291,11 +292,13 @@
 	<!-- 开播时间 -->
 	<div class="grid gap-1.5">
 		<Label class="font-pixel text-xs">{m.filter_airdate_label()}</Label>
-		<div class="flex items-center gap-2">
+		<div
+			class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)]"
+		>
 			<span class="font-pixel text-[10px] text-muted-foreground">{m.airdate_from()}</span>
-			<Input type="date" class="flex-1" bind:value={airDateFrom} />
+			<Input type="date" class="min-w-0 w-full" bind:value={airDateFrom} />
 			<span class="font-pixel text-[10px] text-muted-foreground">{m.airdate_to()}</span>
-			<Input type="date" class="flex-1" bind:value={airDateTo} />
+			<Input type="date" class="min-w-0 w-full" bind:value={airDateTo} />
 		</div>
 	</div>
 
@@ -305,7 +308,7 @@
 
 	{#if hasSearched}
 		<!-- 检索池 -->
-		<div class="border-2 border-border bg-card/60">
+		<div class="min-w-0 border-2 border-border bg-card/60">
 			<div class="flex items-center justify-between gap-2 border-b-2 border-border px-2 py-1">
 				<span class="font-pixel text-[10px]">{m.pool_search_title()}</span>
 				<div class="flex items-center gap-2">
@@ -323,18 +326,18 @@
 					</Button>
 				</div>
 			</div>
-			<div class="max-h-[40svh] overflow-y-auto p-1.5">
+			<div class="min-w-0 max-h-[40svh] overflow-y-auto p-1.5">
 				{#if results.length === 0}
 					<p class="font-pixel py-2 text-center text-[10px] text-muted-foreground">{m.no_results()}</p>
 				{:else}
 					{#each results as item (item.id)}
 						<div
-							class="pixel-border mb-1.5 flex h-28 items-center gap-2 bg-card/70 p-1.5 last:mb-0"
+							class="pixel-border mb-1.5 flex h-32 min-w-0 items-center gap-2 bg-card/70 p-1.5 last:mb-0"
 							data-testid="search-row"
 							data-platform={item.platform}
 						>
 							<ItemCard {item} />
-							<span class="font-pixel flex-1 truncate text-[10px]" title={item.name_cn || item.name}>
+							<span class="font-pixel min-w-0 flex-1 truncate text-[10px]" title={item.name_cn || item.name}>
 								{item.name_cn || item.name}
 							</span>
 							<Button
@@ -359,7 +362,7 @@
 	{/if}
 
 	<!-- 排名池（独立于搜索，进 START 即显示持久化内容） -->
-	<div class="border-2 border-border bg-card/60">
+	<div class="min-w-0 border-2 border-border bg-card/60">
 		<div class="flex items-center justify-between gap-2 border-b-2 border-border px-2 py-1">
 			<span class="font-pixel text-[10px]">{m.pool_ranking_title()}</span>
 			<div class="flex items-center gap-2">
@@ -375,17 +378,17 @@
 				</Button>
 			</div>
 		</div>
-		<div class="max-h-[30svh] overflow-y-auto p-1.5">
+		<div class="min-w-0 max-h-[30svh] overflow-y-auto p-1.5">
 			{#if selected.length === 0}
 				<p class="font-pixel py-2 text-center text-[10px] text-muted-foreground">{m.pool_empty()}</p>
 			{:else}
 				{#each selected as item (item.id)}
 					<div
-						class="pixel-border mb-1.5 flex h-28 items-center gap-2 bg-card/70 p-1.5 last:mb-0"
+						class="pixel-border mb-1.5 flex h-32 min-w-0 items-center gap-2 bg-card/70 p-1.5 last:mb-0"
 						data-testid="pool-row"
 					>
 						<ItemCard {item} />
-						<span class="font-pixel flex-1 truncate text-[10px]" title={item.name_cn || item.name}>
+						<span class="font-pixel min-w-0 flex-1 truncate text-[10px]" title={item.name_cn || item.name}>
 							{item.name_cn || item.name}
 						</span>
 						<Button

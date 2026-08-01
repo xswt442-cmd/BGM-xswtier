@@ -4,11 +4,17 @@
 	import LanguageSwitch from './control/LanguageSwitch.svelte';
 	import TokenSettings from './control/TokenSettings.svelte';
 	import SidebarToggle from './control/SidebarToggle.svelte';
+	import { cn } from '$lib/utils';
 
-	let { showToggle = false }: { showToggle?: boolean } = $props();
+	let { showToggle = false, centered = false }: { showToggle?: boolean; centered?: boolean } = $props();
 </script>
 
-<div class="flex flex-wrap items-center gap-1.5">
+<div
+	class={cn(
+		'flex w-full min-w-0 flex-wrap items-center gap-1.5 sm:w-auto',
+		centered ? 'justify-center' : 'sm:justify-end'
+	)}
+>
 	<ColorControl />
 	<EffectsControl />
 	<LanguageSwitch />

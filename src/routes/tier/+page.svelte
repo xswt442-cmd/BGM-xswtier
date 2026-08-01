@@ -42,8 +42,8 @@
 	});
 </script>
 
-<div class="mx-auto grid min-h-svh w-full max-w-7xl lg:grid-cols-[minmax(0,1fr)_340px]">
-	<main class="p-4 pt-6 pb-32 lg:pb-4">
+<div class="mx-auto grid min-h-svh w-full max-w-7xl xl:grid-cols-[minmax(0,1fr)_340px]">
+	<main class="p-4 pt-6 pb-32 xl:pb-4">
 		<div class="mb-6 flex items-center gap-2">
 			<span class="icon-[pixelarticons--notebook] h-5 w-5 text-accent"></span>
 			<span
@@ -70,7 +70,7 @@
 		</Button>
 	</main>
 
-	<aside class="hidden lg:block">
+	<aside class="hidden xl:block">
 		<div class="sticky top-14 h-[calc(100svh-3.5rem)] border-l">
 			<ItemList bind:items={tierData.collection} onLoadMore={() => itemLoader.loadBatch()} />
 		</div>
@@ -78,7 +78,7 @@
 </div>
 
 <!-- 移动/平板：集合面板作为底部抽屉 -->
-<Sheet bind:open={sidebar.open} side="bottom" class="lg:hidden">
+<Sheet bind:open={sidebar.open} side="bottom" class="xl:hidden">
 	{#snippet content()}
 		<SheetTitle class="sr-only">{m.unranked()}</SheetTitle>
 		<div class="h-[60svh]">

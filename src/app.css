@@ -145,7 +145,7 @@
 	background-image:
 		repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 26px),
 		repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 26px),
-		linear-gradient(rgb(15 18 28 / 0.5), rgb(15 18 28 / 0.5)),
+		linear-gradient(rgb(255 248 232 / 0.34), rgb(255 248 232 / 0.34)),
 		url('lib/assets/sun.jpg');
 	background-size:
 		auto,
@@ -173,7 +173,7 @@
 	background-image:
 		repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 26px),
 		repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 26px),
-		linear-gradient(rgb(15 18 28 / 0.5), rgb(15 18 28 / 0.5)),
+		linear-gradient(rgb(235 247 255 / 0.3), rgb(235 247 255 / 0.3)),
 		url('lib/assets/sky.jpg');
 	background-size:
 		auto,
@@ -233,16 +233,25 @@ h3 {
    ============================================================ */
 .effects-neon .neon-text {
 	text-shadow:
-		0 0 4px var(--neon),
-		0 0 12px var(--neon),
-		0 0 24px var(--neon-glow),
-		0 0 48px var(--neon-glow);
+		0 0 2px var(--neon),
+		0 0 8px var(--neon),
+		0 0 16px var(--neon-glow),
+		0 0 28px var(--neon-glow);
 }
 
 .effects-neon .neon-border {
 	box-shadow:
-		0 0 8px var(--neon),
-		0 0 24px var(--neon-glow);
+		0 0 5px var(--neon),
+		0 0 14px var(--neon-glow);
+}
+
+@media (max-width: 767px) {
+	:root body,
+	.theme-sun body,
+	.theme-dark body,
+	.theme-sky body {
+		background-attachment: scroll;
+	}
 }
 
 .effects-neon .title-vivid {
