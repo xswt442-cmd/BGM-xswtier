@@ -14,7 +14,7 @@
 </script>
 
 <Popover>
-	<PopoverTrigger class="rounded-sm transition-opacity hover:opacity-80">
+	<PopoverTrigger class="min-h-11 rounded-sm transition-opacity hover:opacity-80 sm:min-h-0">
 		<StatusChip label="COLOR" value={SCHEME_BADGE[theme.colorScheme]} />
 	</PopoverTrigger>
 	{#snippet content()}

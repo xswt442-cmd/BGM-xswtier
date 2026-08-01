@@ -90,10 +90,11 @@
 		</div>
 		<div class="ml-auto flex items-center">
 			<Popover>
-				<PopoverTrigger class="rounded opacity-0 transition-opacity group-hover:opacity-100">
-					<Button variant="ghost" size="icon" class="h-6 w-6 text-muted-foreground">
-						<span class="icon-[pixelarticons--settings-2] h-3.5 w-3.5"></span>
-					</Button>
+				<PopoverTrigger
+					class="inline-flex h-11 w-11 items-center justify-center rounded text-muted-foreground opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+					aria-label={m.tier_settings()}
+				>
+					<span class="icon-[pixelarticons--settings-2] h-4 w-4 sm:h-3.5 sm:w-3.5"></span>
 				</PopoverTrigger>
 				{#snippet content()}
 					<div class="grid gap-3">

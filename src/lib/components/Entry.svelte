@@ -48,7 +48,7 @@
 				bind:value={indexId}
 				class="min-w-0 flex-1"
 			/>
-			<Button type="submit" size="icon" disabled={isIndexLoading}>
+			<Button type="submit" size="icon" disabled={isIndexLoading} aria-label={m.submit_index()}>
 				<span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span>
 			</Button>
 		</div>
@@ -80,7 +80,7 @@
 				bind:value={username}
 				class="min-w-0 flex-1"
 			/>
-			<Button type="submit" size="icon" disabled={isUserLoading}>
+			<Button type="submit" size="icon" disabled={isUserLoading} aria-label={m.submit_user()}>
 				<span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span>
 			</Button>
 		</div>

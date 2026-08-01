@@ -194,8 +194,9 @@
 
 	<!-- ② 区域（可调节，默认日本）-->
 	<div class="grid gap-1.5">
-		<Label class="font-pixel text-xs">{m.filter_region_label()}</Label>
+		<Label for="search-region" class="font-pixel text-xs">{m.filter_region_label()}</Label>
 		<select
+			id="search-region"
 			class="font-pixel h-8 w-full cursor-pointer appearance-none border-2 border-border bg-card px-1 text-[10px] text-foreground outline-none"
 			bind:value={region}
 		>
@@ -220,8 +221,9 @@
 	<!-- ④ 三组筛选下拉 -->
 	<div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
 		<div class="grid gap-1">
-			<Label class="font-pixel text-[10px]">{m.filter_platform_label()}</Label>
+			<Label for="search-platform" class="font-pixel text-[10px]">{m.filter_platform_label()}</Label>
 			<select
+				id="search-platform"
 				class="font-pixel h-8 w-full cursor-pointer appearance-none border-2 border-border bg-card px-1 text-[10px] text-foreground outline-none"
 				bind:value={platform}
 			>
@@ -231,8 +233,9 @@
 			</select>
 		</div>
 		<div class="grid gap-1">
-			<Label class="font-pixel text-[10px]">{m.filter_source_label()}</Label>
+			<Label for="search-source" class="font-pixel text-[10px]">{m.filter_source_label()}</Label>
 			<select
+				id="search-source"
 				class="font-pixel h-8 w-full cursor-pointer appearance-none border-2 border-border bg-card px-1 text-[10px] text-foreground outline-none"
 				bind:value={source}
 			>
@@ -242,8 +245,9 @@
 			</select>
 		</div>
 		<div class="grid gap-1">
-			<Label class="font-pixel text-[10px]">{m.filter_type_label()}</Label>
+			<Label for="search-type" class="font-pixel text-[10px]">{m.filter_type_label()}</Label>
 			<select
+				id="search-type"
 				class="font-pixel h-8 w-full cursor-pointer appearance-none border-2 border-border bg-card px-1 text-[10px] text-foreground outline-none"
 				bind:value={type}
 			>
@@ -295,10 +299,10 @@
 		<div
 			class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)]"
 		>
-			<span class="font-pixel text-[10px] text-muted-foreground">{m.airdate_from()}</span>
-			<Input type="date" class="min-w-0 w-full" bind:value={airDateFrom} />
-			<span class="font-pixel text-[10px] text-muted-foreground">{m.airdate_to()}</span>
-			<Input type="date" class="min-w-0 w-full" bind:value={airDateTo} />
+			<Label for="air-date-from" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_from()}</Label>
+			<Input id="air-date-from" type="date" class="min-w-0 w-full" bind:value={airDateFrom} />
+			<Label for="air-date-to" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_to()}</Label>
+			<Input id="air-date-to" type="date" class="min-w-0 w-full" bind:value={airDateTo} />
 		</div>
 	</div>
 

@@ -5,7 +5,7 @@
 	import TierBar from '$lib/components/TierBar.svelte';
 	import ItemList from '$lib/components/ItemList.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { Sheet, SheetTitle } from '$lib/components/ui/sheet';
+	import { Sheet, SheetClose, SheetTitle } from '$lib/components/ui/sheet';
 	import { tierData } from '$lib/states/tierData.svelte';
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { sidebar } from '$lib/states/sidebar.svelte';
@@ -81,6 +81,7 @@
 <Sheet bind:open={sidebar.open} side="bottom" class="xl:hidden">
 	{#snippet content()}
 		<SheetTitle class="sr-only">{m.unranked()}</SheetTitle>
+		<SheetClose class="right-6 top-6 z-10 h-11 w-11" aria-label={m.close_collection()} />
 		<div class="h-[60svh]">
 			<ItemList bind:items={tierData.collection} onLoadMore={() => itemLoader.loadBatch()} />
 		</div>

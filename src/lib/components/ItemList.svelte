@@ -21,7 +21,7 @@
 </script>
 
 <section class="flex h-full flex-col">
-	<div class="flex items-center justify-between px-3 pb-2 pt-3">
+	<div class="flex items-center justify-between px-3 pb-2 pr-14 pt-3 xl:pr-3">
 		<h2 class="font-pixel text-[10px] text-foreground">{m.unranked()}</h2>
 		{#if itemLoader.total > 0}
 			<span class="font-pixel text-[9px] text-muted-foreground">
