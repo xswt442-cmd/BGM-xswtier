@@ -60,3 +60,12 @@ REBUILD.md
 
 # Playwright
 .playwright-mcp/
+
+# Chore
+*.jpg
+*.png
+*.jpeg
+*.mp4
+*.mkv
+*.webp
+*.gif

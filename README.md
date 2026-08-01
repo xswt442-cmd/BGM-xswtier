@@ -2,7 +2,7 @@
 
 Bangumi 动漫 tier 排名工具：输入 BGM 目录 ID 或用户名，加载条目，拖拽排名，保存本地。
 
-项目网址：[BGM-xswtier](https://bgm-xswtier-seven.vercel.app/)
+项目网址：[BGM-xswtier](https://bgm-xswtier.vercel.app/)
 
 ## 本地构建
 
