@@ -30,7 +30,7 @@
 		{/if}
 	</div>
 	<div class="flex w-full items-center justify-center overflow-hidden bg-muted {titleMode === 'two-line' ? 'h-10' : 'h-5'}">
-		<span class="font-pixel px-1 text-center text-[9px] font-bold {titleMode === 'two-line' ? 'line-clamp-2 leading-4' : 'truncate leading-none'}" title={displayName}>
+		<span class="font-pixel px-1 text-center text-[9px] font-bold {titleMode === 'two-line' ? 'line-clamp-2 leading-4' : 'truncate leading-tight'}" title={displayName}>
 			{displayName}
 		</span>
 	</div>
