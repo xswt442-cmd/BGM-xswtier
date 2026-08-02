@@ -150,5 +150,12 @@
   "save_png": "SAVE TIER AS PNG",
   "exporting_png": "GENERATING PNG…",
   "export_png_success": "PNG saved",
-  "export_png_failed": "PNG generation failed. Check that cover images are available and try again."
+  "export_png_failed": "PNG generation failed. Check that cover images are available and try again.",
+  "aria_drag_started": "Started dragging {itemLabel}. Use the arrow keys to move it within {zoneLabel}, or tab to another list to move it there",
+  "aria_moved_to_position": "Moved {itemLabel} to position {position} in {zoneLabel}",
+  "aria_moved_to_zone_end": "Moved {itemLabel} to the end of {zoneLabel}",
+  "aria_moved_to_zone_start": "Moved {itemLabel} to the beginning of {zoneLabel}",
+  "aria_dropped": "Stopped dragging {itemLabel}",
+  "aria_zone_active": "Tab to an item and press space or enter to start dragging it",
+  "aria_zone_disabled": "This is a disabled drag-and-drop list"
 }

@@ -150,5 +150,12 @@
   "save_png": "将 Tier 保存到本地",
   "exporting_png": "正在生成 PNG…",
   "export_png_success": "PNG 已保存到本地",
-  "export_png_failed": "PNG 生成失败，请确认封面图片可访问后重试"
+  "export_png_failed": "PNG 生成失败，请确认封面图片可访问后重试",
+  "aria_drag_started": "开始拖拽 {itemLabel}。在 {zoneLabel} 内用方向键移动，或 Tab 到其他列表以移入",
+  "aria_moved_to_position": "已将 {itemLabel} 移动到 {zoneLabel} 的第 {position} 位",
+  "aria_moved_to_zone_end": "已将 {itemLabel} 移动到 {zoneLabel} 末尾",
+  "aria_moved_to_zone_start": "已将 {itemLabel} 移动到 {zoneLabel} 开头",
+  "aria_dropped": "已停止拖拽 {itemLabel}",
+  "aria_zone_active": "Tab 到某个条目，按空格或回车开始拖拽",
+  "aria_zone_disabled": "这是一个禁用的拖拽列表"
 }

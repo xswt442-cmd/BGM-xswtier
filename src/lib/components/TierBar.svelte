@@ -162,15 +162,17 @@
 			</div>
 		{/if}
 		<section
-			use:dndzone={{ items, flipDurationMs }}
+			use:dndzone={{ items, flipDurationMs, useCursorForDetection: true, delayTouchStart: true }}
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}
+			aria-label={title}
 			class="flex min-h-16 flex-wrap content-start gap-2 p-2 pt-1"
 		>
 			{#each items as item (item.id)}
 				<div
 					animate:flip={{ duration: flipDurationMs }}
 					data-is-dnd-shadow-item-hint={item.isDndShadowItem}
+					aria-label={item.name_cn || item.name || ''}
 				>
 					<ItemCard {item} />
 				</div>

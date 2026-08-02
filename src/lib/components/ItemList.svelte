@@ -35,15 +35,17 @@
 			<p class="font-pixel pointer-events-none absolute inset-x-0 top-0 p-6 text-center text-[10px] text-muted-foreground">{m.EMPTY()}</p>
 		{/if}
 		<section
-			use:dndzone={{ items, flipDurationMs }}
+			use:dndzone={{ items, flipDurationMs, useCursorForDetection: true, delayTouchStart: true }}
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}
+			aria-label={m.unranked()}
 			class="flex min-h-full flex-wrap content-start gap-2 p-3"
 		>
 				{#each items as item (item.id)}
 					<div
 						animate:flip={{ duration: flipDurationMs }}
 						data-is-dnd-shadow-item-hint={item.isDndShadowItem}
+						aria-label={item.name_cn || item.name || ''}
 					>
 						<ItemCard {item} titleMode="two-line" />
 					</div>

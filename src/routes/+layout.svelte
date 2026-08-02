@@ -5,6 +5,7 @@
 	import { applyTheme } from '$lib/states/theme.svelte';
 	import { locale } from '$lib/states/locale.svelte';
 	import StatusBar from '$lib/components/StatusBar.svelte';
+	import { applyAriaStrings } from '$lib/dndAria';
 
 	let { children } = $props();
 
@@ -12,6 +13,12 @@
 		// 双轴主题类 + 语言 attr 挂到 <html>
 		applyTheme();
 		document.documentElement.lang = locale.current;
+	});
+
+	$effect(() => {
+		// 语言切换时刷新读屏/键盘拖拽提示（m.*() formatter 惰性取当前语言）
+		void locale.current;
+		applyAriaStrings();
 	});
 
 

@@ -46,7 +46,7 @@
 		"html-to-image": "^1.11.13",
 		"openapi-fetch": "^0.17.0",
 		"p-limit": "^7.3.1",
-		"svelte-dnd-action": "^0.9.76",
+		"svelte-dnd-action": "^0.9.77",
 		"svelte-persisted-store": "^0.12.0"
 	}
 }

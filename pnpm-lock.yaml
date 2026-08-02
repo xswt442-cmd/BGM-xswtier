@@ -24,8 +24,8 @@ importers:
         specifier: ^7.3.1
         version: 7.3.1
       svelte-dnd-action:
-        specifier: ^0.9.76
-        version: 0.9.76(svelte@5.56.8)
+        specifier: ^0.9.77
+        version: 0.9.77(svelte@5.56.8)
       svelte-persisted-store:
         specifier: ^0.12.0
         version: 0.12.0(svelte@5.56.8)
@@ -1245,8 +1245,8 @@ packages:
       svelte: ^4.0.0 || ^5.0.0-next.0
       typescript: ^5.0.0 || ^6.0.0
 
-  svelte-dnd-action@0.9.76:
-    resolution: {integrity: sha512-5yKiEkeMITG6cdRqXGdGkk8Inn5JzZVC0V6hBg2ZbMa723hh7iNYn3zXPmw9Ww9eWd6ECpPItZF9wUD5tA+Iaw==}
+  svelte-dnd-action@0.9.77:
+    resolution: {integrity: sha512-HEd4gH1OKKH/MzO5HTGldNpergAU4LyhqLvP4lrcmDpzKAGWbeb0FHB+ie1H+LJ1ZRbbjBHU6T/vYQzM80HSug==}
     peerDependencies:
       svelte: '>=3.23.0 || ^5.0.0-next.0'
 
@@ -2364,7 +2364,7 @@ snapshots:
     transitivePeerDependencies:
       - picomatch
 
-  svelte-dnd-action@0.9.76(svelte@5.56.8):
+  svelte-dnd-action@0.9.77(svelte@5.56.8):
     dependencies:
       svelte: 5.56.8
 
