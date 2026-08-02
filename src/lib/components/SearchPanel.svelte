@@ -289,7 +289,14 @@
 	}
 
 	function goToTier() {
-		// 基于排名池，非 results
+		if (tierData.hasDraft) {
+			goto('/tier?draft=1');
+			return;
+		}
+		startNewSession();
+	}
+
+	function startNewSession() {
 		const pool = searchPool.items;
 		if (pool.length === 0) return;
 		itemLoader.clear();
@@ -298,18 +305,9 @@
 		goto('/tier?source=pool');
 	}
 
-	function continueDraft() {
-		goto('/tier?draft=1');
-	}
 </script>
 
 <div class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3">
-	{#if tierData.hasDraft}
-		<Button variant="secondary" class="w-full font-pixel" onclick={continueDraft}>
-			<span class="icon-[pixelarticons--folder] mr-1 h-4 w-4"></span>
-			{m.continue_draft()}
-		</Button>
-	{/if}
 	<!-- ① 直接搜索 -->
 	<div class="grid gap-1.5">
 		<Label for="search-keyword" class="font-pixel text-xs">{m.search_label()}</Label>
@@ -624,7 +622,12 @@
 		</div>
 	</div>
 
-	<Button class="w-full font-pixel" onclick={goToTier} disabled={selected.length === 0}>
+	<Button class="w-full font-pixel" onclick={goToTier} disabled={!tierData.hasDraft && selected.length === 0}>
 		{m.go_to_tier({ count: selected.length })}
 	</Button>
+	{#if tierData.hasDraft && selected.length > 0}
+		<Button variant="secondary" class="w-full font-pixel" onclick={startNewSession}>
+			{m.new_from_pool({ count: selected.length })}
+		</Button>
+	{/if}
 </div>

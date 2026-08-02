@@ -31,8 +31,8 @@ let draft = $state<TierDraft | null>(get(draftStorage));
 // JSON.stringify 遍历全部嵌套属性，任何深变更都触发重写。
 // $effect.root 允许在模块作用域创建 effect（模块顶层直接 $effect 会报 effect_orphan）
 // 持久化前过滤 dnd shadow 占位符（isDndShadowItem），避免污染 localStorage
-function stripShadow<T extends { isDndShadowItem?: boolean }>(list: T[]): T[] {
-	return list.filter((i) => !i.isDndShadowItem);
+function stripShadow<T extends { id: string; isDndShadowItem?: boolean }>(list: T[]): T[] {
+	return list.filter((i) => !i.isDndShadowItem && i.id !== 'id:dnd-shadow-placeholder-0000');
 }
 
 function uniqueItems(list: ItemData[], seen = new Set<string>()): ItemData[] {

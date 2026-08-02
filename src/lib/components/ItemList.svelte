@@ -6,6 +6,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { m } from '$lib/paraglide/messages';
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
+	import { cleanFinalizedItems } from '$lib/utils/dndItems';
 
 	let { items = $bindable([]), onLoadMore }: { items: ItemData[]; onLoadMore?: () => void } = $props();
 
@@ -16,7 +17,7 @@
 		items = e.detail.items;
 	}
 	function handleDndFinalize(e: CustomEvent) {
-		items = e.detail.items;
+		items = cleanFinalizedItems(e.detail.items);
 	}
 </script>
 
@@ -29,26 +30,25 @@
 			</span>
 		{/if}
 	</div>
-	<div class="bg-dotted flex-1 overflow-y-auto">
+	<div class="bg-dotted relative flex-1 overflow-y-auto">
 		{#if items.length === 0 && !itemLoader.isLoading}
-			<p class="font-pixel p-6 text-center text-[10px] text-muted-foreground">{m.EMPTY()}</p>
-		{:else}
-			<section
-				use:dndzone={{ items, flipDurationMs }}
-				onconsider={handleDndConsider}
-				onfinalize={handleDndFinalize}
-				class="flex flex-wrap content-start gap-2 p-3"
-			>
+			<p class="font-pixel pointer-events-none absolute inset-x-0 top-0 p-6 text-center text-[10px] text-muted-foreground">{m.EMPTY()}</p>
+		{/if}
+		<section
+			use:dndzone={{ items, flipDurationMs }}
+			onconsider={handleDndConsider}
+			onfinalize={handleDndFinalize}
+			class="flex min-h-full flex-wrap content-start gap-2 p-3"
+		>
 				{#each items as item (item.id)}
 					<div
 						animate:flip={{ duration: flipDurationMs }}
 						data-is-dnd-shadow-item-hint={item.isDndShadowItem}
 					>
-						<ItemCard {item} />
+						<ItemCard {item} titleMode="two-line" />
 					</div>
 				{/each}
-			</section>
-		{/if}
+		</section>
 	</div>
 	{#if !itemLoader.isDone}
 		<div class="p-3 pt-1">

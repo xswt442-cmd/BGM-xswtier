@@ -6,6 +6,7 @@
 	import { Popover, PopoverTrigger } from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
 	import { m } from '$lib/paraglide/messages';
+	import { cleanFinalizedItems } from '$lib/utils/dndItems';
 
 	let {
 		items = $bindable([]),
@@ -64,7 +65,7 @@
 		items = e.detail.items;
 	}
 	function handleDndFinalize(e: CustomEvent) {
-		items = e.detail.items;
+		items = cleanFinalizedItems(e.detail.items);
 	}
 </script>
 

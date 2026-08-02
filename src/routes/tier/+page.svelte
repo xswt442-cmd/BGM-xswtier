@@ -18,6 +18,7 @@
 	let exportNode: HTMLElement;
 	let statusMessage = $state('');
 	let isExporting = $state(false);
+	let exitDialog: HTMLDialogElement;
 
 	function allSessionItems() {
 		return [
@@ -27,19 +28,23 @@
 	}
 
 	function saveDraft(exit = false) {
-		tierData.normalize();
 		tierData.saveDraft();
 		statusMessage = m.draft_saved();
 		if (exit) goto('/');
 	}
 
 	function clearAndExit() {
-		if (!window.confirm(m.clear_exit_confirm())) return;
+		exitDialog.close();
 		tierData.clearSessionAndDraft();
 		searchPool.clear();
 		itemLoader.clear();
 		sidebar.open = false;
 		goto('/');
+	}
+
+	function saveAndExit() {
+		exitDialog.close();
+		saveDraft(true);
 	}
 
 	function exportFilename() {
@@ -114,15 +119,12 @@
 
 <div class="mx-auto grid min-h-svh w-full max-w-7xl xl:grid-cols-[minmax(0,1fr)_340px]">
 	<main class="p-4 pt-6 pb-32 xl:pb-4">
-		<div class="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4" data-export-exclude>
+		<div class="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3" data-export-exclude>
 			<Button variant="outline" class="font-pixel h-11 text-[10px] sm:h-9" onclick={() => saveDraft(false)}>
 				{m.save_draft()}
 			</Button>
-			<Button variant="outline" class="font-pixel h-11 text-[10px] sm:h-9" onclick={() => saveDraft(true)}>
-				{m.save_draft_exit()}
-			</Button>
-			<Button variant="destructive" class="font-pixel h-11 text-[10px] sm:h-9" onclick={clearAndExit}>
-				{m.clear_exit()}
+			<Button variant="outline" class="font-pixel h-11 text-[10px] sm:h-9" onclick={() => exitDialog.showModal()}>
+				{m.exit_tier()}
 			</Button>
 			<Button class="font-pixel h-11 text-[10px] sm:h-9" onclick={exportPng} disabled={isExporting}>
 				{isExporting ? m.exporting_png() : m.save_png()}
@@ -174,3 +176,22 @@
 		</div>
 	{/snippet}
 </Sheet>
+
+<dialog
+	bind:this={exitDialog}
+	aria-labelledby="exit-dialog-title"
+	class="pixel-border pixel-shadow m-auto w-[min(28rem,calc(100%-2rem))] bg-card p-0 text-foreground backdrop:bg-black/55"
+	onclick={(event) => {
+		if (event.target === exitDialog) exitDialog.close();
+	}}
+>
+	<div class="grid gap-4 p-5">
+		<h2 id="exit-dialog-title" class="font-pixel text-sm">{m.exit_dialog_title()}</h2>
+		<p class="text-sm text-muted-foreground">{m.exit_dialog_description()}</p>
+		<div class="grid gap-2 sm:grid-cols-3">
+			<Button variant="outline" class="font-pixel h-11 text-[9px]" onclick={saveAndExit}>{m.save_draft_exit()}</Button>
+			<Button variant="destructive" class="font-pixel h-11 text-[9px]" onclick={clearAndExit}>{m.clear_exit()}</Button>
+			<Button variant="ghost" class="font-pixel h-11 text-[9px]" onclick={() => exitDialog.close()}>{m.cancel()}</Button>
+		</div>
+	</div>
+</dialog>
