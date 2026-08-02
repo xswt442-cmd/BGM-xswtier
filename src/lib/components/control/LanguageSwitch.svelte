@@ -16,7 +16,7 @@
 
 <DropdownMenu>
 	<DropdownMenuTrigger class="min-h-11 rounded-sm transition-opacity hover:opacity-80 sm:min-h-0">
-		<StatusChip label="LANG" value={LANGUAGE_NAMES[locale.current] ?? locale.current} />
+		<StatusChip label="LANG" value={LANGUAGE_NAMES[locale.current] ?? locale.current} iconClass="icon-[pixelarticons--languages]" />
 	</DropdownMenuTrigger>
 	{#snippet content()}
 		<DropdownMenuLabel>{m.language()}</DropdownMenuLabel>

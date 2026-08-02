@@ -15,7 +15,7 @@
 
 <Popover>
 	<PopoverTrigger class="min-h-11 rounded-sm transition-opacity hover:opacity-80 sm:min-h-0">
-		<StatusChip label="COLOR" value={SCHEME_BADGE[theme.colorScheme]} />
+		<StatusChip label="COLOR" value={SCHEME_BADGE[theme.colorScheme]} iconClass="icon-[pixelarticons--paint-bucket]" />
 	</PopoverTrigger>
 	{#snippet content()}
 		<div class="grid gap-3">

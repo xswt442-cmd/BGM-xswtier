@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ColorControl from './control/ColorControl.svelte';
 	import EffectsControl from './control/EffectsControl.svelte';
+	import UiFeedbackControl from './control/UiFeedbackControl.svelte';
 	import LanguageSwitch from './control/LanguageSwitch.svelte';
 	import TokenSettings from './control/TokenSettings.svelte';
 	import SidebarToggle from './control/SidebarToggle.svelte';
@@ -17,6 +18,7 @@
 >
 	<ColorControl />
 	<EffectsControl />
+	<UiFeedbackControl />
 	<LanguageSwitch />
 	<TokenSettings />
 	{#if showToggle}

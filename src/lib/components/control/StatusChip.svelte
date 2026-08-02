@@ -4,8 +4,9 @@
 	let {
 		label,
 		value,
+		iconClass,
 		class: className
-	}: { label: string; value: string; class?: string } = $props();
+	}: { label: string; value: string; iconClass?: string; class?: string } = $props();
 </script>
 
 <span
@@ -14,6 +15,7 @@
 		className
 	)}
 >
+	{#if iconClass}<span class={cn(iconClass, 'h-3.5 w-3.5 shrink-0 text-accent')}></span>{/if}
 	<span class="text-muted-foreground">[{label}:</span>
 	<span class="text-foreground">{value}]</span>
 </span>

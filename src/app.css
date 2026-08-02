@@ -242,20 +242,86 @@ h3 {
 
 /* ============================================================
    双轴视觉 · 特效轴（Effects）门控
-   effects-none 下这些类天然无光效
    ============================================================ */
 .effects-neon .neon-text {
 	text-shadow:
-		0 0 2px var(--neon),
-		0 0 8px var(--neon),
-		0 0 16px var(--neon-glow),
-		0 0 28px var(--neon-glow);
+		1px 0 0 color-mix(in oklch, var(--neon) 80%, transparent),
+		-1px 0 0 color-mix(in oklch, var(--neon-glow) 65%, transparent),
+		0 2px 0 color-mix(in oklch, var(--neon) 35%, transparent);
 }
 
-.effects-neon .neon-border {
+.effects-neon :is(.neon-border, .pixel-border, button, input, select, dialog, [class*='border-border']) {
 	box-shadow:
-		0 0 5px var(--neon),
-		0 0 14px var(--neon-glow);
+		0 0 0 1px color-mix(in oklch, var(--neon) 72%, transparent),
+		2px 2px 0 color-mix(in oklch, var(--neon) 48%, transparent),
+		4px 4px 0 color-mix(in oklch, var(--neon-glow) 22%, transparent);
+}
+
+.effects-neon :is(button, input, select):hover,
+.effects-neon :is(button, input, select):focus-visible {
+	box-shadow:
+		0 0 0 2px color-mix(in oklch, var(--neon) 78%, transparent),
+		3px 3px 0 color-mix(in oklch, var(--neon-glow) 42%, transparent);
+}
+
+/* CRT：固定覆盖层只绘制扫描线与轻噪点，不拦截交互。 */
+.effects-crt body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	pointer-events: none;
+	background-image:
+		repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.035) 0 1px, transparent 1px 4px),
+		repeating-linear-gradient(90deg, rgb(255 0 70 / 0.012) 0 1px, rgb(0 210 255 / 0.012) 1px 2px, transparent 2px 4px);
+	mix-blend-mode: multiply;
+}
+
+.effects-crt .font-pixel {
+	text-shadow: -1px 0 rgb(255 45 90 / 0.22), 1px 0 rgb(0 210 255 / 0.22);
+}
+
+.effects-crt :is(button, input, select):hover {
+	text-shadow: -1px 0 rgb(255 45 90 / 0.45), 1px 0 rgb(0 210 255 / 0.45);
+}
+
+/* Arcade：阶梯式换色、按压位移与硬阴影。 */
+.feedback-arcade button:hover {
+	animation: arcade-cycle 1s steps(4, end) infinite;
+}
+
+.feedback-arcade button:active {
+	transform: translate(2px, 2px);
+	box-shadow: none;
+}
+
+.feedback-arcade :is(button, input, select):focus-visible {
+	outline: 2px dashed var(--chart-3);
+	outline-offset: 3px;
+}
+
+@keyframes arcade-cycle {
+	0% { box-shadow: 3px 3px 0 var(--chart-2); }
+	25% { box-shadow: 3px 3px 0 var(--chart-3); }
+	50% { box-shadow: 3px 3px 0 var(--chart-4); }
+	75% { box-shadow: 3px 3px 0 var(--chart-5); }
+	100% { box-shadow: 3px 3px 0 var(--chart-2); }
+}
+
+/* Border Pulse：只强调交互轮廓，不让整个面板发光。 */
+.feedback-pulse :is(button, input, select):hover {
+	animation: border-pulse 1.25s steps(3, end) infinite;
+}
+
+.feedback-pulse :is(button, input, select):focus-visible {
+	outline: 2px solid var(--neon);
+	outline-offset: 3px;
+	box-shadow: 0 0 0 2px color-mix(in oklch, var(--neon-glow) 35%, transparent);
+}
+
+@keyframes border-pulse {
+	0%, 100% { outline: 1px solid color-mix(in oklch, var(--neon) 45%, transparent); outline-offset: 1px; }
+	50% { outline: 2px solid color-mix(in oklch, var(--neon) 85%, transparent); outline-offset: 3px; }
 }
 
 @media (max-width: 767px) {
@@ -292,6 +358,14 @@ h3 {
 	}
 	100% {
 		background-position: 0% 50%;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.feedback-arcade button:hover,
+	.feedback-pulse :is(button, input, select):hover,
+	.effects-neon .title-vivid {
+		animation: none;
 	}
 }
 
