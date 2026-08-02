@@ -123,7 +123,7 @@
 			<Button variant="outline" class="font-pixel h-11 text-[10px] sm:h-9" onclick={() => saveDraft(false)}>
 				{m.save_draft()}
 			</Button>
-			<Button variant="outline" class="font-pixel h-11 text-[10px] sm:h-9" onclick={() => exitDialog.showModal()}>
+			<Button class="font-pixel h-11 bg-accent text-[10px] text-accent-foreground hover:bg-accent/85 sm:h-9" onclick={() => exitDialog.showModal()}>
 				{m.exit_tier()}
 			</Button>
 			<Button class="font-pixel h-11 text-[10px] sm:h-9" onclick={exportPng} disabled={isExporting}>
@@ -191,7 +191,7 @@
 		<div class="grid gap-2 sm:grid-cols-3">
 			<Button variant="outline" class="font-pixel h-11 text-[9px]" onclick={saveAndExit}>{m.save_draft_exit()}</Button>
 			<Button variant="destructive" class="font-pixel h-11 text-[9px]" onclick={clearAndExit}>{m.clear_exit()}</Button>
-			<Button variant="ghost" class="font-pixel h-11 text-[9px]" onclick={() => exitDialog.close()}>{m.cancel()}</Button>
+			<Button variant="secondary" class="font-pixel h-11 border border-border bg-secondary text-[9px] hover:bg-secondary/75" onclick={() => exitDialog.close()}>{m.cancel()}</Button>
 		</div>
 	</div>
 </dialog>

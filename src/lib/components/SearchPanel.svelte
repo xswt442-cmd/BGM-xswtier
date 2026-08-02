@@ -559,10 +559,10 @@
 
 		{#if hasMore}
 			<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-				<Button variant="outline" class="w-full font-pixel" onclick={loadMore} disabled={isBusy}>
+				<Button variant="outline" class="w-full border-chart-3 bg-chart-3 font-pixel text-black hover:bg-chart-3/80 hover:text-black" onclick={loadMore} disabled={isBusy}>
 					{isLoading ? m.LOADING() : m.load_more()}
 				</Button>
-				<Button variant="outline" class="w-full font-pixel" onclick={loadAllResults} disabled={isBusy}>
+				<Button variant="outline" class="w-full border-chart-4 bg-chart-4 font-pixel text-black hover:bg-chart-4/80 hover:text-black" onclick={loadAllResults} disabled={isBusy}>
 					{isLoadingAll ? m.loading_all() : m.load_all()}
 				</Button>
 			</div>
@@ -626,7 +626,7 @@
 		{m.go_to_tier({ count: selected.length })}
 	</Button>
 	{#if tierData.hasDraft && selected.length > 0}
-		<Button variant="secondary" class="w-full font-pixel" onclick={startNewSession}>
+		<Button variant="outline" class="w-full border-accent bg-accent/20 font-pixel text-foreground hover:bg-accent/35 hover:text-foreground" onclick={startNewSession}>
 			{m.new_from_pool({ count: selected.length })}
 		</Button>
 	{/if}
