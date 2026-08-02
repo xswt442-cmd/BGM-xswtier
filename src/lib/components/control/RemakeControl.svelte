@@ -1,25 +1,15 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { Popover, PopoverTrigger } from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
 	import { m } from '$lib/paraglide/messages';
 
 	let open = $state(false);
 
-	// 一键重开：清空全部本地数据（排名池/档位/草稿/令牌/主题/语言）后重载，恢复初始状态
+	// 一键重开：应用独占其 origin，清空全部 localStorage（排名池/档位/草稿/令牌/主题/语言）后回首页，恢复初始状态
 	function remake() {
-		const keys = [
-			'bgmtier-search-pool',
-			'tierData-v2',
-			'bgmtier-draft-v1',
-			'bgmtier-token',
-			'bgmtier-scheme',
-			'bgmtier-vfx',
-			'bgmtier-uifb',
-			'bgmtier-effects', // 旧版特效键（兼容清理）
-			'bgmtier-locale'
-		];
-		for (const key of keys) localStorage.removeItem(key);
-		location.reload();
+		localStorage.clear();
+		goto('/');
 	}
 </script>
 
