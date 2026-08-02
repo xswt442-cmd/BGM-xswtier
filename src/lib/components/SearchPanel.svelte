@@ -33,6 +33,8 @@
 	let rawFetched = $state(0); // 服务端已拉取原始条数（offset 递增基准）
 	let mode = $state<'search' | 'season' | 'today' | null>(null);
 	let isLoading = $state(false);
+	let isAddingAll = $state(false);
+	let searchExhausted = $state(false);
 	let hasSearched = $state(false);
 
 	// ---- 排名池（选中待进 tier，持久化全局 store）----
@@ -40,8 +42,14 @@
 	const selected = $derived(searchPool.items);
 	const selectedIds = $derived(new Set(selected.map((i) => i.id)));
 
-	const hasMore = $derived(mode === 'search' && rawFetched < total);
+	const hasMore = $derived(mode === 'search' && !searchExhausted);
+	const isBusy = $derived(isLoading || isAddingAll);
 	const isSelected = (id: string) => selectedIds.has(id);
+
+	function mergeUnique(base: ItemData[], incoming: ItemData[]): ItemData[] {
+		const seen = new Set(base.map((item) => item.id));
+		return [...base, ...incoming.filter((item) => (seen.has(item.id) ? false : (seen.add(item.id), true)))];
+	}
 
 	const REGION_OPTIONS = [
 		{ value: '日本', label: m.filter_region_japan },
@@ -140,6 +148,7 @@
 
 	async function runSearch() {
 		mode = 'search';
+		searchExhausted = false;
 		hasSearched = true;
 		isLoading = true;
 		try {
@@ -147,6 +156,7 @@
 			results = r.items;
 			rawFetched = r.rawCount;
 			total = r.total;
+			searchExhausted = r.rawCount === 0 || r.rawCount >= r.total;
 		} finally {
 			isLoading = false;
 		}
@@ -156,15 +166,22 @@
 		isLoading = true;
 		try {
 			const r = await searchSubjects(buildSearchParams(rawFetched)); // 用原始条数递增，规避二次过滤跳页
-			results = [...results, ...r.items];
+			if (r.rawCount === 0) {
+				// total>0 表示服务端正常返回空尾页；total=0 可能是请求失败，保留重试入口。
+				if (r.total > 0) searchExhausted = true;
+				return;
+			}
+			results = mergeUnique(results, r.items);
 			rawFetched += r.rawCount;
 			total = r.total;
+			if (rawFetched >= total) searchExhausted = true;
 		} finally {
 			isLoading = false;
 		}
 	}
 	async function loadSeason() {
 		mode = 'season';
+		searchExhausted = true;
 		hasSearched = true;
 		isLoading = true;
 		try {
@@ -177,6 +194,7 @@
 	}
 	async function loadToday() {
 		mode = 'today';
+		searchExhausted = true;
 		hasSearched = true;
 		isLoading = true;
 		try {
@@ -197,9 +215,34 @@
 		// 从排名池删除（检索池自动恢复未加态）
 		searchPool.remove(item.id);
 	}
-	function addAllResults() {
-		// 检索池全部加入排名池（searchPool.addAll 内部去重）
+	async function addAllResults() {
+		if (isBusy || results.length === 0) return;
+		// 快捷检索已全量加载；自定义搜索则继续扫描剩余候选页并增量加入真实命中项。
 		searchPool.addAll(results);
+		if (mode !== 'search' || !hasMore) return;
+		isAddingAll = true;
+		try {
+			let offset = rawFetched;
+			let expectedTotal = total;
+			let pages = 0;
+			while (offset < expectedTotal && pages < 100) {
+				const r = await searchSubjects(buildSearchParams(offset));
+				if (r.rawCount === 0) {
+					if (r.total > 0) searchExhausted = true;
+					break;
+				}
+				results = mergeUnique(results, r.items);
+				searchPool.addAll(r.items);
+				offset += r.rawCount;
+				expectedTotal = Math.max(expectedTotal, r.total);
+				rawFetched = offset;
+				total = expectedTotal;
+				pages += 1;
+			}
+			if (offset >= expectedTotal) searchExhausted = true;
+		} finally {
+			isAddingAll = false;
+		}
 	}
 	function clearSelected() {
 		// 清空排名池（检索池自动全部恢复未加态）
@@ -255,11 +298,11 @@
 
 	<!-- ③ 快捷入口 -->
 	<div class="flex flex-wrap items-center gap-2">
-		<Button variant="outline" class="font-pixel text-[10px]" onclick={loadSeason} disabled={isLoading}>
+		<Button variant="outline" class="font-pixel text-[10px]" onclick={loadSeason} disabled={isBusy}>
 			<span class="icon-[pixelarticons--calendar] mr-1 h-4 w-4"></span>
 			{m.season_quick()}
 		</Button>
-		<Button variant="outline" class="font-pixel text-[10px]" onclick={loadToday} disabled={isLoading}>
+		<Button variant="outline" class="font-pixel text-[10px]" onclick={loadToday} disabled={isBusy}>
 			<span class="icon-[pixelarticons--fire] mr-1 h-4 w-4"></span>
 			{m.trending_quick()}
 		</Button>
@@ -414,7 +457,7 @@
 		</div>
 	</div>
 
-	<Button onclick={runSearch} disabled={isLoading} class="font-pixel">
+	<Button onclick={runSearch} disabled={isBusy} class="font-pixel">
 		{isLoading ? m.searching() : m.search_button()}
 	</Button>
 
@@ -424,17 +467,19 @@
 			<div class="flex items-center justify-between gap-2 border-b-2 border-border px-2 py-1">
 				<span class="font-pixel text-[10px]">{m.pool_search_title()}</span>
 				<div class="flex items-center gap-2">
-					<span class="font-pixel text-[10px] text-muted-foreground">
-						{m.results_count({ count: results.length, total })}
+					<span class="font-pixel text-[9px] text-muted-foreground">
+						{hasMore
+							? m.results_scanning({ count: results.length, scanned: rawFetched, total })
+							: m.results_complete({ count: results.length })}
 					</span>
 					<Button
 						variant="ghost"
 						size="sm"
 						class="font-pixel h-5 px-2 text-[9px]"
 						onclick={addAllResults}
-						disabled={results.length === 0}
+						disabled={results.length === 0 || isBusy}
 					>
-						{m.pool_add_all()}
+						{isAddingAll ? m.pool_adding_all() : m.pool_add_all()}
 					</Button>
 				</div>
 			</div>
@@ -467,7 +512,7 @@
 		</div>
 
 		{#if hasMore}
-			<Button variant="outline" class="w-full font-pixel" onclick={loadMore} disabled={isLoading}>
+			<Button variant="outline" class="w-full font-pixel" onclick={loadMore} disabled={isBusy}>
 				{isLoading ? m.LOADING() : m.load_more()}
 			</Button>
 		{/if}

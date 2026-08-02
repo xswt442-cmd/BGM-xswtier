@@ -22,7 +22,7 @@
 		/>
 			{#if item.score !== undefined}
 				<span
-					class="font-pixel absolute bottom-1 right-1 min-w-7 border border-white/70 bg-black/85 px-1 py-1 text-center text-[8px] leading-none tabular-nums text-white shadow-sm"
+					class="absolute bottom-1 right-1 min-w-8 border-2 border-white bg-black px-1 py-0.5 text-center font-mono text-[11px] font-black leading-none tracking-normal tabular-nums text-white shadow-sm"
 					aria-label={`Score ${item.score}`}
 				>
 					{item.score.toFixed(1)}
