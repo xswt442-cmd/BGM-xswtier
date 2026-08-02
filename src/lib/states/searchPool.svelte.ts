@@ -40,7 +40,7 @@ export const searchPool = {
 	/** 批量加入（按 id 去重） */
 	addAll(list: ItemData[]) {
 		const existing = new Set(pool.map((i) => i.id));
-		const fresh = list.filter((i) => !existing.has(i.id));
+		const fresh = list.filter((i) => (existing.has(i.id) ? false : (existing.add(i.id), true)));
 		if (fresh.length > 0) pool = [...pool, ...fresh];
 	},
 	/** 一键清空 */

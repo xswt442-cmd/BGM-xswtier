@@ -33,6 +33,7 @@
 	let rawFetched = $state(0); // 服务端已拉取原始条数（offset 递增基准）
 	let mode = $state<'search' | 'season' | 'today' | null>(null);
 	let isLoading = $state(false);
+	let isLoadingAll = $state(false);
 	let isAddingAll = $state(false);
 	let searchExhausted = $state(false);
 	let hasSearched = $state(false);
@@ -41,9 +42,11 @@
 	// $derived 确保 searchPool 内部 $state 变化时组件重新求值
 	const selected = $derived(searchPool.items);
 	const selectedIds = $derived(new Set(selected.map((i) => i.id)));
+	let searchSelection = $state<Set<string>>(new Set());
+	let rankingSelection = $state<Set<string>>(new Set());
 
 	const hasMore = $derived(mode === 'search' && !searchExhausted);
-	const isBusy = $derived(isLoading || isAddingAll);
+	const isBusy = $derived(isLoading || isLoadingAll || isAddingAll);
 	const isSelected = (id: string) => selectedIds.has(id);
 
 	function mergeUnique(base: ItemData[], incoming: ItemData[]): ItemData[] {
@@ -147,6 +150,7 @@
 	}
 
 	async function runSearch() {
+		searchSelection = new Set();
 		mode = 'search';
 		searchExhausted = false;
 		hasSearched = true;
@@ -180,6 +184,7 @@
 		}
 	}
 	async function loadSeason() {
+		searchSelection = new Set();
 		mode = 'season';
 		searchExhausted = true;
 		hasSearched = true;
@@ -193,6 +198,7 @@
 		}
 	}
 	async function loadToday() {
+		searchSelection = new Set();
 		mode = 'today';
 		searchExhausted = true;
 		hasSearched = true;
@@ -208,45 +214,78 @@
 
 	function toggleSelect(item: ItemData) {
 		// 加入 / 取消（toggle）
-		if (searchPool.has(item.id)) searchPool.remove(item.id);
+		if (searchPool.has(item.id)) {
+			searchPool.remove(item.id);
+			rankingSelection = new Set([...rankingSelection].filter((id) => id !== item.id));
+		}
 		else searchPool.add(item);
 	}
 	function removeSelected(item: ItemData) {
 		// 从排名池删除（检索池自动恢复未加态）
 		searchPool.remove(item.id);
+		rankingSelection = new Set([...rankingSelection].filter((id) => id !== item.id));
 	}
 	async function addAllResults() {
-		if (isBusy || results.length === 0) return;
+		if (isBusy || (results.length === 0 && !hasMore)) return;
 		// 快捷检索已全量加载；自定义搜索则继续扫描剩余候选页并增量加入真实命中项。
 		searchPool.addAll(results);
 		if (mode !== 'search' || !hasMore) return;
 		isAddingAll = true;
 		try {
-			let offset = rawFetched;
-			let expectedTotal = total;
-			let pages = 0;
-			while (offset < expectedTotal && pages < 100) {
-				const r = await searchSubjects(buildSearchParams(offset));
-				if (r.rawCount === 0) {
-					if (r.total > 0) searchExhausted = true;
-					break;
-				}
-				results = mergeUnique(results, r.items);
-				searchPool.addAll(r.items);
-				offset += r.rawCount;
-				expectedTotal = Math.max(expectedTotal, r.total);
-				rawFetched = offset;
-				total = expectedTotal;
-				pages += 1;
-			}
-			if (offset >= expectedTotal) searchExhausted = true;
+			await scanRemaining(true);
 		} finally {
 			isAddingAll = false;
+		}
+	}
+	async function scanRemaining(addToRanking: boolean) {
+		if (mode !== 'search' || !hasMore) return;
+		let offset = rawFetched;
+		let expectedTotal = total;
+		let pages = 0;
+		while (offset < expectedTotal && pages < 100) {
+			const r = await searchSubjects(buildSearchParams(offset));
+			if (r.rawCount === 0) {
+				if (r.total > 0) searchExhausted = true;
+				break;
+			}
+			results = mergeUnique(results, r.items);
+			if (addToRanking) searchPool.addAll(r.items);
+			offset += r.rawCount;
+			expectedTotal = Math.max(expectedTotal, r.total);
+			rawFetched = offset;
+			total = expectedTotal;
+			pages += 1;
+		}
+		if (offset >= expectedTotal || pages >= 100) searchExhausted = true;
+	}
+	async function loadAllResults() {
+		if (isBusy || mode !== 'search' || !hasMore) return;
+		isLoadingAll = true;
+		try {
+			await scanRemaining(false);
+		} finally {
+			isLoadingAll = false;
 		}
 	}
 	function clearSelected() {
 		// 清空排名池（检索池自动全部恢复未加态）
 		searchPool.clear();
+		rankingSelection = new Set();
+	}
+	function toggleBatch(set: Set<string>, id: string, target: 'search' | 'ranking') {
+		const next = new Set(set);
+		if (next.has(id)) next.delete(id);
+		else next.add(id);
+		if (target === 'search') searchSelection = next;
+		else rankingSelection = next;
+	}
+	function addBatchSelection() {
+		searchPool.addAll(results.filter((item) => searchSelection.has(item.id)));
+		searchSelection = new Set();
+	}
+	function deleteBatchSelection() {
+		for (const id of rankingSelection) searchPool.remove(id);
+		rankingSelection = new Set();
 	}
 
 	function goToTier() {
@@ -477,22 +516,31 @@
 						size="sm"
 						class="font-pixel h-5 px-2 text-[9px]"
 						onclick={addAllResults}
-						disabled={results.length === 0 || isBusy}
+						disabled={(results.length === 0 && !hasMore) || isBusy}
 					>
 						{isAddingAll ? m.pool_adding_all() : m.pool_add_all()}
 					</Button>
 				</div>
 			</div>
-			<div class="min-w-0 max-h-[40svh] overflow-y-auto p-1.5">
+			{#if results.length > 0}
+				<div class="flex flex-wrap items-center gap-1.5 border-b-2 border-border px-2 py-1">
+					<span class="font-pixel mr-auto text-[9px] text-muted-foreground">{m.pool_selected_count({ count: searchSelection.size })}</span>
+					<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => (searchSelection = new Set(results.map((item) => item.id)))}>{m.pool_select_all()}</Button>
+					<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => (searchSelection = new Set())} disabled={searchSelection.size === 0}>{m.pool_clear_selection()}</Button>
+					<Button variant="outline" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={addBatchSelection} disabled={searchSelection.size === 0}>{m.pool_add_selected()}</Button>
+				</div>
+			{/if}
+			<div class="grid min-w-0 max-h-[40svh] grid-cols-1 gap-1.5 overflow-y-auto p-1.5 sm:grid-cols-2">
 				{#if results.length === 0}
 					<p class="font-pixel py-2 text-center text-[10px] text-muted-foreground">{m.no_results()}</p>
 				{:else}
 					{#each results as item (item.id)}
 						<div
-							class="pixel-border mb-1.5 flex h-32 min-w-0 items-center gap-2 bg-card/70 p-1.5 last:mb-0"
+							class="pixel-border flex h-32 min-w-0 items-center gap-2 bg-card/70 p-1.5"
 							data-testid="search-row"
 							data-platform={item.platform}
 						>
+							<input type="checkbox" class="h-4 w-4 shrink-0 accent-primary" aria-label={m.pool_select_item({ name: item.name_cn || item.name })} checked={searchSelection.has(item.id)} onchange={() => toggleBatch(searchSelection, item.id, 'search')} />
 							<ItemCard {item} />
 							<span class="font-pixel min-w-0 flex-1 truncate text-[10px]" title={item.name_cn || item.name}>
 								{item.name_cn || item.name}
@@ -512,9 +560,14 @@
 		</div>
 
 		{#if hasMore}
-			<Button variant="outline" class="w-full font-pixel" onclick={loadMore} disabled={isBusy}>
-				{isLoading ? m.LOADING() : m.load_more()}
-			</Button>
+			<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+				<Button variant="outline" class="w-full font-pixel" onclick={loadMore} disabled={isBusy}>
+					{isLoading ? m.LOADING() : m.load_more()}
+				</Button>
+				<Button variant="outline" class="w-full font-pixel" onclick={loadAllResults} disabled={isBusy}>
+					{isLoadingAll ? m.loading_all() : m.load_all()}
+				</Button>
+			</div>
 		{/if}
 	{/if}
 
@@ -535,15 +588,24 @@
 				</Button>
 			</div>
 		</div>
-		<div class="min-w-0 max-h-[30svh] overflow-y-auto p-1.5">
+		{#if selected.length > 0}
+			<div class="flex flex-wrap items-center gap-1.5 border-b-2 border-border px-2 py-1">
+				<span class="font-pixel mr-auto text-[9px] text-muted-foreground">{m.pool_selected_count({ count: rankingSelection.size })}</span>
+				<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => (rankingSelection = new Set(selected.map((item) => item.id)))}>{m.pool_select_all()}</Button>
+				<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => (rankingSelection = new Set())} disabled={rankingSelection.size === 0}>{m.pool_clear_selection()}</Button>
+				<Button variant="destructive" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={deleteBatchSelection} disabled={rankingSelection.size === 0}>{m.pool_delete_selected()}</Button>
+			</div>
+		{/if}
+		<div class="grid min-w-0 max-h-[30svh] grid-cols-1 gap-1.5 overflow-y-auto p-1.5 sm:grid-cols-2">
 			{#if selected.length === 0}
 				<p class="font-pixel py-2 text-center text-[10px] text-muted-foreground">{m.pool_empty()}</p>
 			{:else}
 				{#each selected as item (item.id)}
 					<div
-						class="pixel-border mb-1.5 flex h-32 min-w-0 items-center gap-2 bg-card/70 p-1.5 last:mb-0"
+						class="pixel-border flex h-32 min-w-0 items-center gap-2 bg-card/70 p-1.5"
 						data-testid="pool-row"
 					>
+						<input type="checkbox" class="h-4 w-4 shrink-0 accent-primary" aria-label={m.pool_select_item({ name: item.name_cn || item.name })} checked={rankingSelection.has(item.id)} onchange={() => toggleBatch(rankingSelection, item.id, 'ranking')} />
 						<ItemCard {item} />
 						<span class="font-pixel min-w-0 flex-1 truncate text-[10px]" title={item.name_cn || item.name}>
 							{item.name_cn || item.name}
