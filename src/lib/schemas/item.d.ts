@@ -43,3 +43,7 @@ export type TierStore = {
 	/** 未排名条目池（sidebar） */
 	collectionTierItems: ItemData[];
 };
+
+export type TierDraft = TierStore & {
+	savedAt: string;
+};

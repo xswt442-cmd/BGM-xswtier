@@ -88,7 +88,7 @@
 				placeholder="?"
 			/>
 		</div>
-		<div class="ml-auto flex items-center">
+		<div class="ml-auto flex items-center" data-export-exclude>
 			<Popover>
 				<PopoverTrigger
 					class="inline-flex h-11 w-11 items-center justify-center rounded text-muted-foreground opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"

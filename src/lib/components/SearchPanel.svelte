@@ -8,6 +8,7 @@
 	import type { SearchParams } from '$lib/api/searchFetchers.svelte';
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { searchPool } from '$lib/states/searchPool.svelte';
+	import { tierData } from '$lib/states/tierData.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { ItemData } from '$lib/schemas/item';
 
@@ -208,14 +209,25 @@
 	function goToTier() {
 		// 基于排名池，非 results
 		const pool = searchPool.items;
-		if (pool.length === 0 || !mode) return;
+		if (pool.length === 0) return;
 		itemLoader.clear();
 		itemLoader.seedLoaded(pool);
-		goto(`/tier?source=${mode}`);
+		tierData.startSession(pool);
+		goto('/tier?source=pool');
+	}
+
+	function continueDraft() {
+		goto('/tier?draft=1');
 	}
 </script>
 
 <div class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3">
+	{#if tierData.hasDraft}
+		<Button variant="secondary" class="w-full font-pixel" onclick={continueDraft}>
+			<span class="icon-[pixelarticons--folder] mr-1 h-4 w-4"></span>
+			{m.continue_draft()}
+		</Button>
+	{/if}
 	<!-- ① 直接搜索 -->
 	<div class="grid gap-1.5">
 		<Label for="search-keyword" class="font-pixel text-xs">{m.search_label()}</Label>

@@ -68,6 +68,7 @@ export class BatchLoader {
 
 		const valid = results.filter((i): i is ItemData => i !== undefined);
 		this.loadedItems.push(...valid);
+		tierData.mergeIntoCollection(valid);
 		this.loadedCount += valid.length;
 		this.isLoading = false;
 	}
@@ -89,19 +90,3 @@ export class BatchLoader {
 }
 
 export const itemLoader = new BatchLoader();
-
-// 已加载条目 → tier 集合桥接：增量合并，按 id 去重
-// （collection + 所有 tier 已含的 id 不再追加 → 拖进 tier 的条目不会回流）
-$effect.root(() => {
-	$effect(() => {
-		const loaded = itemLoader.loadedItems;
-		const col = tierData.collection;
-		const tiers = tierData.tiers;
-		const seen = new Set<string>([
-			...col.map((i) => i.id),
-			...tiers.flatMap((t) => t.items.map((i) => i.id))
-		]);
-		const fresh = loaded.filter((i) => !seen.has(i.id));
-		if (fresh.length > 0) tierData.collection = [...col, ...fresh];
-	});
-});

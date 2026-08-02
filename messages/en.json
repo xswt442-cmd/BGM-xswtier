@@ -118,5 +118,15 @@
   "pool_added": "ADDED",
   "pool_delete": "DEL",
   "pool_add_all": "ADD ALL",
-  "pool_delete_all": "DEL ALL"
+  "pool_delete_all": "DEL ALL",
+  "continue_draft": "CONTINUE DRAFT",
+  "save_draft": "SAVE DRAFT",
+  "save_draft_exit": "SAVE & EXIT",
+  "clear_exit": "CLEAR & EXIT",
+  "clear_exit_confirm": "Clear the current ranking, draft, and ranking pool, then exit? This cannot be undone.",
+  "draft_saved": "Draft saved",
+  "save_png": "SAVE TIER AS PNG",
+  "exporting_png": "GENERATING PNG…",
+  "export_png_success": "PNG saved",
+  "export_png_failed": "PNG generation failed. Check that cover images are available and try again."
 }

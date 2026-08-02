@@ -118,5 +118,15 @@
   "pool_added": "已加",
   "pool_delete": "删除",
   "pool_add_all": "全部加入",
-  "pool_delete_all": "全部删除"
+  "pool_delete_all": "全部删除",
+  "continue_draft": "继续暂存",
+  "save_draft": "暂存",
+  "save_draft_exit": "暂存并退出",
+  "clear_exit": "清空并退出",
+  "clear_exit_confirm": "确定清空当前排名、暂存和排名池并退出吗？此操作无法撤销。",
+  "draft_saved": "暂存成功",
+  "save_png": "将 Tier 保存到本地",
+  "exporting_png": "正在生成 PNG…",
+  "export_png_success": "PNG 已保存到本地",
+  "export_png_failed": "PNG 生成失败，请确认封面图片可访问后重试"
 }
