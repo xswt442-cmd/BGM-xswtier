@@ -37,6 +37,8 @@
   "get_token": "获取令牌",
   "clear": "清除",
   "save": "保存",
+  "remake_confirm": "此操作将永久清除你的排名池、已保存的档位、草稿、访问令牌、主题与语言设置，并重新加载网站。此操作无法撤销。",
+  "remake_confirm_action": "确认重开",
   "open_collection": "打开收藏",
   "close_collection": "关闭收藏",
   "tier_settings": "等级设置",

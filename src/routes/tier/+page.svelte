@@ -12,7 +12,6 @@
 	import { fetchIndexById } from '$lib/api/indexFetchers.svelte';
 	import { fetchUserCollection } from '$lib/api/bgmFetchers.svelte';
 	import { m } from '$lib/paraglide/messages';
-	import { searchPool } from '$lib/states/searchPool.svelte';
 	import { toPng } from 'html-to-image';
 
 	let exportNode: HTMLElement;
@@ -34,9 +33,9 @@
 	}
 
 	function clearAndExit() {
+		// 清空 tier 会话（档位/集合/草稿），但保留排名池——回到首页仍能看到，重新去 tier 即重排
 		exitDialog.close();
 		tierData.clearSessionAndDraft();
-		searchPool.clear();
 		itemLoader.clear();
 		sidebar.open = false;
 		goto('/');

@@ -37,6 +37,8 @@
   "get_token": "Get token",
   "clear": "Clear",
   "save": "Save",
+  "remake_confirm": "This will permanently clear your ranking pool, saved tiers, drafts, access token, theme and language settings, then reload the site. This action cannot be undone.",
+  "remake_confirm_action": "REMAKE",
   "open_collection": "Open collection",
   "close_collection": "Close collection",
   "tier_settings": "Tier settings",
