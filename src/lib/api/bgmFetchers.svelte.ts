@@ -38,7 +38,7 @@ export async function fetchSubject(subject_id: number): Promise<ItemData | undef
 	return subjectLikeToItemData(data);
 }
 
-/** 策略分发：按 category 路由到具体端点（MVP 仅 subject） */
+/** 按 ItemIdentity 加载完整条目（当前仅 subject 一类，category 为扩展保留） */
 export async function fetchItemByIdentity(item: ItemIdentity): Promise<ItemData | undefined> {
 	if (item.category === 'subject') return fetchSubject(item.bgm_id);
 	return undefined;

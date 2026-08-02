@@ -83,7 +83,7 @@
 		const isDraft = page.url.searchParams.get('draft') === '1';
 		const index = Number(page.url.searchParams.get('index'));
 		const user = page.url.searchParams.get('user');
-		const source = page.url.searchParams.get('source'); // search | season | trending
+		const source = page.url.searchParams.get('source'); // pool（首页已 seed 进 loadedItems）
 		if (isDraft) {
 			if (!tierData.restoreDraft()) {
 				goto('/');

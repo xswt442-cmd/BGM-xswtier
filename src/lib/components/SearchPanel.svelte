@@ -3,13 +3,16 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
-	import ItemCard from '$lib/components/ItemCard.svelte';
+	import FilterSelect from '$lib/components/FilterSelect.svelte';
+	import RangeField from '$lib/components/RangeField.svelte';
+	import PoolRow from '$lib/components/PoolRow.svelte';
 	import { searchSubjects, fetchSeason, fetchToday } from '$lib/api/searchFetchers.svelte';
 	import type { SearchParams } from '$lib/api/searchFetchers.svelte';
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { searchPool } from '$lib/states/searchPool.svelte';
 	import { tierData } from '$lib/states/tierData.svelte';
 	import { m } from '$lib/paraglide/messages';
+	import { freshById } from '$lib/utils';
 	import type { ItemData } from '$lib/schemas/item';
 
 	// ---- 检索参数 ----
@@ -50,8 +53,7 @@
 	const isSelected = (id: string) => selectedIds.has(id);
 
 	function mergeUnique(base: ItemData[], incoming: ItemData[]): ItemData[] {
-		const seen = new Set(base.map((item) => item.id));
-		return [...base, ...incoming.filter((item) => (seen.has(item.id) ? false : (seen.add(item.id), true)))];
+		return [...base, ...freshById(base, incoming)];
 	}
 
 	const REGION_OPTIONS = [
@@ -183,28 +185,14 @@
 			isLoading = false;
 		}
 	}
-	async function loadSeason() {
+	async function loadQuick(next: 'season' | 'today') {
 		searchSelection = new Set();
-		mode = 'season';
+		mode = next;
 		searchExhausted = true;
 		hasSearched = true;
 		isLoading = true;
 		try {
-			results = await fetchSeason();
-			rawFetched = results.length;
-			total = results.length;
-		} finally {
-			isLoading = false;
-		}
-	}
-	async function loadToday() {
-		searchSelection = new Set();
-		mode = 'today';
-		searchExhausted = true;
-		hasSearched = true;
-		isLoading = true;
-		try {
-			results = await fetchToday();
+			results = next === 'season' ? await fetchSeason() : await fetchToday();
 			rawFetched = results.length;
 			total = results.length;
 		} finally {
@@ -322,24 +310,16 @@
 	<!-- ② 区域（可调节，默认日本）-->
 	<div class="grid gap-1.5">
 		<Label for="search-region" class="font-pixel text-xs">{m.filter_region_label()}</Label>
-		<select
-			id="search-region"
-			class="font-pixel h-10 w-full cursor-pointer appearance-none border-2 border-border bg-card px-2 py-1.5 text-[11px] leading-5 text-foreground outline-none"
-			bind:value={region}
-		>
-			{#each REGION_OPTIONS as opt}
-				<option value={opt.value}>{opt.label()}</option>
-			{/each}
-		</select>
+		<FilterSelect id="search-region" bind:value={region} options={REGION_OPTIONS} />
 	</div>
 
 	<!-- ③ 快捷入口 -->
 	<div class="flex flex-wrap items-center gap-2">
-		<Button variant="outline" class="font-pixel text-[10px]" onclick={loadSeason} disabled={isBusy}>
+		<Button variant="outline" class="font-pixel text-[10px]" onclick={() => loadQuick('season')} disabled={isBusy}>
 			<span class="icon-[pixelarticons--calendar] mr-1 h-4 w-4"></span>
 			{m.season_quick()}
 		</Button>
-		<Button variant="outline" class="font-pixel text-[10px]" onclick={loadToday} disabled={isBusy}>
+		<Button variant="outline" class="font-pixel text-[10px]" onclick={() => loadQuick('today')} disabled={isBusy}>
 			<span class="icon-[pixelarticons--fire] mr-1 h-4 w-4"></span>
 			{m.trending_quick()}
 		</Button>
@@ -349,39 +329,15 @@
 	<div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
 		<div class="grid gap-1">
 			<Label for="search-platform" class="font-pixel text-[10px]">{m.filter_platform_label()}</Label>
-			<select
-				id="search-platform"
-				class="font-pixel h-10 w-full cursor-pointer appearance-none border-2 border-border bg-card px-2 py-1.5 text-[11px] leading-5 text-foreground outline-none"
-				bind:value={platform}
-			>
-				{#each PLATFORM_OPTIONS as opt}
-					<option value={opt.value}>{opt.label()}</option>
-				{/each}
-			</select>
+			<FilterSelect id="search-platform" bind:value={platform} options={PLATFORM_OPTIONS} />
 		</div>
 		<div class="grid gap-1">
 			<Label for="search-source" class="font-pixel text-[10px]">{m.filter_source_label()}</Label>
-			<select
-				id="search-source"
-				class="font-pixel h-10 w-full cursor-pointer appearance-none border-2 border-border bg-card px-2 py-1.5 text-[11px] leading-5 text-foreground outline-none"
-				bind:value={source}
-			>
-				{#each SOURCE_OPTIONS as opt}
-					<option value={opt.value}>{opt.label()}</option>
-				{/each}
-			</select>
+			<FilterSelect id="search-source" bind:value={source} options={SOURCE_OPTIONS} />
 		</div>
 		<div class="grid gap-1">
 			<Label for="search-type" class="font-pixel text-[10px]">{m.filter_type_label()}</Label>
-			<select
-				id="search-type"
-				class="font-pixel h-10 w-full cursor-pointer appearance-none border-2 border-border bg-card px-2 py-1.5 text-[11px] leading-5 text-foreground outline-none"
-				bind:value={type}
-			>
-				{#each TYPE_OPTIONS as opt}
-					<option value={opt.value}>{opt.label()}</option>
-				{/each}
-			</select>
+			<FilterSelect id="search-type" bind:value={type} options={TYPE_OPTIONS} />
 		</div>
 	</div>
 
@@ -421,78 +377,45 @@
 	</div>
 
 	<!-- 开播时间 -->
-	<div class="grid gap-1.5">
-		<Label class="font-pixel text-xs">{m.filter_airdate_label()}</Label>
-		<div
-			class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)]"
-		>
-			<Label for="air-date-from" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_from()}</Label>
-			<Input id="air-date-from" type="date" class="min-w-0 w-full" bind:value={airDateFrom} />
-			<Label for="air-date-to" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_to()}</Label>
-			<Input id="air-date-to" type="date" class="min-w-0 w-full" bind:value={airDateTo} />
-		</div>
-	</div>
+	<RangeField
+		label={m.filter_airdate_label()}
+		fromId="air-date-from"
+		toId="air-date-to"
+		bind:fromValue={airDateFrom}
+		bind:toValue={airDateTo}
+	/>
 
-	<!-- 评分（0.0–10.0 区间，照抄开播时间布局）-->
-	<div class="grid gap-1.5">
-		<Label class="font-pixel text-xs">{m.filter_rating_label()}</Label>
-		<div
-			class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)]"
-		>
-			<Label for="rating-from" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_from()}</Label>
-			<Input
-				id="rating-from"
-				type="number"
-				step="0.1"
-				min="0"
-				max="10"
-				placeholder={m.rating_from_placeholder()}
-				class="min-w-0 w-full"
-				bind:value={ratingFrom}
-			/>
-			<Label for="rating-to" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_to()}</Label>
-			<Input
-				id="rating-to"
-				type="number"
-				step="0.1"
-				min="0"
-				max="10"
-				placeholder={m.rating_to_placeholder()}
-				class="min-w-0 w-full"
-				bind:value={ratingTo}
-			/>
-		</div>
-	</div>
+	<!-- 评分（0.0–10.0 区间）-->
+	<RangeField
+		label={m.filter_rating_label()}
+		fromId="rating-from"
+		toId="rating-to"
+		type="number"
+		step="0.1"
+		fromMin="0"
+		fromMax="10"
+		toMin="0"
+		toMax="10"
+		fromPlaceholder={m.rating_from_placeholder()}
+		toPlaceholder={m.rating_to_placeholder()}
+		bind:fromValue={ratingFrom}
+		bind:toValue={ratingTo}
+	/>
 
 	<!-- 评分人数（0–99999 区间）-->
-	<div class="grid gap-1.5">
-		<Label class="font-pixel text-xs">{m.filter_rating_count_label()}</Label>
-		<div
-			class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)]"
-		>
-			<Label for="rating-count-min" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_from()}</Label>
-			<Input
-				id="rating-count-min"
-				type="number"
-				step="1"
-				min="0"
-				placeholder={m.rating_count_min_placeholder()}
-				class="min-w-0 flex-1"
-				bind:value={ratingCountMin}
-			/>
-			<Label for="rating-count-max" class="font-pixel text-[10px] text-muted-foreground">{m.airdate_to()}</Label>
-			<Input
-				id="rating-count-max"
-				type="number"
-				step="1"
-				min="0"
-				max="99999"
-				placeholder={m.rating_count_max_placeholder()}
-				class="min-w-0 w-full"
-				bind:value={ratingCountMax}
-			/>
-		</div>
-	</div>
+	<RangeField
+		label={m.filter_rating_count_label()}
+		fromId="rating-count-min"
+		toId="rating-count-max"
+		type="number"
+		step="1"
+		fromMin="0"
+		toMax="99999"
+		fromPlaceholder={m.rating_count_min_placeholder()}
+		toPlaceholder={m.rating_count_max_placeholder()}
+		bind:fromValue={ratingCountMin}
+		bind:toValue={ratingCountMax}
+	/>
 
 	<Button onclick={runSearch} disabled={isBusy} class="font-pixel">
 		{isLoading ? m.searching() : m.search_button()}
@@ -533,25 +456,15 @@
 					<p class="font-pixel py-2 text-center text-[10px] text-muted-foreground">{m.no_results()}</p>
 				{:else}
 					{#each results as item (item.id)}
-						<div
-							class="pixel-border flex h-32 min-w-0 items-center gap-2 bg-card/70 p-1.5"
-							data-testid="search-row"
-							data-platform={item.platform}
-						>
-							<input type="checkbox" class="h-4 w-4 shrink-0 accent-primary" aria-label={m.pool_select_item({ name: item.name_cn || item.name })} checked={searchSelection.has(item.id)} onchange={() => toggleBatch(searchSelection, item.id, 'search')} />
-							<ItemCard {item} />
-							<span class="font-pixel min-w-0 flex-1 truncate text-[10px]" title={item.name_cn || item.name}>
-								{item.name_cn || item.name}
-							</span>
-							<Button
-								variant={isSelected(item.id) ? 'secondary' : 'outline'}
-								size="sm"
-								class="font-pixel text-[10px]"
-								onclick={() => toggleSelect(item)}
-							>
-								{isSelected(item.id) ? m.pool_added() : m.pool_add()}
-							</Button>
-						</div>
+						<PoolRow
+							{item}
+							testid="search-row"
+							checked={searchSelection.has(item.id)}
+							onToggle={() => toggleBatch(searchSelection, item.id, 'search')}
+							actionVariant={isSelected(item.id) ? 'secondary' : 'outline'}
+							actionLabel={isSelected(item.id) ? m.pool_added() : m.pool_add()}
+							onAction={() => toggleSelect(item)}
+						/>
 					{/each}
 				{/if}
 			</div>
@@ -599,24 +512,15 @@
 				<p class="font-pixel py-2 text-center text-[10px] text-muted-foreground">{m.pool_empty()}</p>
 			{:else}
 				{#each selected as item (item.id)}
-					<div
-						class="pixel-border flex h-32 min-w-0 items-center gap-2 bg-card/70 p-1.5"
-						data-testid="pool-row"
-					>
-						<input type="checkbox" class="h-4 w-4 shrink-0 accent-primary" aria-label={m.pool_select_item({ name: item.name_cn || item.name })} checked={rankingSelection.has(item.id)} onchange={() => toggleBatch(rankingSelection, item.id, 'ranking')} />
-						<ItemCard {item} />
-						<span class="font-pixel min-w-0 flex-1 truncate text-[10px]" title={item.name_cn || item.name}>
-							{item.name_cn || item.name}
-						</span>
-						<Button
-							variant="destructive"
-							size="sm"
-							class="font-pixel text-[10px]"
-							onclick={() => removeSelected(item)}
-						>
-							{m.pool_delete()}
-						</Button>
-					</div>
+					<PoolRow
+						{item}
+						testid="pool-row"
+						checked={rankingSelection.has(item.id)}
+						onToggle={() => toggleBatch(rankingSelection, item.id, 'ranking')}
+						actionVariant="destructive"
+						actionLabel={m.pool_delete()}
+						onAction={() => removeSelected(item)}
+					/>
 				{/each}
 			{/if}
 		</div>

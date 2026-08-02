@@ -1,36 +1,20 @@
 <script lang="ts">
-	import { Popover, PopoverTrigger } from '$lib/components/ui/popover';
-	import { Button } from '$lib/components/ui/button';
-	import StatusChip from './StatusChip.svelte';
+	import AxisControl from './AxisControl.svelte';
 	import { theme, type ColorScheme } from '$lib/states/theme.svelte';
 	import { m } from '$lib/paraglide/messages';
 
-	const schemes: ColorScheme[] = ['sun', 'dark', 'sky'];
-	const SCHEME_BADGE: Record<ColorScheme, string> = { sun: 'SUN', dark: 'NIGHT', sky: 'SKY' };
-
-	function schemeLabel(s: ColorScheme) {
-		return s === 'sun' ? m.scheme_sun() : s === 'dark' ? m.scheme_dark() : m.scheme_sky();
-	}
+	const options: { value: ColorScheme; badge: string; label: () => string }[] = [
+		{ value: 'sun', badge: 'SUN', label: () => m.scheme_sun() },
+		{ value: 'dark', badge: 'NIGHT', label: () => m.scheme_dark() },
+		{ value: 'sky', badge: 'SKY', label: () => m.scheme_sky() }
+	];
 </script>
 
-<Popover>
-	<PopoverTrigger class="min-h-11 rounded-sm transition-opacity hover:opacity-80 sm:min-h-0">
-		<StatusChip label="COLOR" value={SCHEME_BADGE[theme.colorScheme]} iconClass="icon-[pixelarticons--paint-bucket]" />
-	</PopoverTrigger>
-	{#snippet content()}
-		<div class="grid gap-3">
-			<span class="text-xs font-semibold">{m.color_scheme()}</span>
-			<div class="flex gap-1.5">
-				{#each schemes as s (s)}
-					<Button
-						variant={theme.colorScheme === s ? 'default' : 'outline'}
-						size="sm"
-						onclick={() => theme.setColor(s)}
-					>
-						{schemeLabel(s)}
-					</Button>
-				{/each}
-			</div>
-		</div>
-	{/snippet}
-</Popover>
+<AxisControl
+	chipLabel="COLOR"
+	iconClass="icon-[pixelarticons--paint-bucket]"
+	heading={m.color_scheme()}
+	options={options}
+	current={theme.colorScheme}
+	onSelect={(value) => theme.setColor(value as ColorScheme)}
+/>

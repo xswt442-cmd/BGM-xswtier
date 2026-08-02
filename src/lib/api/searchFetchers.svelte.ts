@@ -44,6 +44,14 @@ function buildAirDate(from?: string, to?: string): string[] {
 	return arr;
 }
 
+/** 数值半开区间 [from, to)：空/NaN 跳过，格式同 air_date（>=6 / <8）。 */
+function buildNumericRange(from?: number, to?: number): string[] {
+	const arr: string[] = [];
+	if (from != null && Number.isFinite(from)) arr.push(`>=${from}`);
+	if (to != null && Number.isFinite(to)) arr.push(`<${to}`);
+	return arr;
+}
+
 /** POST /v0/search/subjects → 完整 Subject 直接映射 ItemData（不二次请求） */
 export async function searchSubjects(p: SearchParams): Promise<SearchResult> {
 	const filter: NonNullable<SearchSubjectRequest['filter']> = {};
@@ -53,17 +61,10 @@ export async function searchSubjects(p: SearchParams): Promise<SearchResult> {
 	const air_date = buildAirDate(p.airDateFrom, p.airDateTo);
 	if (air_date.length) filter.air_date = air_date;
 
-	// 评分与评分人数区间均为半开 [from, to)，格式同 air_date：>=6 / <8
-	const rating: string[] = [];
-	if (p.ratingFrom != null && Number.isFinite(p.ratingFrom)) rating.push(`>=${p.ratingFrom}`);
-	if (p.ratingTo != null && Number.isFinite(p.ratingTo)) rating.push(`<${p.ratingTo}`);
+	const rating = buildNumericRange(p.ratingFrom, p.ratingTo);
 	if (rating.length) filter.rating = rating;
 
-	const ratingCount: string[] = [];
-	if (p.ratingCountMin != null && Number.isFinite(p.ratingCountMin))
-		ratingCount.push(`>=${p.ratingCountMin}`);
-	if (p.ratingCountMax != null && Number.isFinite(p.ratingCountMax))
-		ratingCount.push(`<${p.ratingCountMax}`);
+	const ratingCount = buildNumericRange(p.ratingCountMin, p.ratingCountMax);
 	if (ratingCount.length) filter.rating_count = ratingCount;
 
 	let response;

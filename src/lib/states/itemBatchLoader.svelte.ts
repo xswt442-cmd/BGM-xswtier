@@ -2,6 +2,7 @@ import pLimit from 'p-limit';
 import { QueryClient } from '@tanstack/svelte-query';
 import { fetchItemByIdentity } from '$lib/api/bgmFetchers.svelte';
 import { tierData } from '$lib/states/tierData.svelte';
+import { freshById } from '$lib/utils';
 import type { ItemData, ItemIdentity } from '$lib/schemas/item';
 
 // 限流：未认证 ~30 req/min，带 token ~300 req/min → 并发压 6、批次 15
@@ -36,8 +37,7 @@ export class BatchLoader {
 
 	/** 直接注入已映射的完整条目（搜索/本季/热门路径，无需再 fetchSubject）。内部去重。 */
 	seedLoaded(items: ItemData[]) {
-		const seen = new Set<string>();
-		this.loadedItems = items.filter((i) => (seen.has(i.id) ? false : (seen.add(i.id), true)));
+		this.loadedItems = freshById([], items);
 		this.totalQueued = this.loadedItems.length; // 全量已入池，无队列
 		this.loadedCount = this.loadedItems.length;
 		this.queue = [];
