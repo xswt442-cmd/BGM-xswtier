@@ -530,7 +530,7 @@
 		{m.go_to_tier({ count: selected.length })}
 	</Button>
 	{#if tierData.hasDraft && selected.length > 0}
-		<Button variant="outline" class="w-full border-accent bg-accent/20 font-pixel text-foreground hover:bg-accent/35 hover:text-foreground" onclick={startNewSession}>
+		<Button variant="outline" class="w-full border-accent bg-accent font-pixel text-accent-foreground hover:bg-accent/85" onclick={startNewSession}>
 			{m.new_from_pool({ count: selected.length })}
 		</Button>
 	{/if}
