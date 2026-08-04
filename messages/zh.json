@@ -154,5 +154,17 @@
   "aria_moved_to_zone_start": "已将 {itemLabel} 移动到 {zoneLabel} 开头",
   "aria_dropped": "已停止拖拽 {itemLabel}",
   "aria_zone_active": "Tab 到某个条目，按空格或回车开始拖拽",
-  "aria_zone_disabled": "这是一个禁用的拖拽列表"
+  "aria_zone_disabled": "这是一个禁用的拖拽列表",
+  "share_tier": "分享",
+  "share_copied": "已复制",
+  "share_failed": "复制失败，浏览器可能禁止剪贴板访问",
+  "share_url_too_long": "分享链接已达 {length}/2000 字符，可能被截断，建议改用导出 JSON",
+  "import_tier": "导入",
+  "importing": "正在导入…",
+  "import_success": "导入成功",
+  "import_failed": "导入失败：不是有效的 bgm-xswtier 档位文件",
+  "import_empty": "导入失败：文件中没有档位",
+  "export_tier": "导出 JSON",
+  "export_json_success": "JSON 已导出",
+  "export_json_failed": "导出失败"
 }

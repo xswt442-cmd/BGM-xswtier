@@ -105,6 +105,16 @@ export const tierData = {
 		tiers = clean.tiers;
 		collection = clean.collectionTierItems;
 	},
+	/** 取干净深拷贝快照（已 strip shadow/去重），供分享/导出编码前使用 */
+	snapshot(): TierStore {
+		return JSON.parse(JSON.stringify(cleanStore()));
+	},
+	/** 整体载入一个会话快照（分享链接/导入恢复），内部再 cleanStore 兜底去重 */
+	loadStore(store: TierStore) {
+		const clean = cleanStore(store.tiers, store.collectionTierItems);
+		tiers = JSON.parse(JSON.stringify(clean.tiers));
+		collection = JSON.parse(JSON.stringify(clean.collectionTierItems));
+	},
 	saveDraft() {
 		const clean = cleanStore();
 		const savedAt = new Date().toISOString();

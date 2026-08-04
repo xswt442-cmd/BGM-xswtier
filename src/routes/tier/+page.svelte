@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
+	import { onDestroy, onMount } from 'svelte';
+	import { goto, replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import TierBar from '$lib/components/TierBar.svelte';
 	import ItemList from '$lib/components/ItemList.svelte';
@@ -13,11 +13,17 @@
 	import { fetchUserCollection } from '$lib/api/bgmFetchers.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { toPng } from 'html-to-image';
+	import { encodeURL, decodeURL, exportJSON, importJSON, URL_MAX_LENGTH, SHARE_HASH_PREFIX } from '$lib/utils/tierSerialize';
 
 	let exportNode: HTMLElement;
 	let statusMessage = $state('');
 	let isExporting = $state(false);
 	let exitDialog: HTMLDialogElement;
+	let copied = $state(false);
+	let shareWarning = $state('');
+	let importing = $state(false);
+	let importInput: HTMLInputElement | undefined = $state();
+	let copyTimer: ReturnType<typeof setTimeout> | undefined;
 
 	function allSessionItems() {
 		return [
@@ -25,6 +31,88 @@
 			...tierData.collection
 		];
 	}
+
+	/** 会话是否包含任何条目（控制分享/导出按钮可用性） */
+	const hasSessionItems = $derived(tierData.tiers.some((t) => t.items.length > 0) || tierData.collection.length > 0);
+
+	/** 复制分享链接：序列化 → 写 hash（replaceState 不留历史）→ 剪贴板，超长给警告 */
+	function copyShareLink() {
+		if (!hasSessionItems) return;
+		try {
+			const encoded = encodeURL(tierData.snapshot());
+			const url = `${window.location.pathname}#${SHARE_HASH_PREFIX}${encoded}`;
+			replaceState(url, {});
+			shareWarning = url.length > URL_MAX_LENGTH ? m.share_url_too_long({ length: url.length }) : '';
+			navigator.clipboard.writeText(url).then(
+				() => {
+					copied = true;
+					statusMessage = m.share_tier();
+					clearTimeout(copyTimer);
+					copyTimer = setTimeout(() => (copied = false), 1500);
+				},
+				() => {
+					statusMessage = m.share_failed();
+				}
+			);
+		} catch {
+			statusMessage = m.share_failed();
+		}
+	}
+
+	/** 导出完整会话为 JSON 文件（备份/迁移） */
+	function exportTierJson() {
+		if (!hasSessionItems) return;
+		try {
+			const json = exportJSON(tierData.snapshot());
+			const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `bgm-xswtier-tier-${new Date().toISOString().slice(0, 10)}.json`;
+			a.click();
+			URL.revokeObjectURL(url);
+			statusMessage = m.export_json_success();
+		} catch {
+			statusMessage = m.export_json_failed();
+		}
+	}
+
+	/** 从 JSON 文件恢复会话：校验通过才 loadStore，失败只提示不动状态 */
+	function onImportFile(e: Event) {
+		const input = e.currentTarget as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+		importing = true;
+		const reader = new FileReader();
+		reader.onload = () => {
+			try {
+				const result = importJSON(String(reader.result ?? ''));
+				if (result.ok) {
+					tierData.loadStore(result.store);
+					itemLoader.clear();
+					itemLoader.seedLoaded(allSessionItems());
+					// 导入的会话以本地持久化为主，清掉分享 hash，避免刷新时被旧分享覆盖
+					replaceState(window.location.pathname + window.location.search, {});
+					statusMessage = m.import_success();
+				} else if (result.reason === 'empty') {
+					statusMessage = m.import_empty();
+				} else {
+					statusMessage = m.import_failed();
+				}
+			} finally {
+				importing = false;
+				input.value = '';
+			}
+		};
+		reader.onerror = () => {
+			importing = false;
+			statusMessage = m.import_failed();
+			input.value = '';
+		};
+		reader.readAsText(file);
+	}
+
+	// 清理复制反馈计时器，避免页面卸载后仍触发状态更新
+	onDestroy(() => clearTimeout(copyTimer));
 
 	function saveDraft(exit = false) {
 		tierData.saveDraft();
@@ -92,6 +180,15 @@
 			itemLoader.seedLoaded(allSessionItems());
 			return;
 		}
+		// 分享链接恢复：hash 优先于 index/user/source（payload 自带渲染数据，无需 API 反查）
+		const hash = window.location.hash;
+		const shared = hash ? decodeURL(hash) : null;
+		if (shared) {
+			tierData.loadStore(shared);
+			itemLoader.clear();
+			itemLoader.seedLoaded(allSessionItems());
+			return;
+		}
 		if (!index && !user && !source) {
 			goto('/');
 			return;
@@ -118,17 +215,30 @@
 
 <div class="mx-auto grid min-h-svh w-full max-w-7xl xl:grid-cols-[minmax(0,1fr)_340px]">
 	<main class="p-4 pt-6 pb-32 xl:pb-4">
-		<div class="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3" data-export-exclude>
+		<div class="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3" data-export-exclude>
 			<Button variant="outline" class="font-pixel h-11 text-[10px] sm:h-9" onclick={() => saveDraft(false)}>
 				{m.save_draft()}
 			</Button>
+			<Button class="font-pixel h-11 text-[10px] text-black hover:opacity-85 sm:h-9" style="background-color: var(--chart-3)" onclick={copyShareLink} disabled={!hasSessionItems}>
+				{copied ? m.share_copied() : m.share_tier()}
+			</Button>
 			<Button class="font-pixel h-11 bg-accent text-[10px] text-accent-foreground hover:bg-accent/85 sm:h-9" onclick={() => exitDialog.showModal()}>
 				{m.exit_tier()}
+			</Button>
+			<Button class="font-pixel h-11 text-[10px] text-black hover:opacity-85 sm:h-9" style="background-color: var(--chart-4)" onclick={() => importInput?.click()} disabled={importing}>
+				{importing ? m.importing() : m.import_tier()}
+			</Button>
+			<Button class="font-pixel h-11 text-[10px] text-black hover:opacity-85 sm:h-9" style="background-color: var(--chart-5)" onclick={exportTierJson} disabled={!hasSessionItems}>
+				{m.export_tier()}
 			</Button>
 			<Button class="font-pixel h-11 text-[10px] sm:h-9" onclick={exportPng} disabled={isExporting}>
 				{isExporting ? m.exporting_png() : m.save_png()}
 			</Button>
 		</div>
+		{#if shareWarning}
+			<p class="font-pixel mb-1 text-[10px] text-destructive">{shareWarning}</p>
+		{/if}
+		<input bind:this={importInput} type="file" accept="application/json,.json" class="hidden" onchange={onImportFile} />
 		<p class="sr-only" aria-live="polite">{statusMessage}</p>
 		<div bind:this={exportNode} class="rounded-lg bg-background p-1">
 		<div class="mb-6 flex items-center gap-2">

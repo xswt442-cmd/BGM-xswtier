@@ -15,7 +15,8 @@ const client = new QueryClient({
 			staleTime: 1000 * 60 * 30, // 30 分钟后过期
 			gcTime: 1000 * 60 * 60,
 			retry: 1,
-			refetchOnWindowFocus: false
+			refetchOnWindowFocus: false,
+			refetchOnReconnect: false // 断网恢复不静默刷新，避免覆盖用户正在编辑的会话
 		}
 	}
 });
