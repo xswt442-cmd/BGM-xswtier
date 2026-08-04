@@ -17,6 +17,7 @@ An anime tier-list builder for Bangumi. Search by keyword, load a Bangumi index 
 - **Index & user loading** — rank the entries of any Bangumi index by ID, or a user's collection by username.
 - **Drag-and-drop ranking** — rename, recolor, or delete tiers; adjust the tier label size; everything persists to localStorage.
 - **Session management** — save a draft, exit and resume later, or export the finished tier as a 2× PNG.
+- **Share & backup** — copy a shareable link (the ranking is encoded into the URL, works on any device without an account) or export/import a JSON backup file.
 - **Three-axis visual system** — color scheme (sun / night / sky) × VFX (neon / CRT) × UI feedback (arcade / pulse), freely combinable.
 - **Bilingual UI** — Simplified Chinese / English, switched instantly.
 - **Privacy-friendly** — all data stays in your browser; an optional Bangumi access token raises the API rate limit.
@@ -37,6 +38,7 @@ pnpm build     # production build
 1. Click `CLICK TO START` on the landing page.
 2. Search titles, or enter an index ID / username.
 3. Drag titles into tier rows — your ranking is saved automatically.
+4. On the tier page, click **SHARE** to copy a link of your ranking, or use **EXPORT JSON / IMPORT** to back it up or restore it later.
 
 > **Access token:** enter a Bangumi access token in Settings (<https://next.bgm.tv/demo/access-token>) to raise the API rate limit. Anonymous access works without one.
 
