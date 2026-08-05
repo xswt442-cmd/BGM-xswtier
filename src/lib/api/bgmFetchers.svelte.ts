@@ -45,13 +45,11 @@ export async function fetchItemByIdentity(item: ItemIdentity): Promise<ItemData 
 }
 
 /**
- * 用户名模式：拉取该用户「当前年已看完」的动画收藏（type=2 看过, subject_type=2 动画）
+ * 用户名模式：拉取该用户「已看完」的动画收藏（type=2 看过, subject_type=2 动画），全量不分年份。
+ * 早期版本只收「当前年」条目（subject.date 以当年开头）导致 pool 几乎为空，改为全量。
  * 分页：先取首页拿 total，再并发拉剩余页
  */
-export async function fetchUserCollection(
-	username: string,
-	year: number = new Date().getFullYear()
-): Promise<ItemIdentity[]> {
+export async function fetchUserCollection(username: string): Promise<ItemIdentity[]> {
 	const limit = 50;
 	const query = { type: 2, subject_type: 2, limit, offset: 0 } as const;
 	const { data: firstPage } = await pubClient.GET('/v0/users/{username}/collections', {
@@ -60,12 +58,9 @@ export async function fetchUserCollection(
 	const total = firstPage?.total ?? 0;
 	const items: ItemIdentity[] = [];
 
-	function collect(page: { data?: { subject_id: number; subject?: { date?: string } }[] } | undefined) {
+	function collect(page: { data?: { subject_id: number }[] } | undefined) {
 		for (const c of page?.data ?? []) {
-			const date = c.subject?.date;
-			if (date && date.startsWith(String(year))) {
-				items.push({ bgm_id: c.subject_id, category: 'subject' });
-			}
+			items.push({ bgm_id: c.subject_id, category: 'subject' });
 		}
 	}
 	collect(firstPage);
