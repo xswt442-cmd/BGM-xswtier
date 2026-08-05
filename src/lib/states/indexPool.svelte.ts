@@ -15,9 +15,9 @@ export const indexPool = {
 	get loaded(): boolean {
 		return hasLoaded;
 	},
-	/** 增量合并（按 id 去重） */
+	/** 增量合并（追加 fresh 到现有，按 id 去重） */
 	addAll(list: ItemData[]) {
-		items = freshById(items, list);
+		items = [...items, ...freshById(items, list)];
 	},
 	markLoaded() {
 		hasLoaded = true;

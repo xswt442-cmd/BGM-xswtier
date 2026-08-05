@@ -12,24 +12,51 @@
 	const isAdded = (id: string) => searchPool.has(id);
 
 	let selection = $state<Set<string>>(new Set());
+	let isLoadingAll = $state(false);
+	const isBusy = $derived(isLoadingAll || itemLoader.isLoading);
 
+	/** 分批拉完队列里剩余条目，让 indexPool 包含整个目录（ADD ALL / 全选 的前提） */
+	async function loadAllRemaining() {
+		while (!itemLoader.isDone) {
+			await itemLoader.loadBatch();
+		}
+	}
+	async function addAllToRanking() {
+		if (isBusy) return;
+		isLoadingAll = true;
+		try {
+			await loadAllRemaining();
+			searchPool.addAll(indexPool.items.filter((i) => !isAdded(i.id)));
+		} finally {
+			isLoadingAll = false;
+		}
+		selection = new Set();
+	}
+	async function selectAll() {
+		if (isBusy) return;
+		isLoadingAll = true;
+		try {
+			await loadAllRemaining();
+			selection = new Set(indexPool.items.map((i) => i.id));
+		} finally {
+			isLoadingAll = false;
+		}
+	}
 	function toggleSelect(id: string) {
+		if (isBusy) return;
 		const next = new Set(selection);
 		if (next.has(id)) next.delete(id);
 		else next.add(id);
 		selection = next;
 	}
-	function addToRanking(item: ItemData) {
-		if (isAdded(item.id)) return;
-		searchPool.add(item);
-	}
-	function addAllToRanking() {
-		searchPool.addAll(indexPool.items.filter((i) => !isAdded(i.id)));
-		selection = new Set();
-	}
 	function addSelected() {
+		if (isBusy) return;
 		searchPool.addAll(indexPool.items.filter((i) => selection.has(i.id) && !isAdded(i.id)));
 		selection = new Set();
+	}
+	function addToRanking(item: ItemData) {
+		if (isBusy || isAdded(item.id)) return;
+		searchPool.add(item);
 	}
 </script>
 
@@ -45,18 +72,18 @@
 				size="sm"
 				class="font-pixel h-5 px-2 text-[9px]"
 				onclick={addAllToRanking}
-				disabled={indexPool.items.length === 0}
+				disabled={indexPool.items.length === 0 || isBusy}
 			>
-				{m.pool_add_all()}
+				{isLoadingAll ? m.pool_adding_all() : m.pool_add_all()}
 			</Button>
 		</div>
 	</div>
 	{#if indexPool.items.length > 0}
 		<div class="flex flex-wrap items-center gap-1.5 border-b-2 border-border px-2 py-1">
 			<span class="font-pixel mr-auto text-[9px] text-muted-foreground">{m.pool_selected_count({ count: selection.size })}</span>
-			<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => (selection = new Set(indexPool.items.map((i) => i.id)))}>{m.pool_select_all()}</Button>
-			<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => (selection = new Set())} disabled={selection.size === 0}>{m.pool_clear_selection()}</Button>
-			<Button variant="outline" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={addSelected} disabled={selection.size === 0}>{m.pool_add_selected()}</Button>
+			<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={selectAll} disabled={isBusy}>{m.pool_select_all()}</Button>
+			<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => (selection = new Set())} disabled={selection.size === 0 || isBusy}>{m.pool_clear_selection()}</Button>
+			<Button variant="outline" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={addSelected} disabled={selection.size === 0 || isBusy}>{m.pool_add_selected()}</Button>
 		</div>
 	{/if}
 	<div class="grid min-w-0 max-h-[40svh] grid-cols-1 gap-1.5 overflow-y-auto p-1.5 sm:grid-cols-2">
