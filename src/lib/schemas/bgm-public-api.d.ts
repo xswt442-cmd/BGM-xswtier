@@ -143,7 +143,41 @@ export interface TrendingSubjectResponse {
 	total: number;
 }
 
+/** /v0/me：当前 access token 对应用户（仅声明本工具用到的字段） */
+export interface Me {
+	id: number;
+	url: string;
+	username: string;
+	nickname: string;
+	avatar?: { large?: string; medium?: string; small?: string };
+	sign?: string;
+}
+
+/** /p1/users/{username}/indexes：用户自建目录条目（私有 p1 老 API，字段为 camelCase） */
+export interface SlimIndex {
+	id: number;
+	uid: number;
+	type: number;
+	title: string;
+	private: boolean;
+	total: number;
+	stats?: { subject?: Record<string, number>; groupTopic?: number };
+	createdAt?: number;
+	updatedAt?: number;
+}
+export interface Paged_SlimIndex {
+	data: SlimIndex[];
+	total: number;
+}
+
 export interface paths {
+	'/v0/me': {
+		get: {
+			responses: {
+				200: { content: { 'application/json': Me } };
+			};
+		};
+	};
 	'/v0/subjects/{subject_id}': {
 		get: {
 			parameters: { path: { subject_id: number } };
@@ -196,6 +230,17 @@ export interface paths {
 			parameters: { query: { type: SubjectType; limit?: number; offset?: number } };
 			responses: {
 				200: { content: { 'application/json': TrendingSubjectResponse } };
+			};
+		};
+	};
+	'/p1/users/{username}/indexes': {
+		get: {
+			parameters: {
+				path: { username: string };
+				query?: { limit?: number; offset?: number };
+			};
+			responses: {
+				200: { content: { 'application/json': Paged_SlimIndex } };
 			};
 		};
 	};

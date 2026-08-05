@@ -5,6 +5,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Separator } from '$lib/components/ui/separator';
 	import { m } from '$lib/paraglide/messages';
+	import MyInfoPanel from './MyInfoPanel.svelte';
 	import SearchPanel from './SearchPanel.svelte';
 
 	let indexId = $state('');
@@ -27,6 +28,12 @@
 </script>
 
 <div class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5">
+	<!-- 有 token 时：我的账号 / 自建目录，点击填入下方输入框 -->
+	<MyInfoPanel
+		onFillUsername={(u) => (username = u)}
+		onFillIndex={(id) => (indexId = String(id))}
+	/>
+
 	<!-- 搜索功能块整体上移 -->
 	<SearchPanel />
 
