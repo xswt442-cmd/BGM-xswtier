@@ -6,18 +6,37 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { m } from '$lib/paraglide/messages';
 	import MyInfoPanel from './MyInfoPanel.svelte';
+	import IndexPoolPanel from './IndexPoolPanel.svelte';
 	import SearchPanel from './SearchPanel.svelte';
+	import { fetchIndexById } from '$lib/api/indexFetchers.svelte';
+	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
+	import { indexPool } from '$lib/states/indexPool.svelte';
 
 	let indexId = $state('');
 	let username = $state('');
 	let isIndexLoading = $state(false);
 	let isUserLoading = $state(false);
 
-	function submitIndex() {
+	async function submitIndex() {
 		const id = indexId.trim();
 		if (!/^\d+$/.test(id)) return;
 		isIndexLoading = true;
-		goto(`/tier?index=${id}`).finally(() => (isIndexLoading = false));
+		try {
+			// 加载目录条目进「目录池」（复刻检索池），不直接进 tier；ADD 后才进排名池
+			indexPool.clear();
+			itemLoader.clear();
+			itemLoader.setDestination('indexPool');
+			const identities = await fetchIndexById(Number(id));
+			if (identities) {
+				indexPool.markLoaded();
+				if (identities.length > 0) {
+					itemLoader.addItems(identities);
+					await itemLoader.loadBatch();
+				}
+			}
+		} finally {
+			isIndexLoading = false;
+		}
 	}
 	function submitUser() {
 		const u = username.trim();
@@ -70,6 +89,10 @@
 			</a>
 		</div>
 	</form>
+	{#if indexPool.loaded}
+		<!-- 目录池：输入目录 ID 后加载到这里，ADD 进排名池（复刻检索池） -->
+		<IndexPoolPanel />
+	{/if}
 	<Separator class="my-1" />
 	<form
 		onsubmit={(e) => {

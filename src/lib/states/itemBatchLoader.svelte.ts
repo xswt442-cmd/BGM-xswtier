@@ -2,6 +2,7 @@ import pLimit from 'p-limit';
 import { QueryClient } from '@tanstack/svelte-query';
 import { fetchItemByIdentity } from '$lib/api/bgmFetchers.svelte';
 import { tierData } from '$lib/states/tierData.svelte';
+import { indexPool } from '$lib/states/indexPool.svelte';
 import { freshById } from '$lib/utils';
 import type { ItemData, ItemIdentity } from '$lib/schemas/item';
 
@@ -30,6 +31,12 @@ export class BatchLoader {
 	/** 进度统计：累计入队总数 / 成功加载数 */
 	totalQueued = $state(0);
 	loadedCount = $state(0);
+	/** 加载结果去向：默认并入排名池（collection）；index 模式路由到目录池 */
+	destination = $state<'collection' | 'indexPool'>('collection');
+
+	setDestination(d: 'collection' | 'indexPool') {
+		this.destination = d;
+	}
 
 	addItems(list: ItemIdentity[]) {
 		this.queue.push(...list);
@@ -43,6 +50,7 @@ export class BatchLoader {
 		this.loadedCount = this.loadedItems.length;
 		this.queue = [];
 		this.isLoading = false;
+		this.destination = 'collection'; // 防御性重置：seed 路径不经过 clear()
 	}
 
 	async loadBatch(batch = BATCH_SIZE_DEFAULT) {
@@ -69,7 +77,11 @@ export class BatchLoader {
 
 		const valid = results.filter((i): i is ItemData => i !== undefined);
 		this.loadedItems.push(...valid);
-		tierData.mergeIntoCollection(valid);
+		if (this.destination === 'indexPool') {
+			indexPool.addAll(valid);
+		} else {
+			tierData.mergeIntoCollection(valid);
+		}
 		this.loadedCount += valid.length;
 		this.isLoading = false;
 	}
@@ -87,6 +99,7 @@ export class BatchLoader {
 		this.loadedItems = [];
 		this.totalQueued = 0;
 		this.loadedCount = 0;
+		this.destination = 'collection';
 	}
 }
 
