@@ -24,5 +24,10 @@ export const locale = {
 		current = l;
 		localStorage.setItem(STORAGE_KEY, l);
 		if (typeof document !== 'undefined') document.documentElement.lang = l;
+	},
+	// 回到默认语言（英文）：REMAKE 清空 localStorage 后调用，让内存 state 同步复位
+	reset() {
+		current = baseLocale;
+		if (typeof document !== 'undefined') document.documentElement.lang = baseLocale;
 	}
 };

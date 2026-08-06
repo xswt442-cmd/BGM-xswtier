@@ -177,5 +177,5 @@
   "export_json_failed": "JSON export failed",
   "footer_open_source": "Open-source web app",
   "footer_tech_stack": "SvelteKit 5 · TypeScript · Tailwind CSS",
-  "footer_source_link": "View source on GitHub"
+  "github_view_source": "View source on GitHub"
 }

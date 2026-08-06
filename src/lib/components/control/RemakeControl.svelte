@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { Popover, PopoverTrigger } from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
+	import { locale } from '$lib/states/locale.svelte';
 	import { m } from '$lib/paraglide/messages';
 
 	let open = $state(false);
@@ -9,6 +10,7 @@
 	// 一键重开：应用独占其 origin，清空全部 localStorage（排名池/档位/草稿/令牌/主题/语言）后回首页，恢复初始状态
 	function remake() {
 		localStorage.clear();
+		locale.reset(); // 内存 locale 同步回默认（英文），否则 clear 后 SPA 内仍显示旧语言
 		goto('/');
 	}
 </script>

@@ -46,19 +46,11 @@
 		</div>
 	</div>
 
-	<!-- 底部开源页脚：让落地页呈现软件项目身份（is-a.dev 判定 dev related 依赖页面内容） -->
-	<footer class="flex flex-col items-center gap-1.5 px-4 pb-3 pt-2 text-center">
+	<!-- 底部技术栈小标记：呈现软件项目身份（GitHub 链接已在状态栏） -->
+	<footer class="px-4 pb-3 pt-2 text-center">
 		<p class="font-pixel text-[10px] leading-relaxed text-muted-foreground sm:text-[11px]">
 			{m.footer_open_source()} <span class="text-accent">·</span> {m.footer_tech_stack()}
 		</p>
-		<a
-			href="https://github.com/xswt442-cmd/BGM-xswtier"
-			target="_blank"
-			rel="noreferrer"
-			class="font-pixel text-[10px] text-foreground/80 underline decoration-dotted underline-offset-2 transition-colors hover:text-accent sm:text-[11px]"
-		>
-			{m.footer_source_link()}
-		</a>
 	</footer>
 
 	<!-- 底部 ==== 屏幕边框 -->

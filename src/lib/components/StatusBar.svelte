@@ -4,6 +4,7 @@
 	import UiFeedbackControl from './control/UiFeedbackControl.svelte';
 	import LanguageSwitch from './control/LanguageSwitch.svelte';
 	import TokenSettings from './control/TokenSettings.svelte';
+	import GitHubLink from './control/GitHubLink.svelte';
 	import RemakeControl from './control/RemakeControl.svelte';
 	import SidebarToggle from './control/SidebarToggle.svelte';
 	import { cn } from '$lib/utils';
@@ -22,6 +23,7 @@
 	<UiFeedbackControl />
 	<LanguageSwitch />
 	<TokenSettings />
+	<GitHubLink />
 	<RemakeControl />
 	{#if showToggle}
 		<SidebarToggle />
