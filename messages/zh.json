@@ -174,5 +174,8 @@
   "import_empty": "导入失败：文件中没有档位",
   "export_tier": "导出 JSON",
   "export_json_success": "JSON 已导出",
-  "export_json_failed": "导出失败"
+  "export_json_failed": "导出失败",
+  "footer_open_source": "开源 Web 应用",
+  "footer_tech_stack": "SvelteKit 5 · TypeScript · Tailwind CSS",
+  "footer_source_link": "在 GitHub 查看源码"
 }
