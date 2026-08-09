@@ -177,5 +177,7 @@
   "export_json_failed": "导出失败",
   "footer_open_source": "开源 Web 应用",
   "footer_tech_stack": "SvelteKit 5 · TypeScript · Tailwind CSS",
-  "github_view_source": "在 GitHub 查看源码"
+  "github_view_source": "在 GitHub 查看源码",
+  "tier_drag_handle": "拖拽档位调整顺序",
+  "tier_reorder_zone": "档位列表"
 }

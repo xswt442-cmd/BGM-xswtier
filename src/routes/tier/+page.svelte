@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
+	import { flip } from 'svelte/animate';
+	import { dragHandleZone, SHADOW_PLACEHOLDER_ITEM_ID } from 'svelte-dnd-action';
 	import { goto, replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import TierBar from '$lib/components/TierBar.svelte';
@@ -34,6 +36,17 @@
 
 	/** 会话是否包含任何条目（控制分享/导出按钮可用性） */
 	const hasSessionItems = $derived(tierData.tiers.some((t) => t.items.length > 0) || tierData.collection.length > 0);
+
+	// 档位本身可拖拽排序：dragHandleZone 用独立 type 'tier'，与条目拖拽（默认 type）互不干扰。
+	// consider/finalize 直接取 e.detail.items（含 shadow 占位档），finalize 时过滤幽灵档。
+	function handleTierConsider(e: CustomEvent) {
+		tierData.tiers = e.detail.items;
+	}
+	function handleTierFinalize(e: CustomEvent) {
+		tierData.tiers = e.detail.items.filter(
+			(t: Record<string, any>) => !t.isDndShadowItem && t.id !== SHADOW_PLACEHOLDER_ITEM_ID
+		);
+	}
 
 	/** 复制分享链接：序列化 → 写 hash（replaceState 不留历史）→ 剪贴板，超长给警告 */
 	function copyShareLink() {
@@ -250,17 +263,42 @@
 				TIER LIST
 			</span>
 		</div>
-		{#each tierData.tiers as tier (tier.id)}
-			<TierBar
-				bind:items={tier.items}
-				title={tier.label}
-				color={tier.color}
-				onRename={(label) => tierData.renameTier(tier.id, label)}
-				onColorChange={(color) => tierData.recolorTier(tier.id, color)}
-				onDelete={() => tierData.removeTier(tier.id)}
-				canDelete={tierData.tiers.length > 1}
-			/>
-		{/each}
+		<section
+			use:dragHandleZone={{
+				items: tierData.tiers,
+				type: 'tier',
+				flipDurationMs: 300,
+				delayTouchStart: true
+			}}
+			onconsider={handleTierConsider}
+			onfinalize={handleTierFinalize}
+			aria-label={m.tier_reorder_zone()}
+			class="flex flex-col"
+		>
+			{#each tierData.tiers as tier (tier.id)}
+				<div
+					animate:flip={{ duration: 300 }}
+					data-is-dnd-shadow-item-hint={tier.id === SHADOW_PLACEHOLDER_ITEM_ID}
+				>
+					{#if tier.id === SHADOW_PLACEHOLDER_ITEM_ID}
+						<div
+							class="mb-3 rounded-lg border-2 border-dashed border-border bg-card/50"
+							style="min-height: 5rem"
+						></div>
+					{:else}
+						<TierBar
+							bind:items={tier.items}
+							title={tier.label}
+							color={tier.color}
+							onRename={(label) => tierData.renameTier(tier.id, label)}
+							onColorChange={(color) => tierData.recolorTier(tier.id, color)}
+							onDelete={() => tierData.removeTier(tier.id)}
+							canDelete={tierData.tiers.length > 1}
+						/>
+					{/if}
+				</div>
+			{/each}
+		</section>
 		</div>
 		<Button variant="outline" class="w-full" onclick={() => tierData.addTier()} data-export-exclude>
 			<span class="icon-[pixelarticons--plus] mr-1 h-4 w-4"></span>

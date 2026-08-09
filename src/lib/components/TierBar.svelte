@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dndzone } from 'svelte-dnd-action';
+	import { dndzone, dragHandle } from 'svelte-dnd-action';
 	import { flip } from 'svelte/animate';
 	import type { ItemData } from '$lib/schemas/item';
 	import ItemCard from './ItemCard.svelte';
@@ -32,13 +32,11 @@
 		draftLabel = title;
 	});
 
-	// 自定义字号（rem）；null = 按字数自动缩放（像素体字号偏小）
+	// 自定义字号（rem）；null = 固定字号，不随字数缩放
 	let customSize = $state<number | null>(null);
-	const autoFont = $derived(
-		draftLabel.length <= 2 ? 0.9 : draftLabel.length <= 3 ? 0.75 : draftLabel.length <= 5 ? 0.6 : 0.5
-	);
-	const fontSize = $derived(customSize !== null ? `${customSize}rem` : `${autoFont}rem`);
-	// 名称框宽度：初始约 5rem（约 1/3），随字数自动右扩
+	const FIXED_FONT = 0.7;
+	const fontSize = $derived(customSize !== null ? `${customSize}rem` : `${FIXED_FONT}rem`);
+	// 名称框宽度随字数自动右扩（box 伸长）；字号固定不缩小
 	const nameWidth = $derived(`${Math.max(5, draftLabel.length * 1.15 + 2)}rem`);
 
 	const PRESETS = [
@@ -69,9 +67,18 @@
 	}
 </script>
 
-<!-- 8-bit 等级块：紧凑名称框（左、约 1/3、居中文字、随字数右扩）+ 贴纸区 -->
+<!-- 8-bit 等级块：固定宽度名称框（左、居中文字、固定字号）+ 贴纸区 -->
 <section class="group neon-border pixel-border pixel-shadow mb-3 overflow-hidden rounded-lg bg-card">
 	<div class="flex flex-wrap items-center gap-2 p-2">
+		<button
+			use:dragHandle
+			type="button"
+			aria-label={m.tier_drag_handle()}
+			class="inline-flex h-11 w-9 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted-foreground transition-opacity hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:cursor-grabbing sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+			data-export-exclude
+		>
+			<span class="icon-[pixelarticons--more-vertical] h-4 w-4 sm:h-3.5 sm:w-3.5"></span>
+		</button>
 		<div
 			class="relative flex items-center justify-center rounded-md px-3 py-1.5"
 			style="background-color: {color}; width: {nameWidth};"
@@ -126,7 +133,7 @@
 								variant="outline"
 								size="sm"
 								class="h-6 w-6 p-0"
-								onclick={() => (customSize = Math.max(0.3, (customSize ?? autoFont) - 0.1))}
+								onclick={() => (customSize = Math.max(0.3, (customSize ?? FIXED_FONT) - 0.1))}
 							>
 								−
 							</Button>
@@ -134,7 +141,7 @@
 								variant="outline"
 								size="sm"
 								class="h-6 w-6 p-0"
-								onclick={() => (customSize = (customSize ?? autoFont) + 0.1)}
+								onclick={() => (customSize = (customSize ?? FIXED_FONT) + 0.1)}
 							>
 								+
 							</Button>

@@ -45,7 +45,10 @@ function uniqueItems(list: ItemData[], seen = new Set<string>()): ItemData[] {
 
 function cleanStore(sourceTiers = tiers, sourceCollection = collection): TierStore {
 	const seen = new Set<string>();
-	const cleanTiers = sourceTiers.map((tier) => ({ ...tier, items: uniqueItems(tier.items, seen) }));
+	// 档位本身也可拖拽排序：拖拽中间态 e.detail.items 会含 shadow 占位档，持久化前过滤掉
+	const cleanTiers = sourceTiers
+		.filter((t) => t.id !== 'id:dnd-shadow-placeholder-0000')
+		.map((tier) => ({ ...tier, items: uniqueItems(tier.items, seen) }));
 	return {
 		version: 1,
 		tiers: cleanTiers,
