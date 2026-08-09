@@ -74,10 +74,15 @@
 			use:dragHandle
 			type="button"
 			aria-label={m.tier_drag_handle()}
-			class="inline-flex h-11 w-9 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted-foreground transition-opacity hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:cursor-grabbing sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+			class="group/tdh relative inline-flex h-11 w-9 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:cursor-grabbing sm:h-6 sm:w-6"
 			data-export-exclude
 		>
-			<span class="icon-[pixelarticons--more-vertical] h-4 w-4 sm:h-3.5 sm:w-3.5"></span>
+			<span class="icon-[pixelarticons--move] h-4 w-4 sm:h-3.5 sm:w-3.5"></span>
+			<span
+				class="font-pixel pointer-events-none absolute left-full top-1/2 z-50 ml-1.5 -translate-y-1/2 whitespace-nowrap rounded-sm border border-border bg-background px-1.5 py-1 text-[9px] leading-none text-foreground opacity-0 shadow-sm transition-opacity group-hover/tdh:opacity-100"
+			>
+				{m.tier_drag_handle()}
+			</span>
 		</button>
 		<div
 			class="relative flex items-center justify-center rounded-md px-3 py-1.5"
