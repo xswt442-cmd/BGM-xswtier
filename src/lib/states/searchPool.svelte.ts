@@ -38,6 +38,12 @@ export const searchPool = {
 	remove(id: string) {
 		pool = pool.filter((i) => i.id !== id);
 	},
+	/** 原子批量删除，只触发一次数组替换与持久化。 */
+	removeAll(ids: Iterable<string>) {
+		const targets = new Set(ids);
+		if (targets.size === 0) return;
+		pool = pool.filter((item) => !targets.has(item.id));
+	},
 	/** 批量加入（按 id 去重） */
 	addAll(list: ItemData[]) {
 		const fresh = freshById(pool, list);

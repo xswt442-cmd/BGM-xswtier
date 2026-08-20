@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
@@ -8,9 +7,7 @@
 	import PoolRow from '$lib/components/PoolRow.svelte';
 	import { searchSubjects, fetchSeason, fetchToday } from '$lib/api/searchFetchers.svelte';
 	import type { SearchParams } from '$lib/api/searchFetchers.svelte';
-	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { searchPool } from '$lib/states/searchPool.svelte';
-	import { tierData } from '$lib/states/tierData.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { freshById } from '$lib/utils';
 	import type { ItemData } from '$lib/schemas/item';
@@ -46,7 +43,6 @@
 	const selected = $derived(searchPool.items);
 	const selectedIds = $derived(new Set(selected.map((i) => i.id)));
 	let searchSelection = $state<Set<string>>(new Set());
-	let rankingSelection = $state<Set<string>>(new Set());
 
 	const hasMore = $derived(mode === 'search' && !searchExhausted);
 	const isBusy = $derived(isLoading || isLoadingAll || isAddingAll);
@@ -204,14 +200,8 @@
 		// 加入 / 取消（toggle）
 		if (searchPool.has(item.id)) {
 			searchPool.remove(item.id);
-			rankingSelection = new Set([...rankingSelection].filter((id) => id !== item.id));
 		}
 		else searchPool.add(item);
-	}
-	function removeSelected(item: ItemData) {
-		// 从排名池删除（检索池自动恢复未加态）
-		searchPool.remove(item.id);
-		rankingSelection = new Set([...rankingSelection].filter((id) => id !== item.id));
 	}
 	async function addAllResults() {
 		if (isBusy || (results.length === 0 && !hasMore)) return;
@@ -255,44 +245,16 @@
 			isLoadingAll = false;
 		}
 	}
-	function clearSelected() {
-		// 清空排名池（检索池自动全部恢复未加态）
-		searchPool.clear();
-		rankingSelection = new Set();
-	}
-	function toggleBatch(set: Set<string>, id: string, target: 'search' | 'ranking') {
+	function toggleBatch(set: Set<string>, id: string) {
 		const next = new Set(set);
 		if (next.has(id)) next.delete(id);
 		else next.add(id);
-		if (target === 'search') searchSelection = next;
-		else rankingSelection = next;
+		searchSelection = next;
 	}
 	function addBatchSelection() {
 		searchPool.addAll(results.filter((item) => searchSelection.has(item.id)));
 		searchSelection = new Set();
 	}
-	function deleteBatchSelection() {
-		for (const id of rankingSelection) searchPool.remove(id);
-		rankingSelection = new Set();
-	}
-
-	function goToTier() {
-		if (tierData.hasDraft) {
-			goto('/tier?draft=1');
-			return;
-		}
-		startNewSession();
-	}
-
-	function startNewSession() {
-		const pool = searchPool.items;
-		if (pool.length === 0) return;
-		itemLoader.clear();
-		itemLoader.seedLoaded(pool);
-		tierData.startSession(pool);
-		goto('/tier?source=pool');
-	}
-
 </script>
 
 <div class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3">
@@ -460,7 +422,7 @@
 							{item}
 							testid="search-row"
 							checked={searchSelection.has(item.id)}
-							onToggle={() => toggleBatch(searchSelection, item.id, 'search')}
+							onToggle={() => toggleBatch(searchSelection, item.id)}
 							actionVariant={isSelected(item.id) ? 'secondary' : 'outline'}
 							actionLabel={isSelected(item.id) ? m.pool_added() : m.pool_add()}
 							onAction={() => toggleSelect(item)}
@@ -480,58 +442,5 @@
 				</Button>
 			</div>
 		{/if}
-	{/if}
-
-	<!-- 排名池（独立于搜索，进 START 即显示持久化内容） -->
-	<div class="min-w-0 border-2 border-border bg-card/60">
-		<div class="flex items-center justify-between gap-2 border-b-2 border-border px-2 py-1">
-			<span class="font-pixel text-[10px]">{m.pool_ranking_title()}</span>
-			<div class="flex items-center gap-2">
-				<span class="font-pixel text-[10px] text-muted-foreground">{selected.length}</span>
-				<Button
-					variant="ghost"
-					size="sm"
-					class="font-pixel h-5 px-2 text-[9px]"
-					onclick={clearSelected}
-					disabled={selected.length === 0}
-				>
-					{m.pool_delete_all()}
-				</Button>
-			</div>
-		</div>
-		{#if selected.length > 0}
-			<div class="flex flex-wrap items-center gap-1.5 border-b-2 border-border px-2 py-1">
-				<span class="font-pixel mr-auto text-[9px] text-muted-foreground">{m.pool_selected_count({ count: rankingSelection.size })}</span>
-				<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => (rankingSelection = new Set(selected.map((item) => item.id)))}>{m.pool_select_all()}</Button>
-				<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => (rankingSelection = new Set())} disabled={rankingSelection.size === 0}>{m.pool_clear_selection()}</Button>
-				<Button variant="destructive" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={deleteBatchSelection} disabled={rankingSelection.size === 0}>{m.pool_delete_selected()}</Button>
-			</div>
-		{/if}
-		<div class="grid min-w-0 max-h-[30svh] grid-cols-1 gap-1.5 overflow-y-auto p-1.5 sm:grid-cols-2">
-			{#if selected.length === 0}
-				<p class="font-pixel py-2 text-center text-[10px] text-muted-foreground">{m.pool_empty()}</p>
-			{:else}
-				{#each selected as item (item.id)}
-					<PoolRow
-						{item}
-						testid="pool-row"
-						checked={rankingSelection.has(item.id)}
-						onToggle={() => toggleBatch(rankingSelection, item.id, 'ranking')}
-						actionVariant="destructive"
-						actionLabel={m.pool_delete()}
-						onAction={() => removeSelected(item)}
-					/>
-				{/each}
-			{/if}
-		</div>
-	</div>
-
-	<Button class="w-full font-pixel" onclick={goToTier} disabled={!tierData.hasDraft && selected.length === 0}>
-		{m.go_to_tier({ count: selected.length })}
-	</Button>
-	{#if tierData.hasDraft && selected.length > 0}
-		<Button variant="outline" class="w-full border-accent bg-accent font-pixel text-accent-foreground hover:bg-accent/85" onclick={startNewSession}>
-			{m.new_from_pool({ count: selected.length })}
-		</Button>
 	{/if}
 </div>

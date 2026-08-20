@@ -2,7 +2,7 @@ import pLimit from 'p-limit';
 import { QueryClient } from '@tanstack/svelte-query';
 import { fetchItemByIdentity } from '$lib/api/bgmFetchers.svelte';
 import { tierData } from '$lib/states/tierData.svelte';
-import { indexPool } from '$lib/states/indexPool.svelte';
+import { importPool } from '$lib/states/importPool.svelte';
 import { freshById } from '$lib/utils';
 import type { ItemData, ItemIdentity } from '$lib/schemas/item';
 
@@ -31,11 +31,19 @@ export class BatchLoader {
 	/** 进度统计：累计入队总数 / 成功加载数 */
 	totalQueued = $state(0);
 	loadedCount = $state(0);
-	/** 加载结果去向：默认并入排名池（collection）；index 模式路由到目录池 */
-	destination = $state<'collection' | 'indexPool'>('collection');
+	/** 加载结果去向：默认并入排名池（collection）；import 模式路由到统一导入池。 */
+	destination = $state<'collection' | 'importPool'>('collection');
+	#generation = 0;
 
-	setDestination(d: 'collection' | 'indexPool') {
+	setDestination(d: 'collection' | 'importPool') {
 		this.destination = d;
+	}
+
+	/** Starts a new queue generation so late responses from an older source are ignored. */
+	startImport(list: ItemIdentity[]) {
+		this.clear();
+		this.destination = 'importPool';
+		this.addItems(list);
 	}
 
 	addItems(list: ItemIdentity[]) {
@@ -56,6 +64,8 @@ export class BatchLoader {
 	async loadBatch(batch = BATCH_SIZE_DEFAULT) {
 		const targets = this.queue.splice(0, batch); // 同步出队，防并发重复处理
 		if (targets.length === 0) return;
+		const generation = this.#generation;
+		const destination = this.destination;
 		this.isLoading = true;
 
 		const results = await Promise.all(
@@ -75,10 +85,11 @@ export class BatchLoader {
 			)
 		);
 
+		if (generation !== this.#generation) return;
 		const valid = results.filter((i): i is ItemData => i !== undefined);
 		this.loadedItems.push(...valid);
-		if (this.destination === 'indexPool') {
-			indexPool.addAll(valid);
+		if (destination === 'importPool') {
+			importPool.addAll(valid);
 		} else {
 			tierData.mergeIntoCollection(valid);
 		}
@@ -95,6 +106,7 @@ export class BatchLoader {
 	}
 
 	clear() {
+		this.#generation += 1;
 		this.queue = [];
 		this.loadedItems = [];
 		this.totalQueued = 0;

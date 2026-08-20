@@ -11,7 +11,7 @@ async function openSearch(page: import('@playwright/test').Page) {
 	});
 	await page.goto('/');
 	await page.getByRole('button', { name: /click to start/i }).click();
-	await page.getByRole('button', { name: 'SEARCH', exact: true }).click();
+	await page.getByRole('tabpanel', { name: 'SEARCH' }).getByRole('button', { name: 'SEARCH', exact: true }).click();
 	await expect(page.getByTestId('search-row')).toHaveCount(20);
 }
 
@@ -26,6 +26,7 @@ test('Load More and Load All scan pages without changing the ranking pool', asyn
 	await page.getByRole('button', { name: 'SELECT ALL' }).click();
 	await page.getByRole('button', { name: 'ADD SELECTED' }).click();
 	await expect(page.getByTestId('pool-row')).toHaveCount(45);
+	await page.getByRole('tab', { name: 'RANKING POOL' }).click();
 	await page.getByTestId('pool-row').nth(0).getByRole('checkbox').check();
 	await page.getByTestId('pool-row').nth(1).getByRole('checkbox').check();
 	await page.getByRole('button', { name: 'DEL SELECTED' }).click();

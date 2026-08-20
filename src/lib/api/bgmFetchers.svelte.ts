@@ -49,12 +49,13 @@ export async function fetchItemByIdentity(item: ItemIdentity): Promise<ItemData 
  * 早期版本只收「当前年」条目（subject.date 以当年开头）导致 pool 几乎为空，改为全量。
  * 分页：先取首页拿 total，再并发拉剩余页
  */
-export async function fetchUserCollection(username: string): Promise<ItemIdentity[]> {
+export async function fetchUserCollection(username: string): Promise<ItemIdentity[] | undefined> {
 	const limit = 50;
 	const query = { type: 2, subject_type: 2, limit, offset: 0 } as const;
-	const { data: firstPage } = await pubClient.GET('/v0/users/{username}/collections', {
+	const { data: firstPage, error } = await pubClient.GET('/v0/users/{username}/collections', {
 		params: { path: { username }, query }
 	});
+	if (error || !firstPage) return undefined;
 	const total = firstPage?.total ?? 0;
 	const items: ItemIdentity[] = [];
 
@@ -71,10 +72,11 @@ export async function fetchUserCollection(username: string): Promise<ItemIdentit
 			Array.from({ length: pageCount }, (_, i) =>
 				pubClient.GET('/v0/users/{username}/collections', {
 					params: { path: { username }, query: { ...query, offset: (i + 1) * limit } }
-				}).then((r) => r.data)
+				})
 			)
 		);
-		for (const p of pages) collect(p);
+		if (pages.some((page) => page.error || !page.data)) return undefined;
+		for (const page of pages) collect(page.data);
 	}
 	return items;
 }
