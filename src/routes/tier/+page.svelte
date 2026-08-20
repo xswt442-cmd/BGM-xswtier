@@ -14,6 +14,7 @@
 	import { fetchIndexById } from '$lib/api/indexFetchers.svelte';
 	import { fetchUserCollection } from '$lib/api/bgmFetchers.svelte';
 	import { m } from '$lib/paraglide/messages';
+	import type { TierHistoryAction } from '$lib/utils/tierHistory';
 	import { toPng } from 'html-to-image';
 	import { encodeURL, decodeURL, exportJSON, importJSON, URL_MAX_LENGTH, SHARE_HASH_PREFIX } from '$lib/utils/tierSerialize';
 
@@ -40,12 +41,52 @@
 	// 档位本身可拖拽排序：dragHandleZone 用独立 type 'tier'，与条目拖拽（默认 type）互不干扰。
 	// consider/finalize 直接取 e.detail.items（含 shadow 占位档），finalize 时过滤幽灵档。
 	function handleTierConsider(e: CustomEvent) {
+		tierData.beginHistory('reorder_tier');
 		tierData.tiers = e.detail.items;
 	}
 	function handleTierFinalize(e: CustomEvent) {
 		tierData.tiers = e.detail.items.filter(
 			(t: Record<string, any>) => !t.isDndShadowItem && t.id !== SHADOW_PLACEHOLDER_ITEM_ID
 		);
+		tierData.scheduleHistoryCommit();
+	}
+
+	function historyActionLabel(action: TierHistoryAction) {
+		return {
+			move_item: m.history_move_item(),
+			reorder_tier: m.history_reorder_tier(),
+			add_tier: m.history_add_tier(),
+			delete_tier: m.history_delete_tier(),
+			rename_tier: m.history_rename_tier(),
+			recolor_tier: m.history_recolor_tier()
+		}[action];
+	}
+
+	function undo() {
+		const action = tierData.undo();
+		if (action) statusMessage = m.undo_success({ action: historyActionLabel(action) });
+		return action;
+	}
+
+	function redo() {
+		const action = tierData.redo();
+		if (action) statusMessage = m.redo_success({ action: historyActionLabel(action) });
+		return action;
+	}
+
+	function isEditableTarget(target: EventTarget | null) {
+		return target instanceof Element && Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+	}
+
+	function handleHistoryShortcut(event: KeyboardEvent) {
+		if (!(event.ctrlKey || event.metaKey) || event.altKey || isEditableTarget(event.target)) return;
+		if (document.querySelector('dialog[open]')) return;
+
+		const key = event.key.toLowerCase();
+		const isUndo = key === 'z' && !event.shiftKey;
+		const isRedo = (key === 'z' && event.shiftKey) || (key === 'y' && event.ctrlKey && !event.metaKey);
+		const action = isUndo ? undo() : isRedo ? redo() : null;
+		if (action) event.preventDefault();
 	}
 
 	/** 复制分享链接：序列化 → 写 hash（replaceState 不留历史）→ 剪贴板，超长给警告 */
@@ -126,6 +167,10 @@
 
 	// 清理复制反馈计时器，避免页面卸载后仍触发状态更新
 	onDestroy(() => clearTimeout(copyTimer));
+	onMount(() => {
+		window.addEventListener('keydown', handleHistoryShortcut);
+		return () => window.removeEventListener('keydown', handleHistoryShortcut);
+	});
 
 	function saveDraft(exit = false) {
 		tierData.saveDraft();
@@ -262,6 +307,30 @@
 			>
 				TIER LIST
 			</span>
+			<div class="ml-auto flex items-center gap-1" data-export-exclude>
+				<Button
+					variant="outline"
+					size="icon"
+					class="h-9 w-9"
+					onclick={undo}
+					disabled={!tierData.canUndo}
+					aria-label={m.undo_available({ count: tierData.undoDepth })}
+					title={m.undo_available({ count: tierData.undoDepth })}
+				>
+					<span class="icon-[pixelarticons--undo] h-4 w-4"></span>
+				</Button>
+				<Button
+					variant="outline"
+					size="icon"
+					class="h-9 w-9"
+					onclick={redo}
+					disabled={!tierData.canRedo}
+					aria-label={m.redo_available({ count: tierData.redoDepth })}
+					title={m.redo_available({ count: tierData.redoDepth })}
+				>
+					<span class="icon-[pixelarticons--redo] h-4 w-4"></span>
+				</Button>
+			</div>
 		</div>
 		<section
 			use:dragHandleZone={{

@@ -1,6 +1,7 @@
 import { persisted } from 'svelte-persisted-store';
 import { get } from 'svelte/store';
 import type { ItemData, TierDef, TierDraft, TierStore } from '$lib/schemas/item';
+import { TierHistory, type TierHistoryAction } from '$lib/utils/tierHistory';
 
 export function uid(): string {
 	return crypto.randomUUID();
@@ -27,6 +28,20 @@ const draftStorage = persisted<TierDraft | null>('bgmtier-draft-v1', null, { syn
 let tiers = $state<TierDef[]>(get(storage).tiers);
 let collection = $state<ItemData[]>(get(storage).collectionTierItems);
 let draft = $state<TierDraft | null>(get(draftStorage));
+const history = new TierHistory(50);
+let historyDepth = $state({ past: 0, future: 0 });
+let historyCommitTimer: ReturnType<typeof setTimeout> | undefined;
+
+function syncHistoryDepth() {
+	historyDepth = { past: history.pastDepth, future: history.futureDepth };
+}
+
+function resetHistory() {
+	clearTimeout(historyCommitTimer);
+	historyCommitTimer = undefined;
+	history.reset();
+	syncHistoryDepth();
+}
 
 // JSON.stringify 遍历全部嵌套属性，任何深变更都触发重写。
 // $effect.root 允许在模块作用域创建 effect（模块顶层直接 $effect 会报 effect_orphan）
@@ -54,6 +69,19 @@ function cleanStore(sourceTiers = tiers, sourceCollection = collection): TierSto
 		tiers: cleanTiers,
 		collectionTierItems: uniqueItems(sourceCollection, seen)
 	};
+}
+
+function applyStore(store: TierStore) {
+	const clean = cleanStore(store.tiers, store.collectionTierItems);
+	tiers = JSON.parse(JSON.stringify(clean.tiers));
+	collection = JSON.parse(JSON.stringify(clean.collectionTierItems));
+}
+
+function transact(action: TierHistoryAction, mutation: () => void) {
+	history.begin(cleanStore(), action);
+	mutation();
+	history.commit(cleanStore());
+	syncHistoryDepth();
 }
 $effect.root(() => {
 	$effect(() => {
@@ -88,10 +116,54 @@ export const tierData = {
 	get draftSavedAt() {
 		return draft?.savedAt ?? null;
 	},
+	get canUndo() {
+		return historyDepth.past > 0;
+	},
+	get canRedo() {
+		return historyDepth.future > 0;
+	},
+	get undoDepth() {
+		return historyDepth.past;
+	},
+	get redoDepth() {
+		return historyDepth.future;
+	},
+	beginHistory(action: TierHistoryAction) {
+		clearTimeout(historyCommitTimer);
+		history.begin(cleanStore(), action);
+	},
+	scheduleHistoryCommit() {
+		clearTimeout(historyCommitTimer);
+		historyCommitTimer = setTimeout(() => {
+			historyCommitTimer = undefined;
+			history.commit(cleanStore());
+			syncHistoryDepth();
+		}, 40);
+	},
+	resetHistory,
+	undo(): TierHistoryAction | null {
+		clearTimeout(historyCommitTimer);
+		historyCommitTimer = undefined;
+		if (history.active) history.commit(cleanStore());
+		const entry = history.undo(cleanStore());
+		if (entry) applyStore(entry.store);
+		syncHistoryDepth();
+		return entry?.action ?? null;
+	},
+	redo(): TierHistoryAction | null {
+		clearTimeout(historyCommitTimer);
+		historyCommitTimer = undefined;
+		if (history.active) history.commit(cleanStore());
+		const entry = history.redo(cleanStore());
+		if (entry) applyStore(entry.store);
+		syncHistoryDepth();
+		return entry?.action ?? null;
+	},
 	/** 新入口必须原子创建干净会话，避免旧排名串入。 */
 	startSession(items: ItemData[]) {
 		tiers = defaultTiers();
 		collection = uniqueItems(items);
+		resetHistory();
 	},
 	/** 批次加载只在请求完成时显式合并，不在拖拽期间响应式补回。 */
 	mergeIntoCollection(items: ItemData[]) {
@@ -100,7 +172,11 @@ export const tierData = {
 			...collection.map((item) => item.id)
 		]);
 		const fresh = uniqueItems(items, seen);
-		if (fresh.length > 0) collection = [...collection, ...fresh];
+		if (fresh.length > 0) {
+			collection = [...collection, ...fresh];
+			history.rebaseItems(fresh);
+			syncHistoryDepth();
+		}
 	},
 	/** 拖拽完成后清除 shadow，并确保所有容器内 ID 全局唯一。 */
 	normalize() {
@@ -114,9 +190,8 @@ export const tierData = {
 	},
 	/** 整体载入一个会话快照（分享链接/导入恢复），内部再 cleanStore 兜底去重 */
 	loadStore(store: TierStore) {
-		const clean = cleanStore(store.tiers, store.collectionTierItems);
-		tiers = JSON.parse(JSON.stringify(clean.tiers));
-		collection = JSON.parse(JSON.stringify(clean.collectionTierItems));
+		applyStore(store);
+		resetHistory();
 	},
 	saveDraft() {
 		const clean = cleanStore();
@@ -127,9 +202,8 @@ export const tierData = {
 	},
 	restoreDraft() {
 		if (!draft) return false;
-		const clean = cleanStore(draft.tiers, draft.collectionTierItems);
-		tiers = JSON.parse(JSON.stringify(clean.tiers));
-		collection = JSON.parse(JSON.stringify(clean.collectionTierItems));
+		applyStore(draft);
+		resetHistory();
 		return true;
 	},
 	clearSessionAndDraft() {
@@ -137,26 +211,29 @@ export const tierData = {
 		collection = [];
 		draft = null;
 		draftStorage.set(null);
+		resetHistory();
 	},
 	/** 添加新档，默认标签「新」，色取下一 chart 变量 */
 	addTier(label = '新') {
 		const next = `var(--chart-${Math.min(tiers.length + 1, 8)})`;
 		const t: TierDef = { id: uid(), label, color: next, items: [] };
-		tiers = [...tiers, t];
+		transact('add_tier', () => (tiers = [...tiers, t]));
 		return t;
 	},
 	/** 删除档（至少保留 1 档），条目回流未排名集合 */
 	removeTier(id: string) {
 		const target = tiers.find((t) => t.id === id);
 		if (!target || tiers.length <= 1) return;
-		collection = [...collection, ...target.items];
-		tiers = tiers.filter((t) => t.id !== id);
+		transact('delete_tier', () => {
+			collection = [...collection, ...target.items];
+			tiers = tiers.filter((t) => t.id !== id);
+		});
 	},
 	renameTier(id: string, label: string) {
-		tiers = tiers.map((t) => (t.id === id ? { ...t, label } : t));
+		transact('rename_tier', () => (tiers = tiers.map((t) => (t.id === id ? { ...t, label } : t))));
 	},
 	recolorTier(id: string, color: string) {
-		tiers = tiers.map((t) => (t.id === id ? { ...t, color } : t));
+		transact('recolor_tier', () => (tiers = tiers.map((t) => (t.id === id ? { ...t, color } : t))));
 	},
 	/** 从集合移除某条目（拖入 tier 后调用） */
 	removeFromCollection(itemId: string) {

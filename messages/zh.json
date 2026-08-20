@@ -179,5 +179,15 @@
   "footer_tech_stack": "SvelteKit 5 · TypeScript · Tailwind CSS",
   "github_view_source": "在 GitHub 查看源码",
   "tier_drag_handle": "拖拽档位调整顺序",
-  "tier_reorder_zone": "档位列表"
+  "tier_reorder_zone": "档位列表",
+  "undo_available": "撤销（可用 {count} 步）",
+  "redo_available": "重做（可用 {count} 步）",
+  "undo_success": "已撤销{action}",
+  "redo_success": "已重做{action}",
+  "history_move_item": "条目移动",
+  "history_reorder_tier": "档位排序",
+  "history_add_tier": "新增档位",
+  "history_delete_tier": "删除档位",
+  "history_rename_tier": "档位重命名",
+  "history_recolor_tier": "档位改色"
 }

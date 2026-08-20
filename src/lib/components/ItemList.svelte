@@ -7,6 +7,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { cleanFinalizedItems } from '$lib/utils/dndItems';
+	import { tierData } from '$lib/states/tierData.svelte';
 
 	let { items = $bindable([]), onLoadMore }: { items: ItemData[]; onLoadMore?: () => void } = $props();
 
@@ -14,10 +15,12 @@
 	// svelte-dnd-action 跨容器拖拽：consider/finalize 都直接用原始 items
 	// （含 shadow 占位符，渲染时处理，持久化时过滤）
 	function handleDndConsider(e: CustomEvent) {
+		tierData.beginHistory('move_item');
 		items = e.detail.items;
 	}
 	function handleDndFinalize(e: CustomEvent) {
 		items = cleanFinalizedItems(e.detail.items);
+		tierData.scheduleHistoryCommit();
 	}
 </script>
 

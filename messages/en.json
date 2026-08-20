@@ -179,5 +179,15 @@
   "footer_tech_stack": "SvelteKit 5 · TypeScript · Tailwind CSS",
   "github_view_source": "View source on GitHub",
   "tier_drag_handle": "Drag tier to reorder",
-  "tier_reorder_zone": "Tier list"
+  "tier_reorder_zone": "Tier list",
+  "undo_available": "Undo ({count} available)",
+  "redo_available": "Redo ({count} available)",
+  "undo_success": "Undid {action}",
+  "redo_success": "Redid {action}",
+  "history_move_item": "item move",
+  "history_reorder_tier": "tier reorder",
+  "history_add_tier": "tier addition",
+  "history_delete_tier": "tier deletion",
+  "history_rename_tier": "tier rename",
+  "history_recolor_tier": "tier color change"
 }
