@@ -78,6 +78,9 @@ function applyStore(store: TierStore) {
 }
 
 function transact(action: TierHistoryAction, mutation: () => void) {
+	clearTimeout(historyCommitTimer);
+	historyCommitTimer = undefined;
+	if (history.active) history.commit(cleanStore());
 	history.begin(cleanStore(), action);
 	mutation();
 	history.commit(cleanStore());

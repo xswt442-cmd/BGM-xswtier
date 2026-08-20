@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { dndzone, dragHandle } from 'svelte-dnd-action';
+	import { tick } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import type { ItemData } from '$lib/schemas/item';
 	import ItemCard from './ItemCard.svelte';
@@ -28,6 +29,7 @@
 	} = $props();
 
 	let draftLabel = $state('');
+	let settingsOpen = $state(false);
 	// 仅当 title 变化时同步草稿（用户输入不触发，不会覆盖）
 	$effect(() => {
 		draftLabel = title;
@@ -64,6 +66,12 @@
 		tierData.beginHistory('move_item');
 		items = e.detail.items;
 	}
+
+	async function deleteTier() {
+		settingsOpen = false;
+		await tick();
+		onDelete?.();
+	}
 	function handleDndFinalize(e: CustomEvent) {
 		items = cleanFinalizedItems(e.detail.items);
 		tierData.scheduleHistoryCommit();
@@ -71,12 +79,13 @@
 </script>
 
 <!-- 8-bit 等级块：固定宽度名称框（左、居中文字、固定字号）+ 贴纸区 -->
-<section class="group neon-border pixel-border pixel-shadow mb-3 overflow-hidden rounded-lg bg-card">
+<section class="group neon-border pixel-border pixel-shadow mb-3 overflow-hidden rounded-lg bg-card" data-testid="tier-zone">
 	<div class="flex flex-wrap items-center gap-2 p-2">
 		<button
 			use:dragHandle
 			type="button"
 			aria-label={m.tier_drag_handle()}
+			data-testid="tier-drag-handle"
 			class="group/tdh relative inline-flex h-11 w-9 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:cursor-grabbing sm:h-6 sm:w-6"
 			data-export-exclude
 		>
@@ -102,10 +111,11 @@
 				class="font-pixel w-full bg-transparent text-center font-bold text-black outline-none"
 				style="font-size: {fontSize}; line-height: 1.8;"
 				placeholder="?"
+				data-testid="tier-label-input"
 			/>
 		</div>
 		<div class="ml-auto flex items-center" data-export-exclude>
-			<Popover>
+			<Popover bind:open={settingsOpen}>
 				<PopoverTrigger
 					class="inline-flex h-11 w-11 items-center justify-center rounded text-muted-foreground opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
 					aria-label={m.tier_settings()}
@@ -158,7 +168,7 @@
 							</Button>
 						</div>
 						{#if canDelete}
-							<Button variant="destructive" size="sm" onclick={onDelete}>
+							<Button variant="destructive" size="sm" onclick={deleteTier}>
 								{m.delete_tier()}
 							</Button>
 						{/if}
@@ -187,6 +197,7 @@
 				<div
 					animate:flip={{ duration: flipDurationMs }}
 					data-is-dnd-shadow-item-hint={item.isDndShadowItem}
+					data-item-id={item.id}
 					aria-label={item.name_cn || item.name || ''}
 				>
 					<ItemCard {item} />

@@ -316,6 +316,7 @@
 					disabled={!tierData.canUndo}
 					aria-label={m.undo_available({ count: tierData.undoDepth })}
 					title={m.undo_available({ count: tierData.undoDepth })}
+					data-testid="undo-button"
 				>
 					<span class="icon-[pixelarticons--undo] h-4 w-4"></span>
 				</Button>
@@ -327,6 +328,7 @@
 					disabled={!tierData.canRedo}
 					aria-label={m.redo_available({ count: tierData.redoDepth })}
 					title={m.redo_available({ count: tierData.redoDepth })}
+					data-testid="redo-button"
 				>
 					<span class="icon-[pixelarticons--redo] h-4 w-4"></span>
 				</Button>
@@ -348,6 +350,8 @@
 				<div
 					animate:flip={{ duration: 300 }}
 					data-is-dnd-shadow-item-hint={tier.id === SHADOW_PLACEHOLDER_ITEM_ID}
+					data-testid="tier-bar"
+					data-tier-id={tier.id}
 				>
 					{#if tier.id === SHADOW_PLACEHOLDER_ITEM_ID}
 						<div
