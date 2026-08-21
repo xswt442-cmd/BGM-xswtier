@@ -25,8 +25,8 @@ test('Load More and Load All scan pages without changing the ranking pool', asyn
 
 	await page.getByRole('button', { name: 'SELECT ALL' }).click();
 	await page.getByRole('button', { name: 'ADD SELECTED' }).click();
-	await expect(page.getByTestId('pool-row')).toHaveCount(45);
 	await page.getByRole('tab', { name: 'RANKING POOL' }).click();
+	await expect(page.getByTestId('pool-row')).toHaveCount(45);
 	await page.getByTestId('pool-row').nth(0).getByRole('checkbox').check();
 	await page.getByTestId('pool-row').nth(1).getByRole('checkbox').check();
 	await page.getByRole('button', { name: 'DEL SELECTED' }).click();
@@ -37,5 +37,6 @@ test('Add All scans and adds every unique match', async ({ page }) => {
 	await openSearch(page);
 	await page.getByRole('button', { name: 'ADD ALL' }).click();
 	await expect(page.getByTestId('search-row')).toHaveCount(45);
+	await page.getByRole('tab', { name: 'RANKING POOL' }).click();
 	await expect(page.getByTestId('pool-row')).toHaveCount(45);
 });

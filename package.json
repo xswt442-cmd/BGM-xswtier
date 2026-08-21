@@ -16,6 +16,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest run",
 		"test:e2e": "playwright test",
+		"test:perf": "node scripts/benchmark-pools.mjs",
 		"test": "pnpm test:unit && pnpm test:e2e"
 	},
 	"devDependencies": {
@@ -47,6 +48,7 @@
 	},
 	"dependencies": {
 		"@tanstack/svelte-query": "^6.1.38",
+		"@tanstack/svelte-virtual": "^3.13.36",
 		"bits-ui": "^2.18.1",
 		"html-to-image": "^1.11.13",
 		"lz-string": "^1.5.0",

@@ -11,6 +11,7 @@
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { importPool, type ImportSource } from '$lib/states/importPool.svelte';
 	import type { ItemIdentity } from '$lib/schemas/item';
+	let { active = true }: { active?: boolean } = $props();
 
 	let indexId = $state('');
 	let username = $state('');
@@ -77,5 +78,5 @@
 	</div>
 	{#if error}<p role="alert" class="text-sm text-destructive">{error}</p>{/if}
 	<Separator />
-	{#if importPool.loaded}<ImportPoolPanel />{:else}<p class="font-pixel py-8 text-center text-[10px] text-muted-foreground">{m.import_empty_hint()}</p>{/if}
+	{#if importPool.loaded}<ImportPoolPanel {active} />{:else}<p class="font-pixel py-8 text-center text-[10px] text-muted-foreground">{m.import_empty_hint()}</p>{/if}
 </div>

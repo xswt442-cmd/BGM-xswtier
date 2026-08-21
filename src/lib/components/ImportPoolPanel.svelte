@@ -1,16 +1,27 @@
 <script lang="ts">
-	import PoolRow from '$lib/components/PoolRow.svelte';
+	import VirtualPoolList from '$lib/components/VirtualPoolList.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { Button } from '$lib/components/ui/button';
 	import { importPool } from '$lib/states/importPool.svelte';
 	import { searchPool } from '$lib/states/searchPool.svelte';
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { ItemData } from '$lib/schemas/item';
+	import { selectAllMutable, toggleMutableSelection } from '$lib/utils/poolPerformance';
 
-	let selection = $state<Set<string>>(new Set());
+	let { active = true }: { active?: boolean } = $props();
+	const selection = new SvelteSet<string>();
 	let isLoadingAll = $state(false);
+	let selectionSource = $state<string | null>(null);
 	const isBusy = $derived(isLoadingAll || itemLoader.isLoading);
 	const isAdded = (id: string) => searchPool.has(id);
+	$effect(() => {
+		const next = importPool.source ? `${importPool.source.kind}:${importPool.source.label}` : null;
+		if (selectionSource !== next) {
+			selectionSource = next;
+			selection.clear();
+		}
+	});
 
 	async function loadAllRemaining() {
 		while (!itemLoader.isDone) await itemLoader.loadBatch();
@@ -22,7 +33,7 @@
 		try {
 			await loadAllRemaining();
 			searchPool.addAll(importPool.items);
-			selection = new Set();
+			selection.clear();
 		} finally {
 			isLoadingAll = false;
 		}
@@ -33,22 +44,19 @@
 		isLoadingAll = true;
 		try {
 			await loadAllRemaining();
-			selection = new Set(importPool.items.map((item) => item.id));
+			selectAllMutable(selection, importPool.items);
 		} finally {
 			isLoadingAll = false;
 		}
 	}
 
 	function toggle(id: string) {
-		const next = new Set(selection);
-		if (next.has(id)) next.delete(id);
-		else next.add(id);
-		selection = next;
+		toggleMutableSelection(selection, id);
 	}
 
 	function addSelected() {
 		searchPool.addAll(importPool.items.filter((item) => selection.has(item.id)));
-		selection = new Set();
+		selection.clear();
 	}
 
 	function addItem(item: ItemData) {
@@ -75,19 +83,11 @@
 		<div class="flex flex-wrap items-center gap-1.5 border-b-2 border-border px-2 py-1">
 			<span class="font-pixel mr-auto text-[9px] text-muted-foreground">{m.pool_selected_count({ count: selection.size })}</span>
 			<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={selectAll} disabled={isBusy}>{m.pool_select_all()}</Button>
-			<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => (selection = new Set())} disabled={selection.size === 0 || isBusy}>{m.pool_clear_selection()}</Button>
+			<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => selection.clear()} disabled={selection.size === 0 || isBusy}>{m.pool_clear_selection()}</Button>
 			<Button variant="outline" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={addSelected} disabled={selection.size === 0 || isBusy}>{m.pool_add_selected()}</Button>
 		</div>
 	{/if}
-	<div class="grid min-w-0 max-h-[40svh] grid-cols-1 gap-1.5 overflow-y-auto p-1.5 sm:grid-cols-2">
-		{#if importPool.items.length === 0}
-			<p class="font-pixel py-4 text-center text-[10px] text-muted-foreground sm:col-span-2">{m.pool_empty()}</p>
-		{:else}
-			{#each importPool.items as item (item.id)}
-				<PoolRow {item} testid="import-row" checked={selection.has(item.id)} onToggle={() => toggle(item.id)} actionVariant={isAdded(item.id) ? 'secondary' : 'outline'} actionLabel={isAdded(item.id) ? m.pool_added() : m.pool_add()} onAction={() => addItem(item)} />
-			{/each}
-		{/if}
-	</div>
+	<VirtualPoolList items={importPool.items} {active} testid="import-row" checked={(id) => selection.has(id)} onToggle={toggle} actionVariant={(item) => isAdded(item.id) ? 'secondary' : 'outline'} actionLabel={(item) => isAdded(item.id) ? m.pool_added() : m.pool_add()} onAction={addItem} />
 	{#if !itemLoader.isDone}
 		<div class="p-1.5 pt-0.5">
 			<Button class="w-full" variant="outline" onclick={() => itemLoader.loadBatch()} disabled={itemLoader.isLoading}>

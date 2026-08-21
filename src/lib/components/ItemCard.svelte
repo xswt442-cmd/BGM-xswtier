@@ -18,6 +18,8 @@
 			alt={displayName}
 			draggable="false"
 			loading="lazy"
+			decoding="async"
+			fetchpriority="low"
 			class="absolute inset-0 h-full w-full object-cover object-top"
 		/>
 			{#if item.score !== undefined}

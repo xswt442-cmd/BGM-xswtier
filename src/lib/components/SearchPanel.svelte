@@ -4,13 +4,17 @@
 	import { Label } from '$lib/components/ui/label';
 	import FilterSelect from '$lib/components/FilterSelect.svelte';
 	import RangeField from '$lib/components/RangeField.svelte';
-	import PoolRow from '$lib/components/PoolRow.svelte';
+	import VirtualPoolList from '$lib/components/VirtualPoolList.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { searchSubjects, fetchSeason, fetchToday } from '$lib/api/searchFetchers.svelte';
 	import type { SearchParams } from '$lib/api/searchFetchers.svelte';
 	import { searchPool } from '$lib/states/searchPool.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { freshById } from '$lib/utils';
 	import type { ItemData } from '$lib/schemas/item';
+	import { selectAllMutable, toggleMutableSelection } from '$lib/utils/poolPerformance';
+
+	let { active = true }: { active?: boolean } = $props();
 
 	// ---- 检索参数 ----
 	let keyword = $state('');
@@ -40,13 +44,11 @@
 
 	// ---- 排名池（选中待进 tier，持久化全局 store）----
 	// $derived 确保 searchPool 内部 $state 变化时组件重新求值
-	const selected = $derived(searchPool.items);
-	const selectedIds = $derived(new Set(selected.map((i) => i.id)));
-	let searchSelection = $state<Set<string>>(new Set());
+	const searchSelection = new SvelteSet<string>();
 
 	const hasMore = $derived(mode === 'search' && !searchExhausted);
 	const isBusy = $derived(isLoading || isLoadingAll || isAddingAll);
-	const isSelected = (id: string) => selectedIds.has(id);
+	const isSelected = (id: string) => searchPool.has(id);
 
 	function mergeUnique(base: ItemData[], incoming: ItemData[]): ItemData[] {
 		return [...base, ...freshById(base, incoming)];
@@ -148,7 +150,7 @@
 	}
 
 	async function runSearch() {
-		searchSelection = new Set();
+		searchSelection.clear();
 		mode = 'search';
 		searchExhausted = false;
 		hasSearched = true;
@@ -182,7 +184,7 @@
 		}
 	}
 	async function loadQuick(next: 'season' | 'today') {
-		searchSelection = new Set();
+		searchSelection.clear();
 		mode = next;
 		searchExhausted = true;
 		hasSearched = true;
@@ -245,15 +247,12 @@
 			isLoadingAll = false;
 		}
 	}
-	function toggleBatch(set: Set<string>, id: string) {
-		const next = new Set(set);
-		if (next.has(id)) next.delete(id);
-		else next.add(id);
-		searchSelection = next;
+	function toggleBatch(id: string) {
+		toggleMutableSelection(searchSelection, id);
 	}
 	function addBatchSelection() {
 		searchPool.addAll(results.filter((item) => searchSelection.has(item.id)));
-		searchSelection = new Set();
+		searchSelection.clear();
 	}
 </script>
 
@@ -408,28 +407,12 @@
 			{#if results.length > 0}
 				<div class="flex flex-wrap items-center gap-1.5 border-b-2 border-border px-2 py-1">
 					<span class="font-pixel mr-auto text-[9px] text-muted-foreground">{m.pool_selected_count({ count: searchSelection.size })}</span>
-					<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => (searchSelection = new Set(results.map((item) => item.id)))}>{m.pool_select_all()}</Button>
-					<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => (searchSelection = new Set())} disabled={searchSelection.size === 0}>{m.pool_clear_selection()}</Button>
+					<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => selectAllMutable(searchSelection, results)}>{m.pool_select_all()}</Button>
+					<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => searchSelection.clear()} disabled={searchSelection.size === 0}>{m.pool_clear_selection()}</Button>
 					<Button variant="outline" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={addBatchSelection} disabled={searchSelection.size === 0}>{m.pool_add_selected()}</Button>
 				</div>
 			{/if}
-			<div class="grid min-w-0 max-h-[40svh] grid-cols-1 gap-1.5 overflow-y-auto p-1.5 sm:grid-cols-2">
-				{#if results.length === 0}
-					<p class="font-pixel py-2 text-center text-[10px] text-muted-foreground">{m.no_results()}</p>
-				{:else}
-					{#each results as item (item.id)}
-						<PoolRow
-							{item}
-							testid="search-row"
-							checked={searchSelection.has(item.id)}
-							onToggle={() => toggleBatch(searchSelection, item.id)}
-							actionVariant={isSelected(item.id) ? 'secondary' : 'outline'}
-							actionLabel={isSelected(item.id) ? m.pool_added() : m.pool_add()}
-							onAction={() => toggleSelect(item)}
-						/>
-					{/each}
-				{/if}
-			</div>
+			<VirtualPoolList items={results} {active} testid="search-row" checked={(id) => searchSelection.has(id)} onToggle={toggleBatch} actionVariant={(item) => isSelected(item.id) ? 'secondary' : 'outline'} actionLabel={(item) => isSelected(item.id) ? m.pool_added() : m.pool_add()} onAction={toggleSelect} emptyLabel={m.no_results()} />
 		</div>
 
 		{#if hasMore}

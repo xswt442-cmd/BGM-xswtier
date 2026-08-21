@@ -17,9 +17,9 @@
 		<Tabs.Trigger value="import" class="font-pixel min-h-11 px-2 text-[9px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground sm:text-[11px]">{m.start_tab_import()}</Tabs.Trigger>
 		<Tabs.Trigger value="ranking" class="font-pixel min-h-11 px-2 text-[9px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground sm:text-[11px]">{m.start_tab_ranking()}</Tabs.Trigger>
 	</Tabs.List>
-	<Tabs.Content value="search"><SearchPanel /></Tabs.Content>
-	<Tabs.Content value="import"><ImportPanel /></Tabs.Content>
-	<Tabs.Content value="ranking"><RankingPoolPanel /></Tabs.Content>
+	<Tabs.Content value="search"><SearchPanel active={activeTab === 'search'} /></Tabs.Content>
+	<Tabs.Content value="import"><ImportPanel active={activeTab === 'import'} /></Tabs.Content>
+	<Tabs.Content value="ranking"><RankingPoolPanel active={activeTab === 'ranking'} /></Tabs.Content>
 </Tabs.Root>
 
 <StartDock onViewPool={() => (activeTab = 'ranking')} />
