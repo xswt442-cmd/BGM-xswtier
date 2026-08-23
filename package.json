@@ -2,6 +2,7 @@
 	"name": "bgm-xswtier",
 	"private": true,
 	"version": "0.1.0",
+	"packageManager": "pnpm@11.12.0",
 	"type": "module",
 	"engines": {
 		"node": ">=20.19.0",
