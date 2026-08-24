@@ -1,3 +1,4 @@
+import pLimit from 'p-limit';
 import { pubClient } from './clients.svelte';
 import type { ItemIdentity } from '$lib/schemas/item';
 
@@ -23,13 +24,17 @@ export async function fetchIndexById(index_id: number): Promise<ItemIdentity[] |
 
 	if (total > limit) {
 		const pageCount = Math.ceil(total / limit) - 1;
+		// 并发压制防 429；个别页失败跳过（p?.data ?? [] 兜底），不整体作废
+		const plimit = pLimit(4);
 		const pages = await Promise.all(
 			Array.from({ length: pageCount }, (_, i) =>
-				pubClient
-					.GET('/v0/indices/{index_id}/subjects', {
-						params: { path: { index_id }, query: { limit, offset: (i + 1) * limit } }
-					})
-					.then((r) => r.data as unknown as IndexPage | undefined)
+				plimit(() =>
+					pubClient
+						.GET('/v0/indices/{index_id}/subjects', {
+							params: { path: { index_id }, query: { limit, offset: (i + 1) * limit } }
+						})
+						.then((r) => r.data as unknown as IndexPage | undefined)
+				)
 			)
 		);
 		for (const p of pages) {

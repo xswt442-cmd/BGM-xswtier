@@ -1,6 +1,10 @@
+import pLimit from 'p-limit';
 import { pubClient } from './clients.svelte';
 import type { Subject, SlimSubject, LegacySubjectSmall } from '$lib/schemas/bgm-public-api';
 import type { ItemData, ItemIdentity } from '$lib/schemas/item';
+
+/** 目录/收藏分页拉取的并发上限（匿名额度 ~30 req/min，全并发易触发 429） */
+const PAGE_FETCH_CONCURRENCY = 4;
 
 /** 任意 Subject 变体（完整 Subject / SlimSubject / Legacy_SubjectSmall）→ ItemData */
 export type SubjectLike = Pick<
@@ -47,7 +51,8 @@ export async function fetchItemByIdentity(item: ItemIdentity): Promise<ItemData 
 /**
  * 用户名模式：拉取该用户「已看完」的动画收藏（type=2 看过, subject_type=2 动画），全量不分年份。
  * 早期版本只收「当前年」条目（subject.date 以当年开头）导致 pool 几乎为空，改为全量。
- * 分页：先取首页拿 total，再并发拉剩余页
+ * 分页：先取首页拿 total，再并发拉剩余页。并发用 p-limit 压制（匿名 ~30 req/min，
+ * 大收藏几十页若全并发会瞬间触发 429）；个别页失败只跳过该页，不整体作废。
  */
 export async function fetchUserCollection(username: string): Promise<ItemIdentity[] | undefined> {
 	const limit = 50;
@@ -68,14 +73,16 @@ export async function fetchUserCollection(username: string): Promise<ItemIdentit
 
 	if (total > limit) {
 		const pageCount = Math.ceil(total / limit) - 1;
+		const plimit = pLimit(PAGE_FETCH_CONCURRENCY);
 		const pages = await Promise.all(
 			Array.from({ length: pageCount }, (_, i) =>
-				pubClient.GET('/v0/users/{username}/collections', {
-					params: { path: { username }, query: { ...query, offset: (i + 1) * limit } }
-				})
+				plimit(() =>
+					pubClient.GET('/v0/users/{username}/collections', {
+						params: { path: { username }, query: { ...query, offset: (i + 1) * limit } }
+					})
+				)
 			)
 		);
-		if (pages.some((page) => page.error || !page.data)) return undefined;
 		for (const page of pages) collect(page.data);
 	}
 	return items;
