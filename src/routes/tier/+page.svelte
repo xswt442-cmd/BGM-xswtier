@@ -22,11 +22,30 @@
 	let statusMessage = $state('');
 	let isExporting = $state(false);
 	let exitDialog: HTMLDialogElement;
+	let shareDialog: HTMLDialogElement;
 	let copied = $state(false);
 	let shareWarning = $state('');
 	let importing = $state(false);
 	let importInput: HTMLInputElement | undefined = $state();
 	let copyTimer: ReturnType<typeof setTimeout> | undefined;
+	// 分享覆盖确认：记录待载入 payload 的条目数，按钮回调用 Promise 交还 onMount 流程
+	let shareReplaceCount = $state(0);
+	let shareReplaceResolve: ((replace: boolean) => void) | undefined;
+
+	function askShareReplace(count: number): Promise<boolean> {
+		shareReplaceCount = count;
+		shareDialog.showModal();
+		return new Promise((resolve) => {
+			shareReplaceResolve = resolve;
+		});
+	}
+
+	function resolveShareReplace(replace: boolean) {
+		if (!shareDialog.open) return;
+		shareDialog.close();
+		shareReplaceResolve?.(replace);
+		shareReplaceResolve = undefined;
+	}
 
 	function allSessionItems() {
 		return [
@@ -242,6 +261,19 @@
 		const hash = window.location.hash;
 		const shared = hash ? decodeURL(hash) : null;
 		if (shared) {
+			// payload 会整体替换本地会话（含自动持久化的未导出成果）。
+			// 刷新/前进后退本页时静默恢复（与自动持久化基线行为一致）；
+			// 全新导航打开分享链接且本地已有会话时，覆盖前必须确认。
+			const navEntry = performance.getEntriesByType('navigation')[0] as { type?: string } | undefined;
+			const isReload = navEntry?.type === 'reload' || navEntry?.type === 'back_forward';
+			if (!isReload && allSessionItems().length > 0) {
+				const replace = await askShareReplace(allSessionItems().length);
+				if (!replace) {
+					// 取消则清掉 hash，防止刷新时再次触发覆盖流程
+					replaceState(window.location.pathname + window.location.search, {});
+					return;
+				}
+			}
 			tierData.loadStore(shared);
 			itemLoader.clear();
 			itemLoader.seedLoaded(allSessionItems());
@@ -412,6 +444,28 @@
 			<Button variant="outline" class="font-pixel h-11 text-[9px]" onclick={saveAndExit}>{m.save_draft_exit()}</Button>
 			<Button variant="destructive" class="font-pixel h-11 text-[9px]" onclick={clearAndExit}>{m.clear_exit()}</Button>
 			<Button variant="secondary" class="font-pixel h-11 border border-border bg-secondary text-[9px] hover:bg-secondary/75" onclick={() => exitDialog.close()}>{m.cancel()}</Button>
+		</div>
+	</div>
+</dialog>
+
+<!-- 分享链接覆盖确认：全新导航打开分享链接且本地有会话时，载入前必须显式确认 -->
+<dialog
+	bind:this={shareDialog}
+	aria-labelledby="share-dialog-title"
+	class="pixel-border pixel-shadow m-auto w-[min(28rem,calc(100%-2rem))] bg-card p-0 text-foreground backdrop:bg-black/55"
+	oncancel={() => resolveShareReplace(false)}
+	onclick={(event) => {
+		if (event.target === shareDialog) resolveShareReplace(false);
+	}}
+>
+	<div class="grid gap-4 p-5">
+		<h2 id="share-dialog-title" class="font-pixel text-sm">{m.share_replace_title()}</h2>
+		<p class="text-sm text-muted-foreground">{m.share_replace_desc({ count: shareReplaceCount })}</p>
+		<div class="grid gap-2 sm:grid-cols-2">
+			<Button variant="destructive" class="font-pixel h-11 text-[9px]" onclick={() => resolveShareReplace(true)}>
+				{m.share_replace_confirm()}
+			</Button>
+			<Button variant="secondary" class="font-pixel h-11 border border-border bg-secondary text-[9px] hover:bg-secondary/75" onclick={() => resolveShareReplace(false)}>{m.cancel()}</Button>
 		</div>
 	</div>
 </dialog>
