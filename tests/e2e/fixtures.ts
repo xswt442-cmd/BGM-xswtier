@@ -28,7 +28,11 @@ export async function seedTierPage(page: Page, count = 3, store = makeStore(coun
 		await route.fulfill({ status: 200, contentType: 'application/json', json: { data: [], total: 0 } });
 	});
 	await page.goto('/tier?user=e2e');
-	await page.locator('input[type="file"]').setInputFiles({
+	// 高负载（多 worker 并行）下水合可能远慢于默认 30s 超时：先显式等待文件输入挂载，
+	// 再执行导入，消除 tier-history 等用例的偶发定位超时
+	const fileInput = page.locator('input[type="file"]');
+	await fileInput.waitFor({ state: 'attached', timeout: 60_000 });
+	await fileInput.setInputFiles({
 		name: 'fixture.json',
 		mimeType: 'application/json',
 		buffer: Buffer.from(JSON.stringify(store))
