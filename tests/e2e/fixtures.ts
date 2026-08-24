@@ -45,6 +45,8 @@ export async function seedTierPage(page: Page, count = 3, store = makeStore(coun
 export async function pointerDrag(page: Page, source: Locator, target: Locator) {
 	await source.scrollIntoViewIfNeeded();
 	await target.scrollIntoViewIfNeeded();
+	// 字体 swap / 迟到样式会引发微布局位移：先等字体全部就绪再取坐标，避免慢 runner 上首拖落点漂移
+	await page.evaluate(() => document.fonts.ready.then(() => undefined));
 	const from = await source.boundingBox();
 	const to = await target.boundingBox();
 	if (!from || !to) throw new Error('DnD source or target is not visible');
