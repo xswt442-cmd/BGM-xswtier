@@ -238,7 +238,8 @@
 			const dataUrl = await toPng(exportNode, {
 				pixelRatio: 2,
 				cacheBust: true,
-				skipFonts: true,
+				// 字体已全部同源自托管（Press Start 2P + Fusion Pixel），可安全嵌入导出图，
+				// 保持像素观感；此前 skipFonts:true 是 Google Fonts 外链时代的权宜之计
 				backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--background').trim(),
 				filter: (node) => !(node instanceof HTMLElement && node.hasAttribute('data-export-exclude'))
 			});
