@@ -33,6 +33,9 @@
 	// 分享覆盖确认：记录待载入 payload 的条目数，按钮回调用 Promise 交还 onMount 流程
 	let shareReplaceCount = $state(0);
 	let shareReplaceResolve: ((replace: boolean) => void) | undefined;
+	// 桌面断点（Tailwind xl = 1280px）：非桌面端完全不挂载 aside 的 ItemList，
+	// `hidden xl:block` 只是视觉隐藏，几百个 ItemCard 仍会照常渲染
+	let isDesktop = $state(typeof window !== 'undefined' && window.matchMedia('(min-width: 1280px)').matches);
 
 	function askShareReplace(count: number): Promise<boolean> {
 		shareReplaceCount = count;
@@ -190,7 +193,13 @@
 	onDestroy(() => clearTimeout(copyTimer));
 	onMount(() => {
 		window.addEventListener('keydown', handleHistoryShortcut);
-		return () => window.removeEventListener('keydown', handleHistoryShortcut);
+		const mq = window.matchMedia('(min-width: 1280px)');
+		const updateIsDesktop = () => (isDesktop = mq.matches);
+		mq.addEventListener('change', updateIsDesktop);
+		return () => {
+			window.removeEventListener('keydown', handleHistoryShortcut);
+			mq.removeEventListener('change', updateIsDesktop);
+		};
 	});
 
 	function saveDraft(exit = false) {
@@ -420,11 +429,13 @@
 		</Button>
 	</main>
 
-	<aside class="hidden xl:block">
-		<div class="sticky top-14 h-[calc(100svh-3.5rem)] border-l">
-			<ItemList bind:items={tierData.collection} onLoadMore={() => itemLoader.loadBatch()} />
-		</div>
-	</aside>
+	{#if isDesktop}
+		<aside class="hidden xl:block">
+			<div class="sticky top-14 h-[calc(100svh-3.5rem)] border-l">
+				<ItemList bind:items={tierData.collection} onLoadMore={() => itemLoader.loadBatch()} />
+			</div>
+		</aside>
+	{/if}
 </div>
 
 <!-- 移动/平板：集合面板作为底部抽屉 -->
