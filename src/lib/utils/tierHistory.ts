@@ -34,7 +34,9 @@ function mergeItems(store: TierStore, items: ItemData[]): TierStore {
 export class TierHistory {
 	#past: TierHistoryEntry[] = [];
 	#future: TierHistoryEntry[] = [];
-	#active: TierHistoryEntry | null = null;
+	// begin 时缓存快照的序列化 key：commit 判等只需序列化当前态一次，
+	// 避免每次 commit 都把 begin 时的快照再 stringify 一遍（拖拽期间高频调用）
+	#active: { entry: TierHistoryEntry; key: string } | null = null;
 
 	constructor(readonly limit = 50) {}
 
@@ -52,14 +54,14 @@ export class TierHistory {
 
 	begin(store: TierStore, action: TierHistoryAction) {
 		if (this.#active) return;
-		this.#active = { store: cloneStore(store), action };
+		this.#active = { entry: { store: cloneStore(store), action }, key: storeKey(store) };
 	}
 
 	commit(store: TierStore): boolean {
 		const active = this.#active;
 		this.#active = null;
-		if (!active || storeKey(active.store) === storeKey(store)) return false;
-		this.#past.push(active);
+		if (!active || active.key === storeKey(store)) return false;
+		this.#past.push(active.entry);
 		if (this.#past.length > this.limit) this.#past.splice(0, this.#past.length - this.limit);
 		this.#future = [];
 		return true;
@@ -96,6 +98,11 @@ export class TierHistory {
 		if (items.length === 0) return;
 		this.#past = this.#past.map((entry) => ({ ...entry, store: mergeItems(entry.store, items) }));
 		this.#future = this.#future.map((entry) => ({ ...entry, store: mergeItems(entry.store, items) }));
-		if (this.#active) this.#active = { ...this.#active, store: mergeItems(this.#active.store, items) };
+		if (this.#active) {
+			this.#active = {
+				...this.#active,
+				entry: { ...this.#active.entry, store: mergeItems(this.#active.entry.store, items) }
+			};
+		}
 	}
 }

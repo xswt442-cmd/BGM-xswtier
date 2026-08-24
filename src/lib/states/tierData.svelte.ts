@@ -86,12 +86,36 @@ function transact(action: TierHistoryAction, mutation: () => void) {
 	history.commit(cleanStore());
 	syncHistoryDepth();
 }
+// 持久化去抖：拖拽悬停期间 consider 事件高频触发，全量深序列化 + 同步写盘会逐帧卡顿。
+// 变更只做依赖追踪并合并到 300ms trailing 写入；pagehide / 页面隐藏时立即 flush，
+// 保证「改完立刻刷新/关标签」不丢尾部数据。
+let persistTimer: ReturnType<typeof setTimeout> | undefined;
+
+function flushPersist() {
+	if (persistTimer === undefined) return;
+	clearTimeout(persistTimer);
+	persistTimer = undefined;
+	storage.set(JSON.parse(JSON.stringify(cleanStore())));
+}
+
+function schedulePersist() {
+	if (persistTimer !== undefined) return; // 已有排程：保持最早到期时间，持续编辑期间周期性落盘
+	persistTimer = setTimeout(flushPersist, 300);
+}
+
 $effect.root(() => {
 	$effect(() => {
-		const clean = cleanStore();
-		storage.set(JSON.parse(JSON.stringify(clean)));
+		void cleanStore(); // 只为建立响应式依赖；真正的深序列化推迟到合并后的 flush
+		schedulePersist();
 	});
 });
+
+if (typeof window !== 'undefined') {
+	window.addEventListener('pagehide', flushPersist);
+	document.addEventListener('visibilitychange', () => {
+		if (document.visibilityState === 'hidden') flushPersist();
+	});
+}
 
 $effect.root(() => {
 	$effect(() => {
