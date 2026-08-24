@@ -1,0 +1,25 @@
+#!/bin/sh
+# 仓库自管 pre-push 门禁：只跑类型检查 + 单测（E2E / build 交给 CI 全量把关）。
+# 背景：机器级 ECC 钩子在 Windows 上跑全量 Playwright 会卡住 webServer 退出阶段，
+# 本仓库改用轻量门禁；CI 是推送后的权威验证层。
+#
+# 显式跳过：SKIP_PREPUSH=1 git push origin dev
+# 恢复机器默认钩子：git config --unset core.hooksPath
+
+if [ "$SKIP_PREPUSH" = "1" ]; then
+	echo "[pre-push] SKIP_PREPUSH=1，跳过门禁"
+	exit 0
+fi
+
+if ! command -v pnpm >/dev/null 2>&1; then
+	echo "[pre-push] 未找到 pnpm，跳过门禁" >&2
+	exit 0
+fi
+
+echo "[pre-push] pnpm check ..."
+pnpm check || exit 1
+
+echo "[pre-push] pnpm test:unit ..."
+pnpm test:unit || exit 1
+
+echo "[pre-push] 门禁通过"
