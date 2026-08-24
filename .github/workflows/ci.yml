@@ -10,7 +10,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  # 静态检查 + 单测 + 构建校验
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm test:unit
+      - run: pnpm build
+
+  # Chromium E2E：跑的是生产构建产物（webServer 内 build + preview），带浏览器缓存
+  e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -21,10 +38,13 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ms-playwright-${{ runner.os }}-
       - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm check
-      - run: pnpm test:unit
-      - run: pnpm build
       - run: pnpm test:e2e
       - name: Upload Playwright failure artifacts
         if: failure()
