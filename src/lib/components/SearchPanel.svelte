@@ -41,6 +41,7 @@
 	let isAddingAll = $state(false);
 	let searchExhausted = $state(false);
 	let hasSearched = $state(false);
+	let searchError = $state(false);
 
 	// ---- 排名池（选中待进 tier，持久化全局 store）----
 	// $derived 确保 searchPool 内部 $state 变化时组件重新求值
@@ -157,10 +158,11 @@
 		isLoading = true;
 		try {
 			const r = await searchSubjects(buildSearchParams());
+			searchError = r.error === true;
 			results = r.items;
 			rawFetched = r.rawCount;
 			total = r.total;
-			searchExhausted = r.rawCount === 0 || r.rawCount >= r.total;
+			if (!r.error) searchExhausted = r.rawCount === 0 || r.rawCount >= r.total;
 		} finally {
 			isLoading = false;
 		}
@@ -170,6 +172,11 @@
 		isLoading = true;
 		try {
 			const r = await searchSubjects(buildSearchParams(rawFetched)); // 用原始条数递增，规避二次过滤跳页
+			if (r.error) {
+				searchError = true;
+				return;
+			}
+			searchError = false;
 			if (r.rawCount === 0) {
 				// total>0 表示服务端正常返回空尾页；total=0 可能是请求失败，保留重试入口。
 				if (r.total > 0) searchExhausted = true;
@@ -224,6 +231,11 @@
 		let pages = 0;
 		while (offset < expectedTotal && pages < 100) {
 			const r = await searchSubjects(buildSearchParams(offset));
+			if (r.error) {
+				// 扫描中途失败：保留已拉到的结果，标记错误让用户重试
+				searchError = true;
+				break;
+			}
 			if (r.rawCount === 0) {
 				if (r.total > 0) searchExhausted = true;
 				break;
@@ -381,6 +393,10 @@
 	<Button onclick={runSearch} disabled={isBusy} class="font-pixel">
 		{isLoading ? m.searching() : m.search_button()}
 	</Button>
+
+	{#if searchError}
+		<p class="font-pixel text-[10px] text-destructive" role="alert">{m.search_failed()}</p>
+	{/if}
 
 	{#if hasSearched}
 		<!-- 检索池 -->

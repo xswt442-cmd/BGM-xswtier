@@ -64,4 +64,14 @@
 			</Button>
 		</div>
 	{/if}
+	{#if itemLoader.failedCount > 0}
+		<div class="grid gap-1 p-3 pt-1">
+			<p class="font-pixel text-[9px] text-destructive" role="alert">
+				{m.load_failed_count({ count: itemLoader.failedCount })}
+			</p>
+			<Button class="w-full" variant="outline" onclick={() => itemLoader.retryFailed()} disabled={itemLoader.isLoading}>
+				{m.me_retry()}
+			</Button>
+		</div>
+	{/if}
 </section>

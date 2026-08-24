@@ -31,9 +31,24 @@ export class BatchLoader {
 	/** 进度统计：累计入队总数 / 成功加载数 */
 	totalQueued = $state(0);
 	loadedCount = $state(0);
+	/** 请求失败的条目（单条失败不阻断整批），可整体重试 */
+	failedItems = $state<ItemIdentity[]>([]);
 	/** 加载结果去向：默认并入排名池（collection）；import 模式路由到统一导入池。 */
 	destination = $state<'collection' | 'importPool'>('collection');
 	#generation = 0;
+
+	get failedCount() {
+		return this.failedItems.length;
+	}
+
+	/** 重试此前加载失败的条目：重新入队并立即拉取 */
+	retryFailed() {
+		if (this.failedItems.length === 0 || this.isLoading) return;
+		const failed = this.failedItems;
+		this.failedItems = [];
+		this.addItems(failed);
+		void this.loadBatch();
+	}
 
 	setDestination(d: 'collection' | 'importPool') {
 		this.destination = d;
@@ -57,6 +72,7 @@ export class BatchLoader {
 		this.totalQueued = this.loadedItems.length; // 全量已入池，无队列
 		this.loadedCount = this.loadedItems.length;
 		this.queue = [];
+		this.failedItems = [];
 		this.isLoading = false;
 		this.destination = 'collection'; // 防御性重置：seed 路径不经过 clear()
 	}
@@ -86,7 +102,20 @@ export class BatchLoader {
 		);
 
 		if (generation !== this.#generation) return;
-		const valid = results.filter((i): i is ItemData => i !== undefined);
+		const valid: ItemData[] = [];
+		const failed: ItemIdentity[] = [];
+		results.forEach((result, i) => {
+			if (result === undefined) failed.push(targets[i]);
+			else valid.push(result);
+		});
+		// 失败缓存按 key 去重合并：重试后仍失败的条目保留在列表里，成功过的不再出现
+		if (failed.length > 0 || this.failedItems.length > 0) {
+			const seen = new Set(failed.map((f) => `${f.category}:${f.bgm_id}`));
+			this.failedItems = [
+				...failed,
+				...this.failedItems.filter((f) => !seen.has(`${f.category}:${f.bgm_id}`))
+			];
+		}
 		this.loadedItems.push(...valid);
 		if (destination === 'importPool') {
 			importPool.addAll(valid);
@@ -111,6 +140,7 @@ export class BatchLoader {
 		this.loadedItems = [];
 		this.totalQueued = 0;
 		this.loadedCount = 0;
+		this.failedItems = [];
 		this.destination = 'collection';
 	}
 }

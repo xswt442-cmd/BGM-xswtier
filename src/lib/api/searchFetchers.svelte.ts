@@ -32,6 +32,8 @@ export interface SearchResult {
 	/** 服务端本页原始条数（未过滤）→ 组件据此递增 offset，规避二次过滤跳页 */
 	rawCount: number;
 	total: number;
+	/** true = 请求本身失败（网络/服务端）。此时 items 为空不代表没有命中，调用方应显示错误态而非「无结果」 */
+	error?: boolean;
 }
 
 /** 已知分类值（'其他' 用排除法：platform 不在其中即算其他） */
@@ -75,10 +77,10 @@ export async function searchSubjects(p: SearchParams): Promise<SearchResult> {
 			signal: AbortSignal.timeout(15_000)
 		});
 	} catch {
-		return { items: [], rawCount: 0, total: 0 };
+		return { items: [], rawCount: 0, total: 0, error: true };
 	}
 	const { data, error } = response;
-	if (error || !data) return { items: [], rawCount: 0, total: 0 };
+	if (error || !data) return { items: [], rawCount: 0, total: 0, error: true };
 
 	const raw = (data.data ?? []).map(subjectLikeToItemData).filter((i): i is ItemData => !!i);
 	// 分类客户端二次过滤：服务端 platform 组合筛选可能混入其他值

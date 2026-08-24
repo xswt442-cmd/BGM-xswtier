@@ -25,6 +25,8 @@
 	let shareDialog: HTMLDialogElement;
 	let copied = $state(false);
 	let shareWarning = $state('');
+	// 目录/用户名入口的加载失败提示（undefined = 请求失败；空数组 = 来源本身为空）
+	let loadError = $state(false);
 	let importing = $state(false);
 	let importInput: HTMLInputElement | undefined = $state();
 	let copyTimer: ReturnType<typeof setTimeout> | undefined;
@@ -291,13 +293,17 @@
 		}
 		itemLoader.clear();
 		tierData.startSession([]);
+		loadError = false;
 		let identities;
 		if (index) {
 			identities = await fetchIndexById(index);
 		} else if (user) {
 			identities = await fetchUserCollection(user);
 		}
-		if (!identities || identities.length === 0) return;
+		if (!identities || identities.length === 0) {
+			if (!identities) loadError = true;
+			return;
+		}
 		itemLoader.addItems(identities);
 		await itemLoader.loadBatch();
 	});
@@ -327,6 +333,9 @@
 		</div>
 		{#if shareWarning}
 			<p class="font-pixel mb-1 text-[10px] text-destructive">{shareWarning}</p>
+		{/if}
+		{#if loadError}
+			<p class="font-pixel mb-1 text-[10px] text-destructive" role="alert">{m.entry_load_failed()}</p>
 		{/if}
 		<input bind:this={importInput} type="file" accept="application/json,.json" class="hidden" onchange={onImportFile} />
 		<p class="sr-only" aria-live="polite">{statusMessage}</p>
