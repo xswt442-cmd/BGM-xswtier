@@ -141,6 +141,7 @@ export class BatchLoader {
 		this.totalQueued = 0;
 		this.loadedCount = 0;
 		this.failedItems = [];
+		this.isLoading = false;
 		this.destination = 'collection';
 	}
 }
