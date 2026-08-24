@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { Popover, PopoverTrigger } from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
 	import { locale } from '$lib/states/locale.svelte';
@@ -7,11 +6,13 @@
 
 	let open = $state(false);
 
-	// 一键重开：应用独占其 origin，清空全部 localStorage（排名池/档位/草稿/令牌/主题/语言）后回首页，恢复初始状态
+	// 一键重开：应用独占其 origin，清空全部 localStorage（排名池/档位/草稿/令牌/主题/语言）后恢复初始状态
 	function remake() {
 		localStorage.clear();
-		locale.reset(); // 内存 locale 同步回默认（英文），否则 clear 后 SPA 内仍显示旧语言
-		goto('/');
+		locale.reset(); // 内存 locale 同步回默认（英文），否则 reload 后仍显示旧语言
+		// 必须硬刷新：仅清 localStorage 不够——tierData/searchPool/theme 的内存 $state 仍然存活，
+		// SPA 内继续操作会把旧数据经 flush effect 写回刚清空的存储，且「去 tier」会复活旧会话。
+		location.reload();
 	}
 </script>
 
