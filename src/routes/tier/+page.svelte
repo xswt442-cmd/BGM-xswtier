@@ -105,6 +105,8 @@
 	function handleHistoryShortcut(event: KeyboardEvent) {
 		if (!(event.ctrlKey || event.metaKey) || event.altKey || isEditableTarget(event.target)) return;
 		if (document.querySelector('dialog[open]')) return;
+		// bits-ui 浮层不是原生 dialog（Popover/Sheet 内容 role=dialog、Select=listbox、Menu=menu），同样要避让
+		if (document.querySelector('[role="dialog"], [role="listbox"], [role="menu"]')) return;
 
 		const key = event.key.toLowerCase();
 		const isUndo = key === 'z' && !event.shiftKey;
