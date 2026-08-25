@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ItemData } from '$lib/schemas/item';
 
 function makeItem(id: number): ItemData {
@@ -14,7 +14,14 @@ async function freshSearchPool() {
 let searchPool: Awaited<ReturnType<typeof freshSearchPool>>['searchPool'];
 
 beforeEach(async () => {
+	// 持久化已去抖：用假时钟精确控制落盘时机，并防止真实定时器跨用例泄漏
+	vi.useFakeTimers();
 	searchPool = (await freshSearchPool()).searchPool;
+});
+
+afterEach(() => {
+	vi.runOnlyPendingTimers();
+	vi.useRealTimers();
 });
 
 describe('searchPool state', () => {
@@ -50,5 +57,15 @@ describe('searchPool state', () => {
 		searchPool.addAll([makeItem(1)]);
 		searchPool.clear();
 		expect(searchPool.items).toHaveLength(0);
+	});
+
+	it('持久化去抖：300ms 内连续变更合并为一次落盘', async () => {
+		searchPool.add(makeItem(1));
+		searchPool.add(makeItem(2));
+		// 去抖窗口内尚未写盘
+		expect(localStorage.getItem('bgmtier-search-pool')).toBeNull();
+		await vi.advanceTimersByTimeAsync(300);
+		const stored = JSON.parse(localStorage.getItem('bgmtier-search-pool') ?? '[]');
+		expect(stored.map((i: ItemData) => i.bgm_id)).toEqual([1, 2]);
 	});
 });

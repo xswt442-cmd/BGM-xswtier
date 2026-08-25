@@ -23,11 +23,35 @@ function replacePool(next: ItemData[]) {
 	idIndex = new Set(next.map((item) => item.id));
 }
 
+// 持久化去抖：与 tierData 同策略（300ms trailing 合并写盘；pagehide / 页面隐藏立即落盘）。
+// REMAKE 清库后无新变更即无 pending 定时器，flush 为 no-op，不会把旧池写回存储。
+let persistTimer: ReturnType<typeof setTimeout> | undefined;
+
+function flushPersist() {
+	if (persistTimer === undefined) return;
+	clearTimeout(persistTimer);
+	persistTimer = undefined;
+	storage.set(JSON.parse(JSON.stringify(pool)));
+}
+
+function schedulePersist() {
+	if (persistTimer !== undefined) return; // 已有排程：保持最早到期时间，连续操作期间周期性落盘
+	persistTimer = setTimeout(flushPersist, 300);
+}
+
 $effect.root(() => {
 	$effect(() => {
-		storage.set(JSON.parse(JSON.stringify(pool)));
+		void pool; // 只为建立响应式依赖；深序列化推迟到合并后的 flush
+		schedulePersist();
 	});
 });
+
+if (typeof window !== 'undefined') {
+	window.addEventListener('pagehide', flushPersist);
+	document.addEventListener('visibilitychange', () => {
+		if (document.visibilityState === 'hidden') flushPersist();
+	});
+}
 
 export const searchPool = {
 	get items(): ItemData[] {

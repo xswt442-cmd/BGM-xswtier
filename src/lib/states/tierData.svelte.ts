@@ -1,5 +1,6 @@
 import { persisted } from 'svelte-persisted-store';
 import { get } from 'svelte/store';
+import { SHADOW_PLACEHOLDER_ITEM_ID } from 'svelte-dnd-action';
 import type { ItemData, TierDef, TierDraft, TierStore } from '$lib/schemas/item';
 import { TierHistory, type TierHistoryAction } from '$lib/utils/tierHistory';
 
@@ -47,7 +48,7 @@ function resetHistory() {
 // $effect.root 允许在模块作用域创建 effect（模块顶层直接 $effect 会报 effect_orphan）
 // 持久化前过滤 dnd shadow 占位符（isDndShadowItem），避免污染 localStorage
 function stripShadow<T extends { id: string; isDndShadowItem?: boolean }>(list: T[]): T[] {
-	return list.filter((i) => !i.isDndShadowItem && i.id !== 'id:dnd-shadow-placeholder-0000');
+	return list.filter((i) => !i.isDndShadowItem && i.id !== SHADOW_PLACEHOLDER_ITEM_ID);
 }
 
 function uniqueItems(list: ItemData[], seen = new Set<string>()): ItemData[] {
@@ -62,7 +63,7 @@ function cleanStore(sourceTiers = tiers, sourceCollection = collection): TierSto
 	const seen = new Set<string>();
 	// 档位本身也可拖拽排序：拖拽中间态 e.detail.items 会含 shadow 占位档，持久化前过滤掉
 	const cleanTiers = sourceTiers
-		.filter((t) => t.id !== 'id:dnd-shadow-placeholder-0000')
+		.filter((t) => t.id !== SHADOW_PLACEHOLDER_ITEM_ID)
 		.map((tier) => ({ ...tier, items: uniqueItems(tier.items, seen) }));
 	return {
 		version: 1,
