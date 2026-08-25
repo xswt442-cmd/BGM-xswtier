@@ -4,7 +4,10 @@ const SIZE = 500;
 const ROUNDS = 5;
 const BUDGET_MS = 50;
 const items = Array.from({ length: SIZE }, (_, index) => ({ id: `subject:${index}`, name: `Subject ${index}` }));
-const incoming = [...items.slice(SIZE / 2), ...Array.from({ length: SIZE / 2 }, (_, index) => ({ id: `fresh:${index}` }))];
+const incoming = [
+	...items.slice(SIZE / 2),
+	...Array.from({ length: SIZE / 2 }, (_, index) => ({ id: `fresh:${index}` })),
+];
 const removed = new Set(items.filter((_, index) => index % 3 === 0).map((item) => item.id));
 
 const benchmarks = {
@@ -17,7 +20,7 @@ const benchmarks = {
 	},
 	filter() {
 		return items.filter((_, index) => index % 2 === 0);
-	}
+	},
 };
 
 const medians = {};

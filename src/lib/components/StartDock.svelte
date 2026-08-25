@@ -31,16 +31,25 @@
 	}
 </script>
 
-<div class="sticky bottom-2 z-20 mt-4 flex flex-wrap items-center gap-2 border-2 border-border bg-card/95 p-2 shadow-[4px_4px_0_var(--border)] backdrop-blur-sm" data-testid="ranking-pool-dock">
+<div
+	class="sticky bottom-2 z-20 mt-4 flex flex-wrap items-center gap-2 border-2 border-border bg-card/95 p-2 shadow-[4px_4px_0_var(--border)] backdrop-blur-sm"
+	data-testid="ranking-pool-dock"
+>
 	<div class="mr-auto flex min-w-0 items-center gap-2">
 		<span class="icon-[pixelarticons--list-box] h-5 w-5 shrink-0 text-primary"></span>
 		<span class="font-pixel text-[10px]">{m.ranking_summary({ count })}</span>
 	</div>
-	<Button variant="outline" size="sm" class="font-pixel text-[9px]" onclick={onViewPool}>{m.view_ranking_pool()}</Button>
-	<Button size="sm" class="font-pixel text-[9px]" onclick={goToTier} disabled={!tierData.hasDraft && count === 0}>{m.go_to_tier({ count })}</Button>
+	<Button variant="outline" size="sm" class="font-pixel text-[9px]" onclick={onViewPool}>{m.view_ranking_pool()}</Button
+	>
+	<Button size="sm" class="font-pixel text-[9px]" onclick={goToTier} disabled={!tierData.hasDraft && count === 0}
+		>{m.go_to_tier({ count })}</Button
+	>
 </div>
 
-<dialog bind:this={dialog} class="pixel-border w-[min(92vw,31rem)] bg-card p-0 text-card-foreground backdrop:bg-black/55">
+<dialog
+	bind:this={dialog}
+	class="pixel-border w-[min(92vw,31rem)] bg-card p-0 text-card-foreground backdrop:bg-black/55"
+>
 	<div class="grid gap-4 p-5">
 		<div>
 			<h2 class="font-pixel text-sm">{m.start_choice_title()}</h2>

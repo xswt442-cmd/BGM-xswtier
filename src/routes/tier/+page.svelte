@@ -15,7 +15,14 @@
 	import { fetchUserCollection } from '$lib/api/bgmFetchers.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { TierHistoryAction } from '$lib/utils/tierHistory';
-	import { encodeURL, decodeURL, exportJSON, importJSON, URL_MAX_LENGTH, SHARE_HASH_PREFIX } from '$lib/utils/tierSerialize';
+	import {
+		encodeURL,
+		decodeURL,
+		exportJSON,
+		importJSON,
+		URL_MAX_LENGTH,
+		SHARE_HASH_PREFIX,
+	} from '$lib/utils/tierSerialize';
 
 	let exportNode: HTMLElement;
 	let statusMessage = $state('');
@@ -52,10 +59,7 @@
 	}
 
 	function allSessionItems() {
-		return [
-			...tierData.tiers.flatMap((tier) => tier.items),
-			...tierData.collection
-		];
+		return [...tierData.tiers.flatMap((tier) => tier.items), ...tierData.collection];
 	}
 
 	/** 会话是否包含任何条目（控制分享/导出按钮可用性） */
@@ -69,7 +73,7 @@
 	}
 	function handleTierFinalize(e: CustomEvent) {
 		tierData.tiers = e.detail.items.filter(
-			(t: Record<string, any>) => !t.isDndShadowItem && t.id !== SHADOW_PLACEHOLDER_ITEM_ID
+			(t: Record<string, any>) => !t.isDndShadowItem && t.id !== SHADOW_PLACEHOLDER_ITEM_ID,
 		);
 		tierData.scheduleHistoryCommit();
 	}
@@ -81,7 +85,7 @@
 			add_tier: m.history_add_tier(),
 			delete_tier: m.history_delete_tier(),
 			rename_tier: m.history_rename_tier(),
-			recolor_tier: m.history_recolor_tier()
+			recolor_tier: m.history_recolor_tier(),
 		}[action];
 	}
 
@@ -131,7 +135,7 @@
 				},
 				() => {
 					statusMessage = m.share_failed();
-				}
+				},
 			);
 		} catch {
 			statusMessage = m.share_failed();
@@ -242,7 +246,7 @@
 				// 字体已全部同源自托管（Press Start 2P + Fusion Pixel），可安全嵌入导出图，
 				// 保持像素观感；此前 skipFonts:true 是 Google Fonts 外链时代的权宜之计
 				backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--background').trim(),
-				filter: (node) => !(node instanceof HTMLElement && node.hasAttribute('data-export-exclude'))
+				filter: (node) => !(node instanceof HTMLElement && node.hasAttribute('data-export-exclude')),
 			});
 			const link = document.createElement('a');
 			link.download = exportFilename();
@@ -328,16 +332,34 @@
 			<Button variant="outline" class="font-pixel h-11 text-[10px] sm:h-9" onclick={() => saveDraft(false)}>
 				{m.save_draft()}
 			</Button>
-			<Button class="font-pixel h-11 text-[10px] text-black hover:opacity-85 sm:h-9" style="background-color: var(--chart-3)" onclick={copyShareLink} disabled={!hasSessionItems}>
+			<Button
+				class="font-pixel h-11 text-[10px] text-black hover:opacity-85 sm:h-9"
+				style="background-color: var(--chart-3)"
+				onclick={copyShareLink}
+				disabled={!hasSessionItems}
+			>
 				{copied ? m.share_copied() : m.share_tier()}
 			</Button>
-			<Button class="font-pixel h-11 bg-accent text-[10px] text-accent-foreground hover:bg-accent/85 sm:h-9" onclick={() => exitDialog.showModal()}>
+			<Button
+				class="font-pixel h-11 bg-accent text-[10px] text-accent-foreground hover:bg-accent/85 sm:h-9"
+				onclick={() => exitDialog.showModal()}
+			>
 				{m.exit_tier()}
 			</Button>
-			<Button class="font-pixel h-11 text-[10px] text-black hover:opacity-85 sm:h-9" style="background-color: var(--chart-4)" onclick={() => importInput?.click()} disabled={importing}>
+			<Button
+				class="font-pixel h-11 text-[10px] text-black hover:opacity-85 sm:h-9"
+				style="background-color: var(--chart-4)"
+				onclick={() => importInput?.click()}
+				disabled={importing}
+			>
 				{importing ? m.importing() : m.import_tier()}
 			</Button>
-			<Button class="font-pixel h-11 text-[10px] text-black hover:opacity-85 sm:h-9" style="background-color: var(--chart-5)" onclick={exportTierJson} disabled={!hasSessionItems}>
+			<Button
+				class="font-pixel h-11 text-[10px] text-black hover:opacity-85 sm:h-9"
+				style="background-color: var(--chart-5)"
+				onclick={exportTierJson}
+				disabled={!hasSessionItems}
+			>
 				{m.export_tier()}
 			</Button>
 			<Button class="font-pixel h-11 text-[10px] sm:h-9" onclick={exportPng} disabled={isExporting}>
@@ -353,79 +375,79 @@
 		<input bind:this={importInput} type="file" accept="application/json,.json" class="hidden" onchange={onImportFile} />
 		<p class="sr-only" aria-live="polite">{statusMessage}</p>
 		<div bind:this={exportNode} class="rounded-lg bg-background p-1">
-		<div class="mb-6 flex items-center gap-2">
-			<span class="icon-[pixelarticons--notebook] h-5 w-5 text-accent"></span>
-			<span
-				class="neon-text font-pixel rounded-md px-2.5 py-1 text-xs text-black"
-				style="background: var(--chart-2);"
-			>
-				TIER LIST
-			</span>
-			<div class="ml-auto flex items-center gap-1" data-export-exclude>
-				<Button
-					variant="outline"
-					size="icon"
-					class="h-9 w-9"
-					onclick={undo}
-					disabled={!tierData.canUndo}
-					aria-label={m.undo_available({ count: tierData.undoDepth })}
-					title={m.undo_available({ count: tierData.undoDepth })}
-					data-testid="undo-button"
+			<div class="mb-6 flex items-center gap-2">
+				<span class="icon-[pixelarticons--notebook] h-5 w-5 text-accent"></span>
+				<span
+					class="neon-text font-pixel rounded-md px-2.5 py-1 text-xs text-black"
+					style="background: var(--chart-2);"
 				>
-					<span class="icon-[pixelarticons--undo] h-4 w-4"></span>
-				</Button>
-				<Button
-					variant="outline"
-					size="icon"
-					class="h-9 w-9"
-					onclick={redo}
-					disabled={!tierData.canRedo}
-					aria-label={m.redo_available({ count: tierData.redoDepth })}
-					title={m.redo_available({ count: tierData.redoDepth })}
-					data-testid="redo-button"
-				>
-					<span class="icon-[pixelarticons--redo] h-4 w-4"></span>
-				</Button>
-			</div>
-		</div>
-		<section
-			use:dragHandleZone={{
-				items: tierData.tiers,
-				type: 'tier',
-				flipDurationMs: 300,
-				delayTouchStart: true
-			}}
-			onconsider={handleTierConsider}
-			onfinalize={handleTierFinalize}
-			aria-label={m.tier_reorder_zone()}
-			class="flex flex-col"
-		>
-			{#each tierData.tiers as tier (tier.id)}
-				<div
-					animate:flip={{ duration: 300 }}
-					data-is-dnd-shadow-item-hint={tier.id === SHADOW_PLACEHOLDER_ITEM_ID}
-					data-testid="tier-bar"
-					data-tier-id={tier.id}
-				>
-					{#if tier.id === SHADOW_PLACEHOLDER_ITEM_ID}
-						<div
-							class="mb-3 rounded-lg border-2 border-dashed border-border bg-card/50"
-							style="min-height: 5rem"
-						></div>
-					{:else}
-						<TierBar
-							bind:items={tier.items}
-							title={tier.label}
-							color={tier.color}
-							onRename={(label) => tierData.renameTier(tier.id, label)}
-							onColorChange={(color) => tierData.recolorTier(tier.id, color)}
-							onDelete={() => tierData.removeTier(tier.id)}
-							canDelete={tierData.tiers.length > 1}
-						/>
-					{/if}
+					TIER LIST
+				</span>
+				<div class="ml-auto flex items-center gap-1" data-export-exclude>
+					<Button
+						variant="outline"
+						size="icon"
+						class="h-9 w-9"
+						onclick={undo}
+						disabled={!tierData.canUndo}
+						aria-label={m.undo_available({ count: tierData.undoDepth })}
+						title={m.undo_available({ count: tierData.undoDepth })}
+						data-testid="undo-button"
+					>
+						<span class="icon-[pixelarticons--undo] h-4 w-4"></span>
+					</Button>
+					<Button
+						variant="outline"
+						size="icon"
+						class="h-9 w-9"
+						onclick={redo}
+						disabled={!tierData.canRedo}
+						aria-label={m.redo_available({ count: tierData.redoDepth })}
+						title={m.redo_available({ count: tierData.redoDepth })}
+						data-testid="redo-button"
+					>
+						<span class="icon-[pixelarticons--redo] h-4 w-4"></span>
+					</Button>
 				</div>
-			{/each}
-		</section>
+			</div>
+			<section
+				use:dragHandleZone={{
+					items: tierData.tiers,
+					type: 'tier',
+					flipDurationMs: 300,
+					delayTouchStart: true,
+				}}
+				onconsider={handleTierConsider}
+				onfinalize={handleTierFinalize}
+				aria-label={m.tier_reorder_zone()}
+				class="flex flex-col"
+			>
+				{#each tierData.tiers as tier (tier.id)}
+					<div
+						animate:flip={{ duration: 300 }}
+						data-is-dnd-shadow-item-hint={tier.id === SHADOW_PLACEHOLDER_ITEM_ID}
+						data-testid="tier-bar"
+						data-tier-id={tier.id}
+					>
+						{#if tier.id === SHADOW_PLACEHOLDER_ITEM_ID}
+							<div
+								class="mb-3 rounded-lg border-2 border-dashed border-border bg-card/50"
+								style="min-height: 5rem"
+							></div>
+						{:else}
+							<TierBar
+								bind:items={tier.items}
+								title={tier.label}
+								color={tier.color}
+								onRename={(label) => tierData.renameTier(tier.id, label)}
+								onColorChange={(color) => tierData.recolorTier(tier.id, color)}
+								onDelete={() => tierData.removeTier(tier.id)}
+								canDelete={tierData.tiers.length > 1}
+							/>
+						{/if}
+					</div>
+				{/each}
+			</section>
 		</div>
 		<Button variant="outline" class="w-full" onclick={() => tierData.addTier()} data-export-exclude>
 			<span class="icon-[pixelarticons--plus] mr-1 h-4 w-4"></span>
@@ -467,7 +489,11 @@
 		<div class="grid gap-2 sm:grid-cols-3">
 			<Button variant="outline" class="font-pixel h-11 text-[9px]" onclick={saveAndExit}>{m.save_draft_exit()}</Button>
 			<Button variant="destructive" class="font-pixel h-11 text-[9px]" onclick={clearAndExit}>{m.clear_exit()}</Button>
-			<Button variant="secondary" class="font-pixel h-11 border border-border bg-secondary text-[9px] hover:bg-secondary/75" onclick={() => exitDialog.close()}>{m.cancel()}</Button>
+			<Button
+				variant="secondary"
+				class="font-pixel h-11 border border-border bg-secondary text-[9px] hover:bg-secondary/75"
+				onclick={() => exitDialog.close()}>{m.cancel()}</Button
+			>
 		</div>
 	</div>
 </dialog>
@@ -489,7 +515,11 @@
 			<Button variant="destructive" class="font-pixel h-11 text-[9px]" onclick={() => resolveShareReplace(true)}>
 				{m.share_replace_confirm()}
 			</Button>
-			<Button variant="secondary" class="font-pixel h-11 border border-border bg-secondary text-[9px] hover:bg-secondary/75" onclick={() => resolveShareReplace(false)}>{m.cancel()}</Button>
+			<Button
+				variant="secondary"
+				class="font-pixel h-11 border border-border bg-secondary text-[9px] hover:bg-secondary/75"
+				onclick={() => resolveShareReplace(false)}>{m.cancel()}</Button
+			>
 		</div>
 	</div>
 </dialog>

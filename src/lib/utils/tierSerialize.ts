@@ -82,7 +82,7 @@ export function encodeURL(store: TierStore): string {
 	const payload: SharePayload = {
 		v: 1,
 		t: store.tiers.map(toShareTier),
-		u: store.collectionTierItems.map(toShareItem)
+		u: store.collectionTierItems.map(toShareItem),
 	};
 	return compressToEncodedURIComponent(JSON.stringify(payload));
 }
@@ -108,16 +108,15 @@ export function exportJSON(store: TierStore): string {
 			version: 1,
 			app: 'bgm-xswtier',
 			type: 'tier-list',
-			exportedAt: new Date().toISOString()
+			exportedAt: new Date().toISOString(),
 		},
 		null,
-		2
+		2,
 	);
 }
 
 export type ImportResult =
-	| { ok: true; store: TierStore }
-	| { ok: false; reason: 'parse-error' | 'invalid-shape' | 'empty' };
+	{ ok: true; store: TierStore } | { ok: false; reason: 'parse-error' | 'invalid-shape' | 'empty' };
 
 function isItemData(v: unknown): boolean {
 	if (typeof v !== 'object' || v === null) return false;

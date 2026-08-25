@@ -20,8 +20,6 @@
 		void locale.current;
 		applyAriaStrings();
 	});
-
-
 </script>
 
 <div class="flex min-h-svh flex-col">

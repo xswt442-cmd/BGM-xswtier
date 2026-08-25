@@ -15,5 +15,5 @@ export {
 	Root as Sheet,
 	Title as SheetTitle,
 	Description as SheetDescription,
-	Close as SheetClose
+	Close as SheetClose,
 };

@@ -4,7 +4,7 @@
 		DropdownMenuTrigger,
 		DropdownMenuItem,
 		DropdownMenuLabel,
-		DropdownMenuSeparator
+		DropdownMenuSeparator,
 	} from '$lib/components/ui/dropdown-menu';
 	import StatusChip from './StatusChip.svelte';
 	import { locale } from '$lib/states/locale.svelte';
@@ -16,7 +16,11 @@
 
 <DropdownMenu>
 	<DropdownMenuTrigger class="min-h-11 rounded-sm transition-opacity hover:opacity-80 sm:min-h-0">
-		<StatusChip label="LANG" value={LANGUAGE_NAMES[locale.current] ?? locale.current} iconClass="icon-[pixelarticons--languages]" />
+		<StatusChip
+			label="LANG"
+			value={LANGUAGE_NAMES[locale.current] ?? locale.current}
+			iconClass="icon-[pixelarticons--languages]"
+		/>
 	</DropdownMenuTrigger>
 	{#snippet content()}
 		<DropdownMenuLabel>{m.language()}</DropdownMenuLabel>

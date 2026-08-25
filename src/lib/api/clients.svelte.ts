@@ -12,7 +12,7 @@ const authFetch: typeof fetch = async (url, init) => {
 
 export const pubClient = createClient<paths>({
 	baseUrl: 'https://api.bgm.tv/',
-	fetch: authFetch
+	fetch: authFetch,
 });
 
 // 同源 server 代理客户端：p1 老 API（next.bgm.tv）不返回 CORS 头，浏览器直连被挡，
@@ -30,5 +30,5 @@ type LocalPaths = {
 
 export const localClient = createClient<LocalPaths>({
 	baseUrl: '',
-	fetch: authFetch
+	fetch: authFetch,
 });

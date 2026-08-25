@@ -6,7 +6,7 @@
 	const options: { value: VisualEffects; badge: string; label: () => string }[] = [
 		{ value: 'none', badge: 'NONE', label: () => m.effect_none() },
 		{ value: 'neon', badge: 'NEON', label: () => m.effect_neon() },
-		{ value: 'crt', badge: 'CRT', label: () => m.effect_crt() }
+		{ value: 'crt', badge: 'CRT', label: () => m.effect_crt() },
 	];
 </script>
 
@@ -14,7 +14,7 @@
 	chipLabel="VFX"
 	iconClass="icon-[pixelarticons--sparkles]"
 	heading={m.visual_effects()}
-	options={options}
+	{options}
 	current={theme.effects}
 	onSelect={(value) => theme.setEffects(value as VisualEffects)}
 />

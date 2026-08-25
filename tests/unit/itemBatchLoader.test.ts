@@ -16,14 +16,14 @@ async function freshModules() {
 	const [batchMod, tierMod, poolMod] = await Promise.all([
 		import('$lib/states/itemBatchLoader.svelte'),
 		import('$lib/states/tierData.svelte'),
-		import('$lib/states/importPool.svelte')
+		import('$lib/states/importPool.svelte'),
 	]);
 	const bgm = await import('$lib/api/bgmFetchers.svelte');
 	return {
 		loader: batchMod.itemLoader,
 		tierData: tierMod.tierData,
 		importPool: poolMod.importPool,
-		fetchItemByIdentity: vi.mocked(bgm.fetchItemByIdentity)
+		fetchItemByIdentity: vi.mocked(bgm.fetchItemByIdentity),
 	};
 }
 

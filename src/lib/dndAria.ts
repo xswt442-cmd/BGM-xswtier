@@ -11,6 +11,6 @@ export function applyAriaStrings() {
 		movedToZoneStart: ({ itemLabel, zoneLabel }) => m.aria_moved_to_zone_start({ itemLabel, zoneLabel }),
 		dropped: ({ itemLabel }) => m.aria_dropped({ itemLabel }),
 		zoneActiveInstruction: m.aria_zone_active(),
-		zoneDragDisabledInstruction: m.aria_zone_disabled()
+		zoneDragDisabledInstruction: m.aria_zone_disabled(),
 	});
 }

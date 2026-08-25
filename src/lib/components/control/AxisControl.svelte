@@ -10,7 +10,7 @@
 		heading,
 		options,
 		current,
-		onSelect
+		onSelect,
 	}: {
 		chipLabel: string;
 		iconClass: string;
@@ -25,7 +25,7 @@
 
 <Popover>
 	<PopoverTrigger class="min-h-11 rounded-sm transition-opacity hover:opacity-80 sm:min-h-0">
-		<StatusChip label={chipLabel} value={chipValue} iconClass={iconClass} />
+		<StatusChip label={chipLabel} value={chipValue} {iconClass} />
 	</PopoverTrigger>
 	{#snippet content()}
 		<div class="grid gap-3">

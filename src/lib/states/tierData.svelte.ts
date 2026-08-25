@@ -13,7 +13,7 @@ export function defaultTiers(): TierDef[] {
 		{ id: uid(), label: '顶级', color: 'var(--chart-2)', items: [] },
 		{ id: uid(), label: '人上人', color: 'var(--chart-3)', items: [] },
 		{ id: uid(), label: 'NPC', color: 'var(--chart-4)', items: [] },
-		{ id: uid(), label: '拉完了', color: 'var(--chart-5)', items: [] }
+		{ id: uid(), label: '拉完了', color: 'var(--chart-5)', items: [] },
 	];
 }
 
@@ -67,7 +67,7 @@ function cleanStore(sourceTiers = tiers, sourceCollection = collection): TierSto
 	return {
 		version: 1,
 		tiers: cleanTiers,
-		collectionTierItems: uniqueItems(sourceCollection, seen)
+		collectionTierItems: uniqueItems(sourceCollection, seen),
 	};
 }
 
@@ -196,7 +196,7 @@ export const tierData = {
 	mergeIntoCollection(items: ItemData[]) {
 		const seen = new Set<string>([
 			...tiers.flatMap((tier) => tier.items.map((item) => item.id)),
-			...collection.map((item) => item.id)
+			...collection.map((item) => item.id),
 		]);
 		const fresh = uniqueItems(items, seen);
 		if (fresh.length > 0) {
@@ -265,5 +265,5 @@ export const tierData = {
 	/** 从集合移除某条目（拖入 tier 后调用） */
 	removeFromCollection(itemId: string) {
 		collection = collection.filter((i) => i.id !== itemId);
-	}
+	},
 };

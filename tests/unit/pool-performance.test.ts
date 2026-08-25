@@ -1,8 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import type { ItemData } from '$lib/schemas/item';
-import { poolColumnCount, pruneMutableSelection, selectAllMutable, toggleMutableSelection, virtualRowCount, virtualRowKey, VIRTUAL_POOL_THRESHOLD } from '$lib/utils/poolPerformance';
+import {
+	poolColumnCount,
+	pruneMutableSelection,
+	selectAllMutable,
+	toggleMutableSelection,
+	virtualRowCount,
+	virtualRowKey,
+	VIRTUAL_POOL_THRESHOLD,
+} from '$lib/utils/poolPerformance';
 
-const items = (count: number): ItemData[] => Array.from({ length: count }, (_, index) => ({ id: `subject:${index + 1}`, bgm_id: index + 1, category: 'subject', name: `Subject ${index + 1}` }));
+const items = (count: number): ItemData[] =>
+	Array.from({ length: count }, (_, index) => ({
+		id: `subject:${index + 1}`,
+		bgm_id: index + 1,
+		category: 'subject',
+		name: `Subject ${index + 1}`,
+	}));
 
 describe('pool performance helpers', () => {
 	it('groups stable virtual rows at the responsive breakpoint', () => {

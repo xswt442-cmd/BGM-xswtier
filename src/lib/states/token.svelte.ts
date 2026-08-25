@@ -21,5 +21,5 @@ export const apiToken = {
 	},
 	clear() {
 		this.setToken(null);
-	}
+	},
 };

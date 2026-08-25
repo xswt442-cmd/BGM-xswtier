@@ -17,9 +17,9 @@ const client = new QueryClient({
 			gcTime: 1000 * 60 * 60,
 			retry: 1,
 			refetchOnWindowFocus: false,
-			refetchOnReconnect: false // 断网恢复不静默刷新，避免覆盖用户正在编辑的会话
-		}
-	}
+			refetchOnReconnect: false, // 断网恢复不静默刷新，避免覆盖用户正在编辑的会话
+		},
+	},
 });
 
 export class BatchLoader {
@@ -90,15 +90,15 @@ export class BatchLoader {
 					try {
 						const data = await client.fetchQuery({
 							queryKey: ['item', item.category, item.bgm_id], // 自带去重/缓存
-							queryFn: () => fetchItemByIdentity(item)
+							queryFn: () => fetchItemByIdentity(item),
 						});
 						return { id: `${item.category}:${item.bgm_id}`, ...item, ...data } as ItemData;
 					} catch (error) {
 						console.warn(`[BatchLoader] Failed: ${item.bgm_id}`, error);
 						return undefined; // 单条失败不阻断整批
 					}
-				})
-			)
+				}),
+			),
 		);
 
 		if (generation !== this.#generation) return;
@@ -111,10 +111,7 @@ export class BatchLoader {
 		// 失败缓存按 key 去重合并：重试后仍失败的条目保留在列表里，成功过的不再出现
 		if (failed.length > 0 || this.failedItems.length > 0) {
 			const seen = new Set(failed.map((f) => `${f.category}:${f.bgm_id}`));
-			this.failedItems = [
-				...failed,
-				...this.failedItems.filter((f) => !seen.has(`${f.category}:${f.bgm_id}`))
-			];
+			this.failedItems = [...failed, ...this.failedItems.filter((f) => !seen.has(`${f.category}:${f.bgm_id}`))];
 		}
 		this.loadedItems.push(...valid);
 		if (destination === 'importPool') {

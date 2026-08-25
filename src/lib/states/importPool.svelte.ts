@@ -2,8 +2,7 @@ import { freshById } from '$lib/utils';
 import type { ItemData } from '$lib/schemas/item';
 
 export type ImportSource =
-	| { kind: 'index'; id: number; label: string }
-	| { kind: 'user'; username: string; label: string };
+	{ kind: 'index'; id: number; label: string } | { kind: 'user'; username: string; label: string };
 
 let items = $state<ItemData[]>([]);
 let source = $state<ImportSource | null>(null);
@@ -33,5 +32,5 @@ export const importPool = {
 		items = [];
 		source = null;
 		hasLoaded = false;
-	}
+	},
 };

@@ -10,7 +10,7 @@ function shareHash(tiers: TierDef[]): string {
 	const payload = {
 		v: 1,
 		t: tiers.map((tier) => ({ id: tier.id, l: tier.label, c: tier.color, i: [] })),
-		u: []
+		u: [],
 	};
 	return `#state=${compressToEncodedURIComponent(JSON.stringify(payload))}`;
 }

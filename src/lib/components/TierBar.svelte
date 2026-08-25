@@ -17,7 +17,7 @@
 		onRename,
 		onColorChange,
 		onDelete,
-		canDelete = true
+		canDelete = true,
 	}: {
 		items: ItemData[];
 		title: string;
@@ -50,7 +50,7 @@
 		'var(--chart-5)',
 		'var(--chart-6)',
 		'var(--chart-7)',
-		'var(--chart-8)'
+		'var(--chart-8)',
 	];
 
 	function commitRename() {
@@ -79,7 +79,10 @@
 </script>
 
 <!-- 8-bit 等级块：固定宽度名称框（左、居中文字、固定字号）+ 贴纸区 -->
-<section class="group neon-border pixel-border pixel-shadow mb-3 overflow-hidden rounded-lg bg-card" data-testid="tier-zone">
+<section
+	class="group neon-border pixel-border pixel-shadow mb-3 overflow-hidden rounded-lg bg-card"
+	data-testid="tier-zone"
+>
 	<div class="flex flex-wrap items-center gap-2 p-2">
 		<button
 			use:dragHandle

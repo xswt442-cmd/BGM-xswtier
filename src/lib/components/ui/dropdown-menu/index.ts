@@ -18,5 +18,5 @@ export {
 	Item as DropdownMenuItem,
 	CheckboxItem as DropdownMenuCheckboxItem,
 	Label as DropdownMenuLabel,
-	Separator as DropdownMenuSeparator
+	Separator as DropdownMenuSeparator,
 };

@@ -68,5 +68,5 @@ export const theme = {
 		uiFeedback = feedback;
 		applyTheme();
 		localStorage.setItem(UIFB_KEY, feedback);
-	}
+	},
 };

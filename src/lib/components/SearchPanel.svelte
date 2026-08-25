@@ -60,7 +60,7 @@
 		{ value: '中国', label: m.filter_region_china },
 		{ value: '韩国', label: m.filter_region_korea },
 		{ value: '欧美', label: m.filter_region_western },
-		{ value: '', label: m.filter_region_all }
+		{ value: '', label: m.filter_region_all },
 	];
 	const PLATFORM_OPTIONS = [
 		{ value: '', label: m.filter_platform_all },
@@ -69,7 +69,7 @@
 		{ value: 'OVA', label: m.filter_platform_ova },
 		{ value: '剧场版', label: m.filter_platform_movie },
 		{ value: '动态漫画', label: m.filter_platform_dongman },
-		{ value: '其他', label: m.filter_platform_other }
+		{ value: '其他', label: m.filter_platform_other },
 	];
 	const SOURCE_OPTIONS = [
 		{ value: '', label: m.filter_source_all },
@@ -78,7 +78,7 @@
 		{ value: '游戏改', label: m.filter_source_game },
 		{ value: '小说改', label: m.filter_source_novel },
 		{ value: '动画改', label: m.filter_source_anime },
-		{ value: '影视改', label: m.filter_source_live }
+		{ value: '影视改', label: m.filter_source_live },
 	];
 	const TYPE_OPTIONS = [
 		{ value: '', label: m.filter_type_all },
@@ -109,7 +109,7 @@
 		{ value: '剧情', label: m.filter_type_drama },
 		{ value: '武侠', label: m.filter_type_wuxia },
 		{ value: '美食', label: m.filter_type_food },
-		{ value: '职场', label: m.filter_type_work }
+		{ value: '职场', label: m.filter_type_work },
 	];
 
 	function addTag() {
@@ -130,11 +130,7 @@
 
 	function buildSearchParams(offset = 0): SearchParams {
 		// 来源 + 类型 + 区域合并进 meta_tags（区域默认日本，可切换）
-		const metaTags = [
-			...(source ? [source] : []),
-			...(type ? [type] : []),
-			...(region ? [region] : [])
-		];
+		const metaTags = [...(source ? [source] : []), ...(type ? [type] : []), ...(region ? [region] : [])];
 		return {
 			keyword,
 			tags,
@@ -146,7 +142,7 @@
 			ratingTo: toNum(ratingTo),
 			ratingCountMin: toNum(ratingCountMin),
 			ratingCountMax: toNum(ratingCountMax),
-			offset
+			offset,
 		};
 	}
 
@@ -209,8 +205,7 @@
 		// 加入 / 取消（toggle）
 		if (searchPool.has(item.id)) {
 			searchPool.remove(item.id);
-		}
-		else searchPool.add(item);
+		} else searchPool.add(item);
 	}
 	async function addAllResults() {
 		if (isBusy || (results.length === 0 && !hasMore)) return;
@@ -272,12 +267,7 @@
 	<!-- ① 直接搜索 -->
 	<div class="grid gap-1.5">
 		<Label for="search-keyword" class="font-pixel text-xs">{m.search_label()}</Label>
-		<Input
-			id="search-keyword"
-			type="text"
-			placeholder={m.search_placeholder()}
-			bind:value={keyword}
-		/>
+		<Input id="search-keyword" type="text" placeholder={m.search_placeholder()} bind:value={keyword} />
 	</div>
 
 	<!-- ② 区域（可调节，默认日本）-->
@@ -422,21 +412,60 @@
 			</div>
 			{#if results.length > 0}
 				<div class="flex flex-wrap items-center gap-1.5 border-b-2 border-border px-2 py-1">
-					<span class="font-pixel mr-auto text-[9px] text-muted-foreground">{m.pool_selected_count({ count: searchSelection.size })}</span>
-					<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => selectAllMutable(searchSelection, results)}>{m.pool_select_all()}</Button>
-					<Button variant="ghost" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={() => searchSelection.clear()} disabled={searchSelection.size === 0}>{m.pool_clear_selection()}</Button>
-					<Button variant="outline" size="sm" class="font-pixel h-7 px-2 text-[8px]" onclick={addBatchSelection} disabled={searchSelection.size === 0}>{m.pool_add_selected()}</Button>
+					<span class="font-pixel mr-auto text-[9px] text-muted-foreground"
+						>{m.pool_selected_count({ count: searchSelection.size })}</span
+					>
+					<Button
+						variant="ghost"
+						size="sm"
+						class="font-pixel h-7 px-2 text-[8px]"
+						onclick={() => selectAllMutable(searchSelection, results)}>{m.pool_select_all()}</Button
+					>
+					<Button
+						variant="ghost"
+						size="sm"
+						class="font-pixel h-7 px-2 text-[8px]"
+						onclick={() => searchSelection.clear()}
+						disabled={searchSelection.size === 0}>{m.pool_clear_selection()}</Button
+					>
+					<Button
+						variant="outline"
+						size="sm"
+						class="font-pixel h-7 px-2 text-[8px]"
+						onclick={addBatchSelection}
+						disabled={searchSelection.size === 0}>{m.pool_add_selected()}</Button
+					>
 				</div>
 			{/if}
-			<VirtualPoolList items={results} {active} testid="search-row" checked={(id) => searchSelection.has(id)} onToggle={toggleBatch} actionVariant={(item) => isSelected(item.id) ? 'secondary' : 'outline'} actionLabel={(item) => isSelected(item.id) ? m.pool_added() : m.pool_add()} onAction={toggleSelect} emptyLabel={m.no_results()} />
+			<VirtualPoolList
+				items={results}
+				{active}
+				testid="search-row"
+				checked={(id) => searchSelection.has(id)}
+				onToggle={toggleBatch}
+				actionVariant={(item) => (isSelected(item.id) ? 'secondary' : 'outline')}
+				actionLabel={(item) => (isSelected(item.id) ? m.pool_added() : m.pool_add())}
+				onAction={toggleSelect}
+				emptyLabel={m.no_results()}
+			/>
 		</div>
 
 		{#if hasMore}
 			<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-				<Button variant="outline" class="w-full border-chart-3 bg-chart-3 font-pixel text-black hover:bg-chart-3/80 hover:text-black" onclick={loadMore} disabled={isBusy}>
+				<Button
+					variant="outline"
+					class="w-full border-chart-3 bg-chart-3 font-pixel text-black hover:bg-chart-3/80 hover:text-black"
+					onclick={loadMore}
+					disabled={isBusy}
+				>
 					{isLoading ? m.LOADING() : m.load_more()}
 				</Button>
-				<Button variant="outline" class="w-full border-chart-4 bg-chart-4 font-pixel text-black hover:bg-chart-4/80 hover:text-black" onclick={loadAllResults} disabled={isBusy}>
+				<Button
+					variant="outline"
+					class="w-full border-chart-4 bg-chart-4 font-pixel text-black hover:bg-chart-4/80 hover:text-black"
+					onclick={loadAllResults}
+					disabled={isBusy}
+				>
 					{isLoadingAll ? m.loading_all() : m.load_all()}
 				</Button>
 			</div>

@@ -3,7 +3,7 @@
 	let {
 		id,
 		value = $bindable(''),
-		options
+		options,
 	}: {
 		id: string;
 		value: string;

@@ -17,7 +17,7 @@
 		fromMin,
 		fromMax,
 		toMin,
-		toMax
+		toMax,
 	}: {
 		label: string;
 		fromId: string;

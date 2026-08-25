@@ -6,18 +6,23 @@ const item = (id: number): ItemData => ({
 	id: `subject:${id}`,
 	bgm_id: id,
 	category: 'subject',
-	name: `Subject ${id}`
+	name: `Subject ${id}`,
 });
 
 const store = (items: ItemData[] = []): TierStore => ({
 	version: 1,
 	tiers: [{ id: 'tier-a', label: 'A', color: 'var(--chart-1)', items: [] }],
-	collectionTierItems: items
+	collectionTierItems: items,
 });
 
 const clone = (value: TierStore): TierStore => structuredClone(value);
 
-function commit(history: TierHistory, current: TierStore, action: TierHistoryAction, change: (next: TierStore) => void) {
+function commit(
+	history: TierHistory,
+	current: TierStore,
+	action: TierHistoryAction,
+	change: (next: TierStore) => void,
+) {
 	history.begin(current, action);
 	const next = clone(current);
 	change(next);

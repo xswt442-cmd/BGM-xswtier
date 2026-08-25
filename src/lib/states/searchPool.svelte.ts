@@ -65,5 +65,5 @@ export const searchPool = {
 		// Keep callers reactive to pool replacements while membership stays O(1).
 		void pool;
 		return idIndex.has(id);
-	}
+	},
 };

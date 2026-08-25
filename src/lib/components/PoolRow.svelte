@@ -12,7 +12,7 @@
 		actionLabel,
 		actionVariant = 'outline',
 		onAction,
-		testid
+		testid,
 	}: {
 		item: ItemData;
 		checked: boolean;
@@ -33,7 +33,7 @@
 		type="checkbox"
 		class="h-4 w-4 shrink-0 accent-primary"
 		aria-label={m.pool_select_item({ name: item.name_cn || item.name })}
-		checked={checked}
+		{checked}
 		onchange={onToggle}
 	/>
 	<ItemCard {item} />

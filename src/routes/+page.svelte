@@ -19,7 +19,8 @@
 
 		<!-- 闪烁光标 + 标语 -->
 		<p class="font-pixel neon-text text-xs text-foreground sm:text-sm">
-			<span class="blink text-accent">▮</span> {m.app_description()}
+			<span class="blink text-accent">▮</span>
+			{m.app_description()}
 		</p>
 
 		<!-- 状态栏徽章条（横贯居中） -->
@@ -34,7 +35,8 @@
 					onclick={() => (started = true)}
 					class="font-pixel neon-text neon-border border-4 border-dashed border-foreground px-10 py-5 text-sm text-foreground transition-colors hover:bg-foreground hover:text-background sm:text-base"
 				>
-					<span class="blink">▶</span> {m.press_start()}
+					<span class="blink">▶</span>
+					{m.press_start()}
 				</button>
 			{:else}
 				<div
@@ -49,7 +51,8 @@
 	<!-- 底部技术栈小标记：呈现软件项目身份（GitHub 链接已在状态栏） -->
 	<footer class="px-4 pb-3 pt-2 text-center">
 		<p class="font-pixel text-[10px] leading-relaxed text-muted-foreground sm:text-[11px]">
-			{m.footer_open_source()} <span class="text-accent">·</span> {m.footer_tech_stack()}
+			{m.footer_open_source()} <span class="text-accent">·</span>
+			{m.footer_tech_stack()}
 		</p>
 	</footer>
 

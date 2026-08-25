@@ -30,13 +30,13 @@ export function subjectLikeToItemData(s: SubjectLike): ItemData | undefined {
 		eps: s.eps ?? s.eps_count,
 		air_date: s.date ?? s.air_date,
 		platform: s.platform, // calendar 条目 LegacySubjectSmall 无此字段 → undefined
-		meta_tags: s.meta_tags
+		meta_tags: s.meta_tags,
 	};
 }
 
 export async function fetchSubject(subject_id: number): Promise<ItemData | undefined> {
 	const { data, error } = await pubClient.GET('/v0/subjects/{subject_id}', {
-		params: { path: { subject_id } }
+		params: { path: { subject_id } },
 	});
 	if (error || !data) return undefined;
 	return subjectLikeToItemData(data);
@@ -58,7 +58,7 @@ export async function fetchUserCollection(username: string): Promise<ItemIdentit
 	const limit = 50;
 	const query = { type: 2, subject_type: 2, limit, offset: 0 } as const;
 	const { data: firstPage, error } = await pubClient.GET('/v0/users/{username}/collections', {
-		params: { path: { username }, query }
+		params: { path: { username }, query },
 	});
 	if (error || !firstPage) return undefined;
 	const total = firstPage?.total ?? 0;
@@ -78,10 +78,10 @@ export async function fetchUserCollection(username: string): Promise<ItemIdentit
 			Array.from({ length: pageCount }, (_, i) =>
 				plimit(() =>
 					pubClient.GET('/v0/users/{username}/collections', {
-						params: { path: { username }, query: { ...query, offset: (i + 1) * limit } }
-					})
-				)
-			)
+						params: { path: { username }, query: { ...query, offset: (i + 1) * limit } },
+					}),
+				),
+			),
 		);
 		for (const page of pages) collect(page.data);
 	}

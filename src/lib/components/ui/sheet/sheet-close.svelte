@@ -13,7 +13,7 @@
 <DialogPrimitive.Close
 	class={cn(
 		'absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-1 focus:ring-ring disabled:pointer-events-none',
-		className
+		className,
 	)}
 	{...rest}
 >

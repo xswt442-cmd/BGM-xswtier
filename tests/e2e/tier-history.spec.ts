@@ -66,7 +66,7 @@ test.describe('Tier undo and redo', () => {
 		await page.locator('input[type="file"]').setInputFiles({
 			name: 'tier.json',
 			mimeType: 'application/json',
-			buffer: Buffer.from(JSON.stringify(imported))
+			buffer: Buffer.from(JSON.stringify(imported)),
 		});
 		await expect(page.getByTestId('tier-label-input').first()).toHaveValue('IMPORTED');
 		await expect(page.getByTestId('undo-button')).toBeDisabled();

@@ -35,7 +35,11 @@
 	</div>
 	<div class="bg-dotted relative flex-1 overflow-y-auto">
 		{#if items.length === 0 && !itemLoader.isLoading}
-			<p class="font-pixel pointer-events-none absolute inset-x-0 top-0 p-6 text-center text-[10px] text-muted-foreground">{m.EMPTY()}</p>
+			<p
+				class="font-pixel pointer-events-none absolute inset-x-0 top-0 p-6 text-center text-[10px] text-muted-foreground"
+			>
+				{m.EMPTY()}
+			</p>
 		{/if}
 		<section
 			use:dndzone={{ items, flipDurationMs, useCursorForDetection: true, delayTouchStart: true }}
@@ -45,16 +49,16 @@
 			data-testid="unranked-zone"
 			class="flex min-h-full flex-wrap content-start gap-2 p-3"
 		>
-				{#each items as item (item.id)}
-					<div
-						animate:flip={{ duration: flipDurationMs }}
-						data-is-dnd-shadow-item-hint={item.isDndShadowItem}
-						data-item-id={item.id}
-						aria-label={item.name_cn || item.name || ''}
-					>
-						<ItemCard {item} titleMode="two-line" />
-					</div>
-				{/each}
+			{#each items as item (item.id)}
+				<div
+					animate:flip={{ duration: flipDurationMs }}
+					data-is-dnd-shadow-item-hint={item.isDndShadowItem}
+					data-item-id={item.id}
+					aria-label={item.name_cn || item.name || ''}
+				>
+					<ItemCard {item} titleMode="two-line" />
+				</div>
+			{/each}
 		</section>
 	</div>
 	{#if !itemLoader.isDone}

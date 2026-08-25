@@ -15,7 +15,7 @@
 <div
 	class={cn(
 		'flex w-full min-w-0 flex-wrap items-center gap-1.5 sm:w-auto',
-		centered ? 'justify-center' : 'sm:justify-end'
+		centered ? 'justify-center' : 'sm:justify-end',
 	)}
 >
 	<ColorControl />

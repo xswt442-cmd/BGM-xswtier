@@ -44,16 +44,16 @@ pnpm build     # production build
 
 ## Tech Stack
 
-| Layer | Tech |
-|---|---|
-| Framework | SvelteKit · Svelte 5 (runes) |
-| Styling | Tailwind CSS v4 · @iconify/tailwind4 · tw-animate-css |
-| UI components | bits-ui / shadcn-svelte |
-| i18n | Paraglide JS (`messages/en.json`, `messages/zh.json`) |
-| Data | openapi-fetch · @tanstack/svelte-query · p-limit |
-| Drag & drop | svelte-dnd-action |
-| Persistence | svelte-persisted-store (localStorage) |
-| Deployment | @sveltejs/adapter-vercel |
+| Layer         | Tech                                                  |
+| ------------- | ----------------------------------------------------- |
+| Framework     | SvelteKit · Svelte 5 (runes)                          |
+| Styling       | Tailwind CSS v4 · @iconify/tailwind4 · tw-animate-css |
+| UI components | bits-ui / shadcn-svelte                               |
+| i18n          | Paraglide JS (`messages/en.json`, `messages/zh.json`) |
+| Data          | openapi-fetch · @tanstack/svelte-query · p-limit      |
+| Drag & drop   | svelte-dnd-action                                     |
+| Persistence   | svelte-persisted-store (localStorage)                 |
+| Deployment    | @sveltejs/adapter-vercel                              |
 
 ## Deployment
 

@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { TierStore } from '$lib/schemas/item';
-import {
-	compressToEncodedURIComponent,
-	decompressFromEncodedURIComponent
-} from 'lz-string';
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import { decodeURL, encodeURL, exportJSON, importJSON, SHARE_HASH_PREFIX } from '$lib/utils/tierSerialize';
 
 const fixture: TierStore = {
@@ -13,10 +10,10 @@ const fixture: TierStore = {
 			id: 'tier-a',
 			label: 'S',
 			color: 'var(--chart-1)',
-			items: [{ id: 'subject:1', bgm_id: 1, category: 'subject', name: 'One', name_cn: '一', score: 8.7 }]
-		}
+			items: [{ id: 'subject:1', bgm_id: 1, category: 'subject', name: 'One', name_cn: '一', score: 8.7 }],
+		},
 	],
-	collectionTierItems: [{ id: 'subject:2', bgm_id: 2, category: 'subject', name: 'Two' }]
+	collectionTierItems: [{ id: 'subject:2', bgm_id: 2, category: 'subject', name: 'Two' }],
 };
 
 describe('tier serialization', () => {
@@ -42,7 +39,7 @@ describe('tier serialization', () => {
 		const badItem = JSON.stringify({
 			version: 1,
 			tiers: [{ id: 't', label: 'A', color: 'red', items: [{ id: 'char:9', name: 'X' }] }],
-			collectionTierItems: []
+			collectionTierItems: [],
 		});
 		expect(importJSON(badItem)).toEqual({ ok: false, reason: 'invalid-shape' });
 	});
@@ -53,7 +50,7 @@ describe('tier serialization', () => {
 		const hostile = JSON.stringify({
 			v: 1,
 			t: [{ id: 't1', l: 'A', c: 'red', i: [{ id: 'char:9', n: 'X' }] }],
-			u: []
+			u: [],
 		});
 		const encoded = compressToEncodedURIComponent(hostile);
 		expect(decodeURL(`#${SHARE_HASH_PREFIX}${encoded}`)).toBeNull(); // 非 subject 条目被拒

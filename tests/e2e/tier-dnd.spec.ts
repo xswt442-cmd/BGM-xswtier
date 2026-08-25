@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { pointerDrag, seedTierPage } from './fixtures';
 
-test('moves 20 unique items into tiers, leaves no ghost, and accepts a drag back into an empty pool', async ({ page }) => {
+test('moves 20 unique items into tiers, leaves no ghost, and accepts a drag back into an empty pool', async ({
+	page,
+}) => {
 	await seedTierPage(page, 20);
 	const unranked = page.getByTestId('unranked-zone');
 	const firstTier = page.getByTestId('tier-zone').first();

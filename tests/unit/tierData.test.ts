@@ -6,7 +6,7 @@ function makeItem(id: number): ItemData {
 		id: `subject:${id}`,
 		bgm_id: id,
 		category: 'subject',
-		name: `Subject ${id}`
+		name: `Subject ${id}`,
 	};
 }
 

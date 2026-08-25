@@ -9,18 +9,18 @@ export const makeItem = (id: number): ItemData => ({
 	name_cn: `条目 ${id}`,
 	score: 8 + (id % 10) / 10,
 	platform: 'TV',
-	meta_tags: ['日本']
+	meta_tags: ['日本'],
 });
 
 export const makeTiers = (): TierDef[] => [
 	{ id: 'tier-a', label: 'A', color: 'var(--chart-1)', items: [] },
-	{ id: 'tier-b', label: 'B', color: 'var(--chart-2)', items: [] }
+	{ id: 'tier-b', label: 'B', color: 'var(--chart-2)', items: [] },
 ];
 
 export const makeStore = (count = 3): TierStore => ({
 	version: 1,
 	tiers: makeTiers(),
-	collectionTierItems: Array.from({ length: count }, (_, index) => makeItem(index + 1))
+	collectionTierItems: Array.from({ length: count }, (_, index) => makeItem(index + 1)),
 });
 
 export async function seedTierPage(page: Page, count = 3, store = makeStore(count)) {
@@ -35,7 +35,7 @@ export async function seedTierPage(page: Page, count = 3, store = makeStore(coun
 	await fileInput.setInputFiles({
 		name: 'fixture.json',
 		mimeType: 'application/json',
-		buffer: Buffer.from(JSON.stringify(store))
+		buffer: Buffer.from(JSON.stringify(store)),
 	});
 	await expect(page.getByTestId('tier-bar')).toHaveCount(store.tiers.length);
 	await page.goto('/tier?source=pool');
@@ -53,9 +53,13 @@ export async function pointerDrag(page: Page, source: Locator, target: Locator) 
 	await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
 	await page.mouse.down();
 	await page.mouse.move(from.x + from.width / 2 + 10, from.y + from.height / 2 + 10);
-	await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+	await page.evaluate(
+		() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))),
+	);
 	await page.mouse.move(to.x + to.width / 2, to.y + Math.max(8, to.height - 16), { steps: 20 });
-	await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+	await page.evaluate(
+		() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))),
+	);
 	await page.mouse.up();
 }
 
@@ -66,5 +70,5 @@ export const mockSubject = (id: number) => ({
 	name_cn: `条目 ${id}`,
 	platform: 'TV',
 	meta_tags: ['日本'],
-	rating: { total: 6000 + id, count: {}, score: 8.5, rank: id }
+	rating: { total: 6000 + id, count: {}, score: 8.5, rank: id },
 });

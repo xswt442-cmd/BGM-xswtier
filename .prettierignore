@@ -1,0 +1,8 @@
+# 构建产物与生成物不入格式化范围
+src/lib/paraglide/
+.svelte-kit/
+build/
+static/fonts/
+testplace/
+dev-docs/
+pnpm-lock.yaml

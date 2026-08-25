@@ -6,12 +6,27 @@ test.beforeEach(async ({ page }) => {
 	await page.route('https://api.bgm.tv/**', async (route) => {
 		const url = new URL(route.request().url());
 		if (url.pathname.endsWith('/v0/indices/123/subjects')) {
-			return route.fulfill({ status: 200, contentType: 'application/json', json: { data: [{ id: 1 }, { id: 2 }], total: 2, limit: 50, offset: 0 } });
+			return route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				json: { data: [{ id: 1 }, { id: 2 }], total: 2, limit: 50, offset: 0 },
+			});
 		}
-		if (url.pathname.endsWith('/v0/indices/999/subjects')) return route.fulfill({ status: 500, contentType: 'application/json', json: { error: 'failed' } });
-		if (url.pathname.endsWith('/v0/users/demo/collections')) return route.fulfill({ status: 200, contentType: 'application/json', json: { data: [{ subject_id: 3 }], total: 1, limit: 50, offset: 0 } });
+		if (url.pathname.endsWith('/v0/indices/999/subjects'))
+			return route.fulfill({ status: 500, contentType: 'application/json', json: { error: 'failed' } });
+		if (url.pathname.endsWith('/v0/users/demo/collections'))
+			return route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				json: { data: [{ subject_id: 3 }], total: 1, limit: 50, offset: 0 },
+			});
 		const subjectMatch = url.pathname.match(/\/v0\/subjects\/(\d+)$/);
-		if (subjectMatch) return route.fulfill({ status: 200, contentType: 'application/json', json: mockSubject(Number(subjectMatch[1])) });
+		if (subjectMatch)
+			return route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				json: mockSubject(Number(subjectMatch[1])),
+			});
 		return route.abort();
 	});
 	await page.goto('/');

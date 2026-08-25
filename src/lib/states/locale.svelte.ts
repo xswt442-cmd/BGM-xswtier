@@ -29,5 +29,5 @@ export const locale = {
 	reset() {
 		current = baseLocale;
 		if (typeof document !== 'undefined') document.documentElement.lang = baseLocale;
-	}
+	},
 };

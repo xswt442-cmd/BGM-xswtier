@@ -13,9 +13,21 @@
 
 <Tabs.Root value={activeTab} onValueChange={setTab} class="min-w-0" data-testid="start-tabs">
 	<Tabs.List class="mb-4 grid grid-cols-3 border-2 border-border bg-card/70 p-1">
-		<Tabs.Trigger value="search" class="font-pixel min-h-11 px-2 text-[9px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground sm:text-[11px]">{m.start_tab_search()}</Tabs.Trigger>
-		<Tabs.Trigger value="import" class="font-pixel min-h-11 px-2 text-[9px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground sm:text-[11px]">{m.start_tab_import()}</Tabs.Trigger>
-		<Tabs.Trigger value="ranking" class="font-pixel min-h-11 px-2 text-[9px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground sm:text-[11px]">{m.start_tab_ranking()}</Tabs.Trigger>
+		<Tabs.Trigger
+			value="search"
+			class="font-pixel min-h-11 px-2 text-[9px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground sm:text-[11px]"
+			>{m.start_tab_search()}</Tabs.Trigger
+		>
+		<Tabs.Trigger
+			value="import"
+			class="font-pixel min-h-11 px-2 text-[9px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground sm:text-[11px]"
+			>{m.start_tab_import()}</Tabs.Trigger
+		>
+		<Tabs.Trigger
+			value="ranking"
+			class="font-pixel min-h-11 px-2 text-[9px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground sm:text-[11px]"
+			>{m.start_tab_ranking()}</Tabs.Trigger
+		>
 	</Tabs.List>
 	<Tabs.Content value="search"><SearchPanel active={activeTab === 'search'} /></Tabs.Content>
 	<Tabs.Content value="import"><ImportPanel active={activeTab === 'import'} /></Tabs.Content>

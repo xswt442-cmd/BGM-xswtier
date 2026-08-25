@@ -6,7 +6,7 @@
 
 	let {
 		onFillUsername,
-		onFillIndex
+		onFillIndex,
 	}: { onFillUsername: (username: string) => void; onFillIndex: (indexId: number) => void } = $props();
 
 	// username = BGM 登录名（collections/indexes 接口只认这个，如纯数字）；

@@ -37,7 +37,11 @@
 		const generation = ++requestGeneration;
 		loading = 'index';
 		try {
-			await acceptSource({ kind: 'index', id: Number(raw), label: `#${raw}` }, await fetchIndexById(Number(raw)), generation);
+			await acceptSource(
+				{ kind: 'index', id: Number(raw), label: `#${raw}` },
+				await fetchIndexById(Number(raw)),
+				generation,
+			);
 		} finally {
 			if (generation === requestGeneration) loading = null;
 		}
@@ -59,24 +63,71 @@
 <div class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">
 	<MyInfoPanel onFillUsername={(value) => (username = value)} onFillIndex={(value) => (indexId = String(value))} />
 	<div class="grid gap-4 sm:grid-cols-2">
-		<form onsubmit={(event) => { event.preventDefault(); void submitIndex(); }} class="grid content-start gap-1.5">
+		<form
+			onsubmit={(event) => {
+				event.preventDefault();
+				void submitIndex();
+			}}
+			class="grid content-start gap-1.5"
+		>
 			<Label for="index-id" class="font-pixel text-xs">{m.entry_index_label()}</Label>
 			<div class="flex min-w-0 gap-2">
-				<Input id="index-id" type="text" inputmode="numeric" placeholder={m.entry_index_placeholder()} bind:value={indexId} class="min-w-0 flex-1" />
-				<Button type="submit" size="icon" disabled={loading !== null} aria-label={m.submit_index()}><span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span></Button>
+				<Input
+					id="index-id"
+					type="text"
+					inputmode="numeric"
+					placeholder={m.entry_index_placeholder()}
+					bind:value={indexId}
+					class="min-w-0 flex-1"
+				/>
+				<Button type="submit" size="icon" disabled={loading !== null} aria-label={m.submit_index()}
+					><span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span></Button
+				>
 			</div>
-			<div class="text-right"><a href="https://bgm.tv/index/create" target="_blank" rel="noreferrer" class="font-pixel text-[9px] text-primary hover:underline">{m.entry_index_create_link()} ↗</a></div>
+			<div class="text-right">
+				<a
+					href="https://bgm.tv/index/create"
+					target="_blank"
+					rel="noreferrer"
+					class="font-pixel text-[9px] text-primary hover:underline">{m.entry_index_create_link()} ↗</a
+				>
+			</div>
 		</form>
-		<form onsubmit={(event) => { event.preventDefault(); void submitUser(); }} class="grid content-start gap-1.5">
+		<form
+			onsubmit={(event) => {
+				event.preventDefault();
+				void submitUser();
+			}}
+			class="grid content-start gap-1.5"
+		>
 			<Label for="username" class="font-pixel text-xs">{m.entry_user_label()}</Label>
 			<div class="flex min-w-0 gap-2">
-				<Input id="username" type="text" placeholder={m.entry_user_placeholder()} bind:value={username} class="min-w-0 flex-1" />
-				<Button type="submit" size="icon" disabled={loading !== null} aria-label={m.submit_user()}><span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span></Button>
+				<Input
+					id="username"
+					type="text"
+					placeholder={m.entry_user_placeholder()}
+					bind:value={username}
+					class="min-w-0 flex-1"
+				/>
+				<Button type="submit" size="icon" disabled={loading !== null} aria-label={m.submit_user()}
+					><span class="icon-[pixelarticons--arrow-right] h-4 w-4"></span></Button
+				>
 			</div>
-			<div class="text-right"><a href="https://bangumi.tv/login" target="_blank" rel="noreferrer" class="font-pixel text-[9px] text-primary hover:underline">{m.entry_user_hint()} ↗</a></div>
+			<div class="text-right">
+				<a
+					href="https://bangumi.tv/login"
+					target="_blank"
+					rel="noreferrer"
+					class="font-pixel text-[9px] text-primary hover:underline">{m.entry_user_hint()} ↗</a
+				>
+			</div>
 		</form>
 	</div>
 	{#if error}<p role="alert" class="text-sm text-destructive">{error}</p>{/if}
 	<Separator />
-	{#if importPool.loaded}<ImportPoolPanel {active} />{:else}<p class="font-pixel py-8 text-center text-[10px] text-muted-foreground">{m.import_empty_hint()}</p>{/if}
+	{#if importPool.loaded}<ImportPoolPanel {active} />{:else}<p
+			class="font-pixel py-8 text-center text-[10px] text-muted-foreground"
+		>
+			{m.import_empty_hint()}
+		</p>{/if}
 </div>

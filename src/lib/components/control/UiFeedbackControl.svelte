@@ -6,7 +6,7 @@
 	const options: { value: UiFeedback; badge: string; label: () => string }[] = [
 		{ value: 'none', badge: 'NONE', label: () => m.feedback_none() },
 		{ value: 'arcade', badge: 'ARCADE', label: () => m.feedback_arcade() },
-		{ value: 'pulse', badge: 'PULSE', label: () => m.feedback_pulse() }
+		{ value: 'pulse', badge: 'PULSE', label: () => m.feedback_pulse() },
 	];
 </script>
 
@@ -14,7 +14,7 @@
 	chipLabel="UIFB"
 	iconClass="icon-[pixelarticons--gamepad]"
 	heading={m.ui_feedback()}
-	options={options}
+	{options}
 	current={theme.uiFeedback}
 	onSelect={(value) => theme.setUiFeedback(value as UiFeedback)}
 />

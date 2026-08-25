@@ -44,16 +44,16 @@ pnpm build     # 生产构建
 
 ## 技术栈
 
-| 层 | 技术 |
-|---|---|
-| 框架 | SvelteKit · Svelte 5 (runes) |
-| 样式 | Tailwind CSS v4 · @iconify/tailwind4 · tw-animate-css |
-| UI 组件 | bits-ui / shadcn-svelte |
-| 国际化 | Paraglide JS（`messages/en.json`、`messages/zh.json`） |
-| 数据 | openapi-fetch · @tanstack/svelte-query · p-limit |
-| 拖拽 | svelte-dnd-action |
-| 持久化 | svelte-persisted-store（localStorage） |
-| 部署 | @sveltejs/adapter-vercel |
+| 层      | 技术                                                   |
+| ------- | ------------------------------------------------------ |
+| 框架    | SvelteKit · Svelte 5 (runes)                           |
+| 样式    | Tailwind CSS v4 · @iconify/tailwind4 · tw-animate-css  |
+| UI 组件 | bits-ui / shadcn-svelte                                |
+| 国际化  | Paraglide JS（`messages/en.json`、`messages/zh.json`） |
+| 数据    | openapi-fetch · @tanstack/svelte-query · p-limit       |
+| 拖拽    | svelte-dnd-action                                      |
+| 持久化  | svelte-persisted-store（localStorage）                 |
+| 部署    | @sveltejs/adapter-vercel                               |
 
 ## 部署
 

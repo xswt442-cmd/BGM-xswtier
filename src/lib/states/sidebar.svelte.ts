@@ -10,5 +10,5 @@ export const sidebar = {
 	},
 	toggle() {
 		open = !open;
-	}
+	},
 };

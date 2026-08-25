@@ -11,7 +11,7 @@ export async function fetchIndexById(index_id: number): Promise<ItemIdentity[] |
 	const items: ItemIdentity[] = [];
 
 	const { data: firstRaw, error } = await pubClient.GET('/v0/indices/{index_id}/subjects', {
-		params: { path: { index_id }, query: { limit, offset: 0 } }
+		params: { path: { index_id }, query: { limit, offset: 0 } },
 	});
 	if (error) return undefined;
 	const firstPage = firstRaw as unknown as IndexPage | undefined;
@@ -31,11 +31,11 @@ export async function fetchIndexById(index_id: number): Promise<ItemIdentity[] |
 				plimit(() =>
 					pubClient
 						.GET('/v0/indices/{index_id}/subjects', {
-							params: { path: { index_id }, query: { limit, offset: (i + 1) * limit } }
+							params: { path: { index_id }, query: { limit, offset: (i + 1) * limit } },
 						})
-						.then((r) => r.data as unknown as IndexPage | undefined)
-				)
-			)
+						.then((r) => r.data as unknown as IndexPage | undefined),
+				),
+			),
 		);
 		for (const p of pages) {
 			for (const s of p?.data ?? []) {

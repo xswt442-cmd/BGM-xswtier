@@ -74,7 +74,7 @@ export async function searchSubjects(p: SearchParams): Promise<SearchResult> {
 		response = await pubClient.POST('/v0/search/subjects', {
 			params: { query: { limit: p.limit ?? 100, offset: p.offset ?? 0 } },
 			body: { keyword: p.keyword ?? '', filter, sort: p.sort },
-			signal: AbortSignal.timeout(15_000)
+			signal: AbortSignal.timeout(15_000),
 		});
 	} catch {
 		return { items: [], rawCount: 0, total: 0, error: true };
@@ -87,7 +87,7 @@ export async function searchSubjects(p: SearchParams): Promise<SearchResult> {
 	let items = raw;
 	if (p.platform) {
 		items = raw.filter((i) =>
-			p.platform === '其他' ? !KNOWN_PLATFORMS.includes(i.platform ?? '') : i.platform === p.platform
+			p.platform === '其他' ? !KNOWN_PLATFORMS.includes(i.platform ?? '') : i.platform === p.platform,
 		);
 	}
 	return { items, rawCount: raw.length, total: data.total ?? 0 };
@@ -120,19 +120,17 @@ export async function fetchSeason(): Promise<ItemData[]> {
 		type: [2],
 		tag: ['TV'],
 		meta_tags: ['日本'],
-		air_date: [`>=${from}`, `<${to}`]
+		air_date: [`>=${from}`, `<${to}`],
 	};
 	const PAGE = 20;
 	const all: ItemData[] = [];
 	for (let offset = 0; offset < 300; offset += PAGE) {
 		const { data, error } = await pubClient.POST('/v0/search/subjects', {
 			params: { query: { limit: PAGE, offset } },
-			body: { keyword: '', filter, sort: 'rank' }
+			body: { keyword: '', filter, sort: 'rank' },
 		});
 		if (error || !data) break;
-		const items = (data.data ?? [])
-			.map(subjectLikeToItemData)
-			.filter((i): i is ItemData => !!i);
+		const items = (data.data ?? []).map(subjectLikeToItemData).filter((i): i is ItemData => !!i);
 		all.push(...items);
 		// total 可能不准，用返回为空兜底；最多拉 300 条防死循环
 		if (items.length < PAGE || offset >= (data.total ?? 0)) break;
@@ -162,8 +160,8 @@ export async function fetchToday(concurrency = 6): Promise<ItemData[]> {
 			limit(async () => {
 				const full = await fetchSubject(s.bgm_id); // calendar 无地区字段 → 取详情判 meta_tags
 				return full?.meta_tags?.includes('日本') ? full : undefined;
-			})
-		)
+			}),
+		),
 	);
 	return detail.filter((i): i is ItemData => !!i);
 }

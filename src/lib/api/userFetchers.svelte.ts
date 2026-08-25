@@ -14,7 +14,7 @@ export async function fetchMe(): Promise<Me | undefined> {
  */
 export async function fetchUserIndexes(username: string): Promise<SlimIndex[]> {
 	const { data, error } = await localClient.GET('/api/p1/users/{username}/indexes', {
-		params: { path: { username }, query: { limit: 100, offset: 0 } }
+		params: { path: { username }, query: { limit: 100, offset: 0 } },
 	});
 	if (error || !data) throw new Error('p1 indexes fetch failed');
 	return data.data ?? [];
