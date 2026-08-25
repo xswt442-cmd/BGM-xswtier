@@ -9,6 +9,10 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # corepack 首次调用 pnpm 时按 packageManager 字段拉取固定版本，非 TTY 下禁用确认提示
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+
 jobs:
   # 静态检查 + 单测 + 构建校验
   verify:
@@ -16,7 +20,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
+      - run: corepack enable
       - uses: actions/setup-node@v7
         with:
           node-version: 24
@@ -33,7 +37,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
+      - run: corepack enable
       - uses: actions/setup-node@v7
         with:
           node-version: 24
