@@ -3,6 +3,30 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			// 首帧预置主题与语言：水合前读 localStorage 直接挂类/设 lang。
+			// applyTheme 在 onMount 才跑，缺这段时深色与中文用户会先看到一帧默认暖阳英文（FOUC）。
+			// 键名/合法值须与 theme.svelte.ts / locale.svelte.ts 保持同步，两处同改。
+			(function () {
+				try {
+					var root = document.documentElement;
+					var pick = function (key, fallback, allowed) {
+						var v = localStorage.getItem(key);
+						return allowed.indexOf(v) !== -1 ? v : fallback;
+					};
+					var scheme = pick('bgmtier-scheme', 'sun', ['sun', 'dark', 'sky']);
+					// 兼容旧 bgmtier-effects 键（与 theme.svelte.ts 同款回退）
+					var vfxRaw = localStorage.getItem('bgmtier-vfx') || localStorage.getItem('bgmtier-effects');
+					var vfx = ['none', 'neon', 'crt'].indexOf(vfxRaw) !== -1 ? vfxRaw : 'none';
+					var uifbRaw = localStorage.getItem('bgmtier-uifb') || localStorage.getItem('bgmtier-effects');
+					var uifb = ['none', 'arcade', 'pulse'].indexOf(uifbRaw) !== -1 ? uifbRaw : 'none';
+					root.classList.add('theme-' + scheme, 'effects-' + vfx, 'feedback-' + uifb);
+					root.lang = pick('bgmtier-locale', 'en', ['en', 'zh']);
+				} catch (e) {
+					/* localStorage 不可用时保持默认，交回 onMount 的 applyTheme */
+				}
+			})();
+		</script>
 		<meta name="text-scale" content="scale" />
 		<title>BGM-xswtier</title>
 		<meta name="description" content="Bangumi 动漫 tier 排名工具" />
