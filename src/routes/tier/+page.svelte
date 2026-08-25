@@ -15,7 +15,6 @@
 	import { fetchUserCollection } from '$lib/api/bgmFetchers.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { TierHistoryAction } from '$lib/utils/tierHistory';
-	import { toPng } from 'html-to-image';
 	import { encodeURL, decodeURL, exportJSON, importJSON, URL_MAX_LENGTH, SHARE_HASH_PREFIX } from '$lib/utils/tierSerialize';
 
 	let exportNode: HTMLElement;
@@ -235,6 +234,8 @@
 		statusMessage = m.exporting_png();
 		try {
 			await document.fonts.ready;
+			// 动态引入：PNG 导出非进页必需，避免 html-to-image 计入 tier 页首包
+			const { toPng } = await import('html-to-image');
 			const dataUrl = await toPng(exportNode, {
 				pixelRatio: 2,
 				cacheBust: true,
