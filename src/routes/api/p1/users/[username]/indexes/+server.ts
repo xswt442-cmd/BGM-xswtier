@@ -16,7 +16,13 @@ export const GET: RequestHandler = async ({ params, url, request }) => {
 	if (auth) headers['Authorization'] = auth;
 
 	const target = `https://next.bgm.tv/p1/users/${encodeURIComponent(username)}/indexes?limit=${limit}&offset=${offset}`;
-	const res = await fetch(target, { headers, signal: AbortSignal.timeout(15_000) });
+	let res: Response;
+	try {
+		res = await fetch(target, { headers, signal: AbortSignal.timeout(15_000) });
+	} catch {
+		// DNS/连接失败等网络层异常：返回与下方错误分支一致的 JSON 结构，而非 SvelteKit 默认 500 页
+		return json({ error: 'p1 indexes proxy: upstream unreachable' }, { status: 502 });
+	}
 	if (!res.ok) {
 		return json({ error: `p1 indexes proxy failed: ${res.status}` }, { status: res.status });
 	}
