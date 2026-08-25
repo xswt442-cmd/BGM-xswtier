@@ -1,12 +1,7 @@
 import type { ItemData, TierStore } from '$lib/schemas/item';
 
 export type TierHistoryAction =
-	| 'move_item'
-	| 'reorder_tier'
-	| 'add_tier'
-	| 'delete_tier'
-	| 'rename_tier'
-	| 'recolor_tier';
+	'move_item' | 'reorder_tier' | 'add_tier' | 'delete_tier' | 'rename_tier' | 'recolor_tier';
 
 export type TierHistoryEntry = {
 	store: TierStore;
@@ -23,7 +18,7 @@ function mergeItems(store: TierStore, items: ItemData[]): TierStore {
 	const next = cloneStore(store);
 	const seen = new Set([
 		...next.tiers.flatMap((tier) => tier.items.map((item) => item.id)),
-		...next.collectionTierItems.map((item) => item.id)
+		...next.collectionTierItems.map((item) => item.id),
 	]);
 	for (const item of items) {
 		if (!seen.has(item.id)) {
@@ -52,7 +47,7 @@ export class TierHistory {
 	constructor(
 		readonly limit = 50,
 		readonly maxSnapshotChars = 2_000_000,
-		minKeep = 10
+		minKeep = 10,
 	) {
 		this.#minKeep = Math.max(1, Math.min(minKeep, limit));
 	}
@@ -82,6 +77,8 @@ export class TierHistory {
 		const size = active.key.length;
 		this.#past.push({ ...active.entry, size });
 		this.#pastBytes += size;
+		// 新分支：redo 栈作废
+		this.#future = [];
 		this.#evictOverflow();
 		return true;
 	}
@@ -90,8 +87,7 @@ export class TierHistory {
 	#evictOverflow() {
 		while (
 			this.#past.length > 0 &&
-			(this.#past.length > this.limit ||
-				(this.#pastBytes > this.maxSnapshotChars && this.#past.length > this.#minKeep))
+			(this.#past.length > this.limit || (this.#pastBytes > this.maxSnapshotChars && this.#past.length > this.#minKeep))
 		) {
 			this.#pastBytes -= this.#past[0].size;
 			this.#past.shift();
@@ -138,7 +134,7 @@ export class TierHistory {
 		if (this.#active) {
 			this.#active = {
 				...this.#active,
-				entry: { ...this.#active.entry, store: mergeItems(this.#active.entry.store, items) }
+				entry: { ...this.#active.entry, store: mergeItems(this.#active.entry.store, items) },
 			};
 		}
 	}
