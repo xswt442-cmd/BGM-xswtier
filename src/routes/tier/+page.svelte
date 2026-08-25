@@ -11,6 +11,7 @@
 	import { tierData } from '$lib/states/tierData.svelte';
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { sidebar } from '$lib/states/sidebar.svelte';
+	import { toProxiedImageUrl } from '$lib/utils/imageProxy';
 	import { fetchIndexById } from '$lib/api/indexFetchers.svelte';
 	import { fetchUserCollection } from '$lib/api/bgmFetchers.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -238,8 +239,17 @@
 		if (!exportNode || isExporting) return;
 		isExporting = true;
 		statusMessage = m.exporting_png();
+		// lain CDN 无 CORS 头，html-to-image 跨域 fetch 取不到封面字节 → 导出图缺封面。
+		// 导出期间把节点内图片临时改写为同源代理地址，完成后在 finally 恢复原图。
+		const imgs = [...exportNode.querySelectorAll('img')];
+		const originalSrcs = imgs.map((img) => img.getAttribute('src'));
+		imgs.forEach((img, i) => {
+			const proxied = toProxiedImageUrl(originalSrcs[i]);
+			if (proxied) img.setAttribute('src', proxied);
+		});
 		try {
 			await document.fonts.ready;
+			await Promise.all(imgs.map((img) => img.decode().catch(() => {})));
 			// 动态引入：PNG 导出非进页必需，避免 html-to-image 计入 tier 页首包
 			const { toPng } = await import('html-to-image');
 			const dataUrl = await toPng(exportNode, {
@@ -259,6 +269,11 @@
 			console.error('[Tier export] Failed', error);
 			statusMessage = m.export_png_failed();
 		} finally {
+			imgs.forEach((img, i) => {
+				const src = originalSrcs[i];
+				if (src === null) img.removeAttribute('src');
+				else img.setAttribute('src', src);
+			});
 			isExporting = false;
 		}
 	}
