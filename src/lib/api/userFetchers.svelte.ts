@@ -19,3 +19,15 @@ export async function fetchUserIndexes(username: string): Promise<SlimIndex[]> {
 	if (error || !data) throw new Error('p1 indexes fetch failed');
 	return data.data ?? [];
 }
+
+/**
+ * 某用户收藏的目录列表（年度精选等官方/他人目录在此枚举，经同源 /api/p1 代理）。
+ * 失败直接抛错，由调用方决定降级策略。
+ */
+export async function fetchUserCollectedIndexes(username: string): Promise<SlimIndex[]> {
+	const { data, error } = await localClient.GET('/api/p1/users/{username}/collections/indexes', {
+		params: { path: { username }, query: { limit: 100, offset: 0 } },
+	});
+	if (error || !data) throw new Error('p1 collected indexes fetch failed');
+	return data.data ?? [];
+}

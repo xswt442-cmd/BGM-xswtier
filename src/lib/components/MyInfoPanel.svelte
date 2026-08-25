@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { apiToken } from '$lib/states/token.svelte';
-	import { fetchMe, fetchUserIndexes } from '$lib/api/userFetchers.svelte';
+	import { fetchMe, fetchUserIndexes, fetchUserCollectedIndexes } from '$lib/api/userFetchers.svelte';
 	import { m } from '$lib/paraglide/messages';
 
 	let {
@@ -14,6 +14,9 @@
 	let username = $state<string | null>(null);
 	let nickname = $state<string | null>(null);
 	let indexes = $state<{ id: number; title: string }[]>([]);
+	/** 收藏的目录（年度精选等官方/他人目录）——独立加载，失败只降级本区 */
+	let collected = $state<{ id: number; title: string }[]>([]);
+	let collectedError = $state(false);
 	let loading = $state(false);
 	/** /v0/me 整体失败（token 无效等），用户名不可用 */
 	let error = $state<string | null>(null);
@@ -35,6 +38,8 @@
 			username = null;
 			nickname = null;
 			indexes = [];
+			collected = [];
+			collectedError = false;
 			error = null;
 			indexesError = false;
 			loading = false;
@@ -64,6 +69,15 @@
 			console.error('[MyInfoPanel] indexes', e);
 			indexes = [];
 			indexesError = true;
+		}
+		// 收藏的目录（年度精选等）：独立降级，失败不干扰自建目录展示
+		collectedError = false;
+		try {
+			collected = await fetchUserCollectedIndexes(me.username);
+		} catch (e) {
+			console.error('[MyInfoPanel] collected indexes', e);
+			collected = [];
+			collectedError = true;
 		} finally {
 			loading = false;
 		}
@@ -116,6 +130,26 @@
 				</ul>
 			{:else}
 				<p class="text-[10px] text-muted-foreground">{m.me_no_indexes()}</p>
+			{/if}
+			{#if collected.length > 0}
+				<p class="font-pixel mt-1 text-[9px] text-muted-foreground">{m.me_collected_indexes()}</p>
+				<ul class="grid max-h-36 gap-0.5 overflow-y-auto pr-0.5">
+					{#each collected as idx (idx.id)}
+						<li>
+							<button
+								class="flex w-full items-center gap-1.5 rounded border border-border/50 bg-background/50 px-2 py-1 text-left text-[11px] transition-colors hover:bg-accent/60"
+								onclick={() => onFillIndex(idx.id)}
+								title={idx.title}
+							>
+								<span class="icon-[pixelarticons--star] h-3.5 w-3.5 shrink-0 text-accent"></span>
+								<span class="min-w-0 flex-1 truncate">{idx.title}</span>
+								<span class="shrink-0 text-[9px] text-muted-foreground">#{idx.id}</span>
+							</button>
+						</li>
+					{/each}
+				</ul>
+			{:else if collectedError && !indexesError}
+				<p class="mt-1 text-[10px] text-destructive">{m.me_indexes_failed()}</p>
 			{/if}
 		{:else}
 			<p class="text-[10px] text-muted-foreground">{m.me_loading()}</p>

@@ -26,6 +26,14 @@ type LocalPaths = {
 			};
 		};
 	};
+	'/api/p1/users/{username}/collections/indexes': {
+		get: {
+			parameters: { path: { username: string }; query?: { limit?: number; offset?: number } };
+			responses: {
+				200: { content: { 'application/json': Paged_SlimIndex } };
+			};
+		};
+	};
 };
 
 export const localClient = createClient<LocalPaths>({

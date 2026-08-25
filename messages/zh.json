@@ -17,6 +17,7 @@
 	"me_my_info": "我的信息",
 	"me_fill_username": "填入用户名",
 	"me_no_indexes": "暂无自建目录",
+	"me_collected_indexes": "收藏的目录",
 	"me_fetch_failed": "读取账号信息失败，token 是否有效？",
 	"me_retry": "重试",
 	"me_loading": "读取中…",

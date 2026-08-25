@@ -17,6 +17,7 @@
 	"me_my_info": "MY INFO",
 	"me_fill_username": "Fill username",
 	"me_no_indexes": "No indexes yet",
+	"me_collected_indexes": "Collected indexes",
 	"me_fetch_failed": "Could not load your account. Is the token valid?",
 	"me_retry": "RETRY",
 	"me_loading": "Loading…",
