@@ -1,0 +1,17 @@
+# 统一换行：仓库内一律 LF，检出也不转 CRLF。
+# 背景：Windows autocrlf smudge 会把工作树改成 CRLF，导致本地与 CI 的
+# prettier --check 结论分裂（2026-08-25 CI format:check 连挂的根因之一）；
+# 全部 blob 已是 LF，此文件只锁定现状并消除跨平台差异。
+* text=auto eol=lf
+
+# 二进制不走任何转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff2 binary
+*.woff binary
+*.zip binary
+*.webm binary

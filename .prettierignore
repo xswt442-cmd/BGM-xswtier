@@ -6,3 +6,6 @@ static/fonts/
 testplace/
 dev-docs/
 pnpm-lock.yaml
+# inlang SDK 每次 install/prepare 重新生成的机器文件（CI 上现生成脏格式，格式化无意义）
+project.inlang/.meta.json
+project.inlang/README.md

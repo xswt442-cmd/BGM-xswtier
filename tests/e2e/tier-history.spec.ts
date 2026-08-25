@@ -82,7 +82,7 @@ test.describe('Tier undo and redo', () => {
 	test('recolors and deletes a tier with one undo step each', async ({ page }) => {
 		await seedTierPage(page);
 		await page.getByLabel('Tier settings').first().click();
-		await page.getByRole('button', { name: 'var(--chart-8)' }).click();
+		await page.getByRole('button', { name: /pink/i }).click();
 		await expect(page.getByTestId('undo-button')).toBeEnabled();
 		await page.getByTestId('undo-button').click();
 		await expect(page.getByTestId('redo-button')).toBeEnabled();
