@@ -48,14 +48,6 @@
 		</div>
 	</div>
 
-	<!-- 底部技术栈小标记：呈现软件项目身份（GitHub 链接已在状态栏） -->
-	<footer class="px-4 pb-3 pt-2 text-center">
-		<p class="font-pixel text-[10px] leading-relaxed text-muted-foreground sm:text-[11px]">
-			{m.footer_open_source()} <span class="text-accent">·</span>
-			{m.footer_tech_stack()}
-		</p>
-	</footer>
-
 	<!-- 底部 ==== 屏幕边框 -->
 	<div class="border-b-4 border-double border-foreground/50"></div>
 </div>

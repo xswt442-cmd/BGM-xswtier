@@ -193,8 +193,6 @@
 	"export_tier": "EXPORT JSON",
 	"export_json_success": "JSON saved",
 	"export_json_failed": "JSON export failed",
-	"footer_open_source": "Open-source web app",
-	"footer_tech_stack": "SvelteKit 5 · TypeScript · Tailwind CSS",
 	"github_view_source": "View source on GitHub",
 	"tier_drag_handle": "Drag tier to reorder",
 	"tier_reorder_zone": "Tier list",
