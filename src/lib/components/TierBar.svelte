@@ -52,6 +52,18 @@
 		'var(--chart-7)',
 		'var(--chart-8)',
 	];
+	// 色板读屏标签：三主题色相一致（红橙黄绿青蓝紫粉），用具名颜色而非 CSS 变量名；
+	// 存消息函数引用、模板内调用，语言切换即时生效
+	const COLOR_LABELS = [
+		m.chart_color_1,
+		m.chart_color_2,
+		m.chart_color_3,
+		m.chart_color_4,
+		m.chart_color_5,
+		m.chart_color_6,
+		m.chart_color_7,
+		m.chart_color_8,
+	];
 
 	function commitRename() {
 		const trimmed = draftLabel.trim();
@@ -130,12 +142,13 @@
 						<div class="grid gap-1.5">
 							<span class="text-xs font-semibold">{m.color_scheme()}</span>
 							<div class="flex flex-wrap items-center gap-1.5">
-								{#each PRESETS as p (p)}
+								{#each PRESETS as p, i (p)}
 									<button
 										type="button"
 										class="pixel-border h-6 w-6 rounded-full"
 										style="background: {p};"
-										aria-label={p}
+										aria-label={COLOR_LABELS[i]()}
+										title={COLOR_LABELS[i]()}
 										onclick={() => onColorChange?.(p)}
 									></button>
 								{/each}
@@ -143,6 +156,7 @@
 									<input
 										type="color"
 										class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+										aria-label={m.custom_color()}
 										onchange={(e) => onColorChange?.(e.currentTarget.value)}
 									/>
 								</label>

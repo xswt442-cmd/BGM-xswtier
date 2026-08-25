@@ -33,6 +33,8 @@
 	let shareWarning = $state('');
 	// 目录/用户名入口的加载失败提示（undefined = 请求失败；空数组 = 来源本身为空）
 	let loadError = $state(false);
+	// 分享链接带 #state= 前缀但解码失败（坏链接）
+	let shareError = $state(false);
 	let importing = $state(false);
 	let importInput: HTMLInputElement | undefined = $state();
 	let copyTimer: ReturnType<typeof setTimeout> | undefined;
@@ -279,6 +281,13 @@
 		// 分享链接恢复：hash 优先于 index/user/source（payload 自带渲染数据，无需 API 反查）
 		const hash = window.location.hash;
 		const shared = hash ? decodeURL(hash) : null;
+		if (!shared && hash && hash.replace(/^#/, '').startsWith(SHARE_HASH_PREFIX)) {
+			// 带 #state= 前缀但解码失败：坏链接。可见报错、留在本地会话，
+			// 并清掉坏 hash 防止刷新时重复触发。
+			shareError = true;
+			replaceState(window.location.pathname + window.location.search, {});
+			return;
+		}
 		if (shared) {
 			// payload 会整体替换本地会话（含自动持久化的未导出成果）。
 			// 刷新/前进后退本页时静默恢复（与自动持久化基线行为一致）；
@@ -371,6 +380,9 @@
 		{/if}
 		{#if loadError}
 			<p class="font-pixel mb-1 text-[10px] text-destructive" role="alert">{m.entry_load_failed()}</p>
+		{/if}
+		{#if shareError}
+			<p class="font-pixel mb-1 text-[10px] text-destructive" role="alert">{m.share_link_invalid()}</p>
 		{/if}
 		<input bind:this={importInput} type="file" accept="application/json,.json" class="hidden" onchange={onImportFile} />
 		<p class="sr-only" aria-live="polite">{statusMessage}</p>
