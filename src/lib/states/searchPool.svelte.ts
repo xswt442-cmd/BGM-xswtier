@@ -1,6 +1,7 @@
 import { persisted } from 'svelte-persisted-store';
 import { get } from 'svelte/store';
 import { freshById } from '$lib/utils';
+import { storageWarning } from '$lib/states/storageWarning.svelte';
 import type { ItemData } from '$lib/schemas/item';
 
 // 排名池：跨路由持久化的核心变量。
@@ -11,7 +12,8 @@ function defaultPool(): ItemData[] {
 	return [];
 }
 
-const storage = persisted<ItemData[]>('bgmtier-search-pool', defaultPool(), { syncTabs: false });
+const STORAGE_KEY = 'bgmtier-search-pool';
+const storage = persisted<ItemData[]>(STORAGE_KEY, defaultPool(), { syncTabs: false });
 
 // $state 是 UI 活模型（可被双池增删改），$effect 负责 flush 回 persisted store → localStorage
 const initialPool = get(storage);
@@ -26,17 +28,38 @@ function replacePool(next: ItemData[]) {
 // 持久化去抖：与 tierData 同策略（300ms trailing 合并写盘；pagehide / 页面隐藏立即落盘）。
 // REMAKE 清库后无新变更即无 pending 定时器，flush 为 no-op，不会把旧池写回存储。
 let persistTimer: ReturnType<typeof setTimeout> | undefined;
+// 写盘校验：svelte-persisted-store 会吞掉写盘异常（仅 console.error），
+// 配额溢出靠「回读比对」检测；比对含全量 stringify，走 5s 间隔脏检查，
+// pagehide / 页面隐藏时同步强制校验（与 tierData 同策略）。
+let dirtySinceVerify = false;
 
 function flushPersist() {
 	if (persistTimer === undefined) return;
 	clearTimeout(persistTimer);
 	persistTimer = undefined;
-	storage.set(JSON.parse(JSON.stringify(pool)));
+	storage.set(pool);
+	dirtySinceVerify = true;
+}
+
+function verifyPersisted() {
+	if (!dirtySinceVerify || typeof localStorage === 'undefined') return;
+	dirtySinceVerify = false;
+	if (localStorage.getItem(STORAGE_KEY) === JSON.stringify(pool)) {
+		storageWarning.clear();
+	} else {
+		console.warn('[searchPool] persist verification failed (quota?)');
+		storageWarning.trigger();
+	}
 }
 
 function schedulePersist() {
 	if (persistTimer !== undefined) return; // 已有排程：保持最早到期时间，连续操作期间周期性落盘
 	persistTimer = setTimeout(flushPersist, 300);
+}
+
+function persistNow() {
+	flushPersist();
+	verifyPersisted();
 }
 
 $effect.root(() => {
@@ -47,10 +70,11 @@ $effect.root(() => {
 });
 
 if (typeof window !== 'undefined') {
-	window.addEventListener('pagehide', flushPersist);
+	window.addEventListener('pagehide', persistNow);
 	document.addEventListener('visibilitychange', () => {
-		if (document.visibilityState === 'hidden') flushPersist();
+		if (document.visibilityState === 'hidden') persistNow();
 	});
+	setInterval(verifyPersisted, 5000);
 }
 
 export const searchPool = {

@@ -98,6 +98,12 @@
 		return action;
 	}
 
+	/** 按评分把未排名集合预分档（单事务可撤销），完成后播报结果 */
+	function autoDistribute() {
+		tierData.autoDistributeByScore();
+		statusMessage = m.auto_distribute_done();
+	}
+
 	function redo() {
 		const action = tierData.redo();
 		if (action) statusMessage = m.redo_success({ action: historyActionLabel(action) });
@@ -411,6 +417,18 @@
 					TIER LIST
 				</span>
 				<div class="ml-auto flex items-center gap-1" data-export-exclude>
+					<Button
+						variant="outline"
+						size="icon"
+						class="h-9 w-9"
+						onclick={autoDistribute}
+						disabled={tierData.collection.length === 0 || isExporting}
+						aria-label={m.auto_distribute()}
+						title={m.auto_distribute()}
+						data-testid="auto-distribute-button"
+					>
+						<span class="icon-[pixelarticons--sort] h-4 w-4"></span>
+					</Button>
 					<Button
 						variant="outline"
 						size="icon"

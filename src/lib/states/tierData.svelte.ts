@@ -3,6 +3,8 @@ import { get } from 'svelte/store';
 import { SHADOW_PLACEHOLDER_ITEM_ID } from 'svelte-dnd-action';
 import type { ItemData, TierDef, TierDraft, TierStore } from '$lib/schemas/item';
 import { TierHistory, type TierHistoryAction } from '$lib/utils/tierHistory';
+import { distributeByScore } from '$lib/utils/autoDistribute';
+import { storageWarning } from '$lib/states/storageWarning.svelte';
 
 export function uid(): string {
 	return crypto.randomUUID();
@@ -22,8 +24,10 @@ function defaultStore(): TierStore {
 	return { version: 1, tiers: defaultTiers(), collectionTierItems: [] };
 }
 
-const storage = persisted<TierStore>('tierData-v2', defaultStore(), { syncTabs: false });
-const draftStorage = persisted<TierDraft | null>('bgmtier-draft-v1', null, { syncTabs: false });
+const STORE_KEY = 'tierData-v2';
+const DRAFT_KEY = 'bgmtier-draft-v1';
+const storage = persisted<TierStore>(STORE_KEY, defaultStore(), { syncTabs: false });
+const draftStorage = persisted<TierDraft | null>(DRAFT_KEY, null, { syncTabs: false });
 
 // $state 是 UI 活模型（可被 dndzone bindable 改），$effect 负责 flush 回 persisted store → localStorage
 let tiers = $state<TierDef[]>(get(storage).tiers);
@@ -91,17 +95,39 @@ function transact(action: TierHistoryAction, mutation: () => void) {
 // 变更只做依赖追踪并合并到 300ms trailing 写入；pagehide / 页面隐藏时立即 flush，
 // 保证「改完立刻刷新/关标签」不丢尾部数据。
 let persistTimer: ReturnType<typeof setTimeout> | undefined;
+// 写盘校验：svelte-persisted-store 内部会吞掉写盘异常（仅 console.error），
+// 配额溢出靠「回读比对」检测。比对含全量 stringify，为不拖累拖拽热路径
+// 改成 5s 间隔的脏检查（pagehide / 页面隐藏时同步强制校验一次）。
+let lastSnapshot: TierStore | undefined;
+let dirtySinceVerify = false;
 
 function flushPersist() {
 	if (persistTimer === undefined) return;
 	clearTimeout(persistTimer);
 	persistTimer = undefined;
-	storage.set(JSON.parse(JSON.stringify(cleanStore())));
+	storage.set((lastSnapshot = cleanStore()));
+	dirtySinceVerify = true;
+}
+
+function verifyPersisted() {
+	if (!dirtySinceVerify || typeof localStorage === 'undefined' || !lastSnapshot) return;
+	dirtySinceVerify = false;
+	if (localStorage.getItem(STORE_KEY) === JSON.stringify(lastSnapshot)) {
+		storageWarning.clear();
+	} else {
+		console.warn('[tierData] persist verification failed (quota?)');
+		storageWarning.trigger();
+	}
 }
 
 function schedulePersist() {
 	if (persistTimer !== undefined) return; // 已有排程：保持最早到期时间，持续编辑期间周期性落盘
 	persistTimer = setTimeout(flushPersist, 300);
+}
+
+function persistNow() {
+	flushPersist();
+	verifyPersisted();
 }
 
 $effect.root(() => {
@@ -112,10 +138,11 @@ $effect.root(() => {
 });
 
 if (typeof window !== 'undefined') {
-	window.addEventListener('pagehide', flushPersist);
+	window.addEventListener('pagehide', persistNow);
 	document.addEventListener('visibilitychange', () => {
-		if (document.visibilityState === 'hidden') flushPersist();
+		if (document.visibilityState === 'hidden') persistNow();
 	});
+	setInterval(verifyPersisted, 5000);
 }
 
 $effect.root(() => {
@@ -206,6 +233,13 @@ export const tierData = {
 			syncHistoryDepth();
 		}
 	},
+	/** 按评分预分档：未排名集合降序均匀切到当前各档（无分垫底），单事务可撤销 */
+	autoDistributeByScore() {
+		transact('move_item', () => {
+			tiers = distributeByScore(tiers, collection).tiers;
+			collection = [];
+		});
+	},
 	/** 拖拽完成后清除 shadow，并确保所有容器内 ID 全局唯一。 */
 	normalize() {
 		const clean = cleanStore();
@@ -225,7 +259,11 @@ export const tierData = {
 		const clean = cleanStore();
 		const savedAt = new Date().toISOString();
 		draft = { ...JSON.parse(JSON.stringify(clean)), savedAt };
-		draftStorage.set(JSON.parse(JSON.stringify(draft)));
+		draftStorage.set(draft);
+		if (typeof localStorage !== 'undefined' && localStorage.getItem(DRAFT_KEY) !== JSON.stringify(draft)) {
+			console.warn('[tierData] draft persist verification failed (quota?)');
+			storageWarning.trigger();
+		}
 		return savedAt;
 	},
 	restoreDraft() {

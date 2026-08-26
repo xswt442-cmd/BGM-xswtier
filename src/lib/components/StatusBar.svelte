@@ -7,6 +7,8 @@
 	import GitHubLink from './control/GitHubLink.svelte';
 	import RemakeControl from './control/RemakeControl.svelte';
 	import SidebarToggle from './control/SidebarToggle.svelte';
+	import { storageWarning } from '$lib/states/storageWarning.svelte';
+	import { m } from '$lib/paraglide/messages';
 	import { cn } from '$lib/utils';
 
 	let { showToggle = false, centered = false }: { showToggle?: boolean; centered?: boolean } = $props();
@@ -18,6 +20,15 @@
 		centered ? 'justify-center' : 'sm:justify-end',
 	)}
 >
+	{#if storageWarning.active}
+		<span
+			class="font-pixel inline-flex cursor-help items-center whitespace-nowrap rounded-sm border-2 border-destructive px-2 py-1.5 text-[10px] leading-none text-destructive sm:py-1"
+			role="alert"
+			title={m.storage_quota_title()}
+		>
+			{m.storage_quota_exceeded()}
+		</span>
+	{/if}
 	<ColorControl />
 	<EffectsControl />
 	<UiFeedbackControl />
