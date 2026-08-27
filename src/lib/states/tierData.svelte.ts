@@ -3,6 +3,7 @@ import { get } from 'svelte/store';
 import { SHADOW_PLACEHOLDER_ITEM_ID } from 'svelte-dnd-action';
 import type { ItemData, TierDef, TierDraft, TierStore } from '$lib/schemas/item';
 import { TierHistory, type TierHistoryAction } from '$lib/utils/tierHistory';
+import { migrateStore } from '$lib/utils/tierSerialize';
 import { distributeByScore } from '$lib/utils/autoDistribute';
 import { storageWarning } from '$lib/states/storageWarning.svelte';
 
@@ -30,9 +31,11 @@ const storage = persisted<TierStore>(STORE_KEY, defaultStore(), { syncTabs: fals
 const draftStorage = persisted<TierDraft | null>(DRAFT_KEY, null, { syncTabs: false });
 
 // $state 是 UI 活模型（可被 dndzone bindable 改），$effect 负责 flush 回 persisted store → localStorage
-let tiers = $state<TierDef[]>(get(storage).tiers);
-let collection = $state<ItemData[]>(get(storage).collectionTierItems);
-let draft = $state<TierDraft | null>(get(draftStorage));
+// 初始化经 migrateStore：旧版本数据自动沿阶梯升级，未来版本/损坏数据回落默认会话
+const initialStore = migrateStore(get(storage)) ?? defaultStore();
+let tiers = $state<TierDef[]>(initialStore.tiers);
+let collection = $state<ItemData[]>(initialStore.collectionTierItems);
+let draft = $state<TierDraft | null>(migrateStore(get(draftStorage)) as TierDraft | null);
 const history = new TierHistory(50);
 let historyDepth = $state({ past: 0, future: 0 });
 let historyCommitTimer: ReturnType<typeof setTimeout> | undefined;

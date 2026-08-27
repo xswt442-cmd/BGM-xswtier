@@ -118,6 +118,34 @@ export function exportJSON(store: TierStore): string {
 export type ImportResult =
 	{ ok: true; store: TierStore } | { ok: false; reason: 'parse-error' | 'invalid-shape' | 'empty' };
 
+/** 当前数据契约版本；schema 变更时递增并往 MIGRATIONS 追加升级步骤 */
+export const STORE_VERSION = 1;
+
+type Migration = { from: number; migrate: (raw: Record<string, unknown>) => unknown };
+// 版本升级阶梯（按 from 升序）。首个用例出现时在此追加，migrateStore 即自动逐级应用。
+// 形如：{ from: 1, migrate: (raw) => ({ ...raw, newField: default }) }
+const MIGRATIONS: Migration[] = [];
+
+/**
+ * 历史数据统一入口（localStorage 初始化 / JSON 导入共用）：
+ * 校验 version → 沿 MIGRATIONS 阶梯逐级升级到当前版本 → validateStore 终检。
+ * 返回 null 表示无法安全理解（未来版本 / 结构损坏），调用方应走默认会话或拒绝导入。
+ */
+export function migrateStore(raw: unknown): TierStore | null {
+	if (typeof raw !== 'object' || raw === null) return null;
+	const o = raw as Record<string, unknown>;
+	const v = o.version;
+	if (typeof v !== 'number' || !Number.isInteger(v)) return null;
+	if (v > STORE_VERSION) return null; // 未来版本：旧前端明确拒绝，不做猜测式兼容
+	let current: unknown = raw;
+	for (let step = v; step < STORE_VERSION; step += 1) {
+		const migration = MIGRATIONS.find((m) => m.from === step);
+		if (!migration) return null;
+		current = migration.migrate(current as Record<string, unknown>);
+	}
+	return validateStore(current) ? (current as TierStore) : null;
+}
+
 function isItemData(v: unknown): boolean {
 	if (typeof v !== 'object' || v === null) return false;
 	const o = v as Record<string, unknown>;
@@ -156,8 +184,8 @@ export function importJSON(text: string): ImportResult {
 	} catch {
 		return { ok: false, reason: 'parse-error' };
 	}
-	if (!validateStore(parsed)) return { ok: false, reason: 'invalid-shape' };
-	const store = parsed as TierStore;
+	const store = migrateStore(parsed);
+	if (!store) return { ok: false, reason: 'invalid-shape' };
 	if (store.tiers.length === 0) return { ok: false, reason: 'empty' };
 	return { ok: true, store };
 }
