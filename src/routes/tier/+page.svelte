@@ -7,11 +7,13 @@
 	import TierBar from '$lib/components/TierBar.svelte';
 	import ItemList from '$lib/components/ItemList.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { Popover, PopoverTrigger } from '$lib/components/ui/popover';
 	import { Sheet, SheetClose, SheetTitle } from '$lib/components/ui/sheet';
 	import { tierData } from '$lib/states/tierData.svelte';
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { sidebar } from '$lib/states/sidebar.svelte';
 	import { toProxiedImageUrl } from '$lib/utils/imageProxy';
+	import { toMarkdown, toBBCode } from '$lib/utils/tierExportText';
 	import { fetchIndexById } from '$lib/api/indexFetchers.svelte';
 	import { fetchUserCollection } from '$lib/api/bgmFetchers.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -156,16 +158,33 @@
 		if (!hasSessionItems) return;
 		try {
 			const json = exportJSON(tierData.snapshot());
-			const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
-			const a = document.createElement('a');
-			a.href = url;
-			a.download = `bgm-xswtier-tier-${new Date().toISOString().slice(0, 10)}.json`;
-			a.click();
-			URL.revokeObjectURL(url);
+			downloadTextFile(`bgm-xswtier-tier-${new Date().toISOString().slice(0, 10)}.json`, json, 'application/json');
 			statusMessage = m.export_json_success();
 		} catch {
 			statusMessage = m.export_json_failed();
 		}
+	}
+
+	function downloadTextFile(filename: string, text: string, mime = 'text/plain') {
+		const url = URL.createObjectURL(new Blob([text], { type: `${mime};charset=utf-8` }));
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	/** 发帖向文本导出：Markdown / BBCode（文件名带当日日期） */
+	function exportText(format: 'markdown' | 'bbcode') {
+		if (!hasSessionItems) return;
+		const store = tierData.snapshot();
+		const stamp = new Date().toISOString().slice(0, 10);
+		if (format === 'markdown') {
+			downloadTextFile(`bgm-xswtier-${stamp}.md`, toMarkdown(store), 'text/markdown');
+		} else {
+			downloadTextFile(`bgm-xswtier-${stamp}.bbcode.txt`, toBBCode(store));
+		}
+		statusMessage = m.export_file_success();
 	}
 
 	/** 从 JSON 文件恢复会话：校验通过才 loadStore，失败只提示不动状态 */
@@ -384,14 +403,39 @@
 			>
 				{importing ? m.importing() : m.import_tier()}
 			</Button>
-			<Button
-				class="font-pixel h-11 text-[10px] text-black hover:opacity-85 sm:h-9"
-				style="background-color: var(--chart-5)"
-				onclick={exportTierJson}
-				disabled={!hasSessionItems}
-			>
-				{m.export_tier()}
-			</Button>
+			<Popover>
+				<PopoverTrigger
+					class="font-pixel inline-flex h-11 items-center justify-center gap-1 rounded-md text-[10px] text-black transition-opacity hover:opacity-85 disabled:pointer-events-none disabled:opacity-50 sm:h-9"
+					style="background-color: var(--chart-5)"
+					disabled={!hasSessionItems}
+				>
+					{m.export_menu()}
+					<span class="icon-[pixelarticons--chevron-down] h-3.5 w-3.5"></span>
+				</PopoverTrigger>
+				{#snippet content()}
+					<div class="grid gap-1">
+						<Button variant="ghost" size="sm" class="font-pixel justify-start text-[10px]" onclick={exportTierJson}>
+							{m.export_tier()}
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							class="font-pixel justify-start text-[10px]"
+							onclick={() => exportText('markdown')}
+						>
+							{m.export_markdown()}
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							class="font-pixel justify-start text-[10px]"
+							onclick={() => exportText('bbcode')}
+						>
+							{m.export_bbcode()}
+						</Button>
+					</div>
+				{/snippet}
+			</Popover>
 			<Button class="font-pixel h-11 text-[10px] sm:h-9" onclick={exportPng} disabled={isExporting}>
 				{isExporting ? m.exporting_png() : m.save_png()}
 			</Button>
