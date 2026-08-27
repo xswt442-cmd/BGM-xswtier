@@ -12,6 +12,8 @@ export default defineConfig({
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure',
 		video: 'retain-on-failure',
+		// PWA service worker 会拦截同源请求、绕过 page.route 的 API mock——E2E 里一律屏蔽
+		serviceWorkers: 'block',
 	},
 	projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 	webServer: {

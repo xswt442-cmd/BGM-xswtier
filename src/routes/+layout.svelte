@@ -6,6 +6,7 @@
 	import { locale } from '$lib/states/locale.svelte';
 	import StatusBar from '$lib/components/StatusBar.svelte';
 	import { applyAriaStrings } from '$lib/dndAria';
+	import { createErrorReporter, installGlobalErrorReporting } from '$lib/utils/errorReport';
 
 	let { children } = $props();
 
@@ -13,6 +14,26 @@
 		// 双轴主题类 + 语言 attr 挂到 <html>
 		applyTheme();
 		document.documentElement.lang = locale.current;
+		// 生产环境：全局错误上报到同源 /api/log（服务端落 Vercel 日志），静默失败不干扰使用
+		if (import.meta.env.PROD) {
+			const report = createErrorReporter((payload) => {
+				try {
+					void fetch('/api/log', {
+						method: 'POST',
+						headers: { 'content-type': 'application/json' },
+						body: JSON.stringify(payload),
+						keepalive: true,
+					}).catch(() => {});
+				} catch {
+					/* 上报本身绝不抛错 */
+				}
+			});
+			installGlobalErrorReporting(report);
+		}
+		// PWA：注册 service worker（离线壳 + 静态资源缓存），仅生产构建
+		if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+		}
 	});
 
 	$effect(() => {
