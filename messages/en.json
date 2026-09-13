@@ -225,5 +225,18 @@
 	"history_add_tier": "tier addition",
 	"history_delete_tier": "tier deletion",
 	"history_rename_tier": "tier rename",
-	"history_recolor_tier": "tier color change"
+	"history_recolor_tier": "tier color change",
+	"domain_migration_old_title": "WE MOVED!",
+	"domain_migration_old_description": "This legacy address has been replaced by our official domain. Browser data is isolated by domain, so download a migration backup before opening the new site.",
+	"domain_migration_new_title": "BRING YOUR DATA",
+	"domain_migration_new_description": "Import the migration backup downloaded from the old vercel.app address. Existing tier data, drafts, ranking pool and appearance settings will be replaced.",
+	"domain_migration_token_note": "For your safety, access tokens are never included. Enter your token again on the new domain.",
+	"domain_migration_export": "DOWNLOAD BACKUP",
+	"domain_migration_exported": "Migration backup downloaded",
+	"domain_migration_open_new": "OPEN OFFICIAL SITE",
+	"domain_migration_import": "IMPORT BACKUP",
+	"domain_migration_import_confirm": "Importing will replace compatible local data on this domain. Continue?",
+	"domain_migration_imported": "Imported. Reloading…",
+	"domain_migration_failed": "Could not import this migration backup.",
+	"domain_migration_dismiss": "Dismiss migration notice"
 }

@@ -18,6 +18,7 @@
 	import { fetchUserCollection } from '$lib/api/bgmFetchers.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { TierHistoryAction } from '$lib/utils/tierHistory';
+	import { publicTierShareUrl } from '$lib/config/site';
 	import {
 		encodeURL,
 		decodeURL,
@@ -134,10 +135,11 @@
 		if (!hasSessionItems) return;
 		try {
 			const encoded = encodeURL(tierData.snapshot());
-			const url = `${window.location.pathname}#${SHARE_HASH_PREFIX}${encoded}`;
-			replaceState(url, {});
-			shareWarning = url.length > URL_MAX_LENGTH ? m.share_url_too_long({ length: url.length }) : '';
-			navigator.clipboard.writeText(url).then(
+			const route = `${window.location.pathname}#${SHARE_HASH_PREFIX}${encoded}`;
+			const shareUrl = publicTierShareUrl(window.location.pathname, encoded);
+			replaceState(route, {});
+			shareWarning = shareUrl.length > URL_MAX_LENGTH ? m.share_url_too_long({ length: shareUrl.length }) : '';
+			navigator.clipboard.writeText(shareUrl).then(
 				() => {
 					copied = true;
 					statusMessage = m.share_tier();

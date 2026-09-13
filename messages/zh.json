@@ -225,5 +225,18 @@
 	"history_add_tier": "新增档位",
 	"history_delete_tier": "删除档位",
 	"history_rename_tier": "档位重命名",
-	"history_recolor_tier": "档位改色"
+	"history_recolor_tier": "档位改色",
+	"domain_migration_old_title": "我们搬家了！",
+	"domain_migration_old_description": "这个旧地址已由正式域名替代。浏览器数据按域名隔离，请先下载迁移备份，再前往新站导入。",
+	"domain_migration_new_title": "迁移旧站数据",
+	"domain_migration_new_description": "导入从旧 vercel.app 地址下载的迁移备份。现有排名、草稿、排名池和外观设置将被替换。",
+	"domain_migration_token_note": "为保护安全，访问令牌永远不会写入迁移包，请在新域名重新填写。",
+	"domain_migration_export": "下载迁移备份",
+	"domain_migration_exported": "迁移备份已下载",
+	"domain_migration_open_new": "前往正式站",
+	"domain_migration_import": "导入迁移备份",
+	"domain_migration_import_confirm": "导入会替换此域名下兼容的本地数据，是否继续？",
+	"domain_migration_imported": "导入成功，正在重新载入…",
+	"domain_migration_failed": "无法导入这个迁移备份。",
+	"domain_migration_dismiss": "关闭迁移提示"
 }

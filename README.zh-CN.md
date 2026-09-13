@@ -7,7 +7,7 @@
 Bangumi 动漫 Tier 排名工具。支持关键词搜索、按目录 ID / 用户名加载条目，拖拽到各档位排名，排名自动保存在本地浏览器，无需后端。
 
 [![License: MIT](https://img.shields.io/github/license/xswt442-cmd/BGM-xswtier)](LICENSE)
-[![Live Demo](https://img.shields.io/badge/demo-bgm--xswtier-black?logo=vercel&logoColor=white)](https://bgm-xswtier.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/demo-bgm--xswtier-black?logo=vercel&logoColor=white)](https://bgm-xswtier.xswt.fyi/)
 [![Framework](https://img.shields.io/badge/SvelteKit-5-FF3E00?logo=svelte&logoColor=white)](https://kit.svelte.dev)
 
 ## 功能特性

@@ -7,7 +7,7 @@
 An anime tier-list builder for Bangumi. Search by keyword, load a Bangumi index ID or username, then drag titles into ranked tiers. Your rankings are saved locally in the browser — no backend required.
 
 [![License: MIT](https://img.shields.io/github/license/xswt442-cmd/BGM-xswtier)](LICENSE)
-[![Live Demo](https://img.shields.io/badge/demo-bgm--xswtier-black?logo=vercel&logoColor=white)](https://bgm-xswtier.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/demo-bgm--xswtier-black?logo=vercel&logoColor=white)](https://bgm-xswtier.xswt.fyi/)
 [![Framework](https://img.shields.io/badge/SvelteKit-5-FF3E00?logo=svelte&logoColor=white)](https://kit.svelte.dev)
 
 ## Features

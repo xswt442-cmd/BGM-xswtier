@@ -67,6 +67,7 @@ REBUILD.md
 # Chore
 *.jpg
 *.png
+!static/og-cover.png
 *.jpeg
 *.mp4
 *.mkv

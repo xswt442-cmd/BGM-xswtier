@@ -5,6 +5,7 @@
 	import { applyTheme } from '$lib/states/theme.svelte';
 	import { locale } from '$lib/states/locale.svelte';
 	import StatusBar from '$lib/components/StatusBar.svelte';
+	import DomainMigrationNotice from '$lib/components/DomainMigrationNotice.svelte';
 	import { applyAriaStrings } from '$lib/dndAria';
 	import { createErrorReporter, installGlobalErrorReporting } from '$lib/utils/errorReport';
 
@@ -56,3 +57,5 @@
 		{@render children()}
 	</main>
 </div>
+
+<DomainMigrationNotice />
