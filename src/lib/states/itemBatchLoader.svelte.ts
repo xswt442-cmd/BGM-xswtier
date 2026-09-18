@@ -96,7 +96,8 @@ export class BatchLoader {
 						});
 						// 空结果一律按失败处理：展开 undefined 会得到无 name/image 的空壳条目
 						if (!data?.id) return undefined;
-						return { id: `${item.category}:${item.bgm_id}`, ...item, ...data } as ItemData;
+						// data.id 由 subjectLikeToItemData 保证 = `${category}:${bgm_id}`，直接以它为准
+						return { ...item, ...data } as ItemData;
 					} catch (error) {
 						console.warn(`[BatchLoader] Failed: ${item.bgm_id}`, error);
 						return undefined; // 单条失败不阻断整批

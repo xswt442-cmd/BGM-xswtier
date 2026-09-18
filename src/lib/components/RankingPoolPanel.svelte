@@ -2,13 +2,23 @@
 	import VirtualPoolList from '$lib/components/VirtualPoolList.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
 	import { m } from '$lib/paraglide/messages';
 	import { searchPool } from '$lib/states/searchPool.svelte';
-	import { pruneMutableSelection, selectAllMutable, toggleMutableSelection } from '$lib/utils/poolPerformance';
+	import {
+		filterItemsByQuery,
+		pruneMutableSelection,
+		selectAllMutable,
+		toggleMutableSelection,
+	} from '$lib/utils/poolPerformance';
 
 	let { active = true }: { active?: boolean } = $props();
 	const selection = new SvelteSet<string>();
 	const items = $derived(searchPool.items);
+	let query = $state('');
+	/** 仅用于渲染；selection 的 prune 必须走全量，否则筛选会误清已选项 */
+	const visible = $derived(filterItemsByQuery(items, query));
+	const filtering = $derived(query.trim().length > 0);
 	$effect(() => pruneMutableSelection(selection, items));
 
 	function toggle(id: string) {
@@ -32,7 +42,9 @@
 	<div class="flex items-center justify-between gap-2 border-b-2 border-border px-2 py-1">
 		<span class="font-pixel text-[10px]">{m.pool_ranking_title()}</span>
 		<div class="flex items-center gap-2">
-			<span class="font-pixel text-[10px] text-muted-foreground">{items.length}</span>
+			<span class="font-pixel text-[10px] text-muted-foreground">
+				{filtering ? m.pool_filtered_count({ shown: visible.length, total: items.length }) : items.length}
+			</span>
 			<Button
 				variant="ghost"
 				size="sm"
@@ -48,6 +60,23 @@
 		</div>
 	</div>
 	{#if items.length > 0}
+		<div class="flex items-center gap-1.5 border-b-2 border-border px-2 py-1">
+			<Input
+				class="font-pixel h-7 min-w-0 flex-1 text-[9px]"
+				placeholder={m.pool_filter_placeholder()}
+				bind:value={query}
+				data-testid="pool-filter-input"
+				aria-label={m.pool_filter_placeholder()}
+			/>
+			{#if filtering}
+				<Button
+					variant="ghost"
+					size="sm"
+					class="font-pixel h-7 shrink-0 px-2 text-[8px]"
+					onclick={() => (query = '')}>{m.pool_filter_clear()}</Button
+				>
+			{/if}
+		</div>
 		<div class="flex flex-wrap items-center gap-1.5 border-b-2 border-border px-2 py-1">
 			<span class="font-pixel mr-auto text-[9px] text-muted-foreground"
 				>{m.pool_selected_count({ count: selection.size })}</span
@@ -56,7 +85,7 @@
 				variant="ghost"
 				size="sm"
 				class="font-pixel h-7 px-2 text-[8px]"
-				onclick={() => selectAllMutable(selection, items)}>{m.pool_select_all()}</Button
+				onclick={() => selectAllMutable(selection, visible)}>{m.pool_select_all()}</Button
 			>
 			<Button
 				variant="ghost"
@@ -75,7 +104,7 @@
 		</div>
 	{/if}
 	<VirtualPoolList
-		{items}
+		items={visible}
 		{active}
 		testid="pool-row"
 		checked={(id) => selection.has(id)}
@@ -83,6 +112,7 @@
 		actionVariant={() => 'destructive'}
 		actionLabel={() => m.pool_delete()}
 		onAction={(item) => remove(item.id)}
+		emptyLabel={filtering ? m.pool_filter_no_match() : m.pool_empty()}
 		maxHeight="55svh"
 	/>
 </section>

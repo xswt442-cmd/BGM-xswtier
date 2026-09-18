@@ -2,19 +2,28 @@
 	import VirtualPoolList from '$lib/components/VirtualPoolList.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
 	import { importPool } from '$lib/states/importPool.svelte';
 	import { searchPool } from '$lib/states/searchPool.svelte';
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { ItemData } from '$lib/schemas/item';
-	import { selectAllMutable, toggleMutableSelection } from '$lib/utils/poolPerformance';
+	import {
+		filterItemsByQuery,
+		selectAllMutable,
+		toggleMutableSelection,
+	} from '$lib/utils/poolPerformance';
 
 	let { active = true }: { active?: boolean } = $props();
 	const selection = new SvelteSet<string>();
 	let isLoadingAll = $state(false);
 	let selectionSource = $state<string | null>(null);
+	let query = $state('');
 	const isBusy = $derived(isLoadingAll || itemLoader.isLoading);
 	const isAdded = (id: string) => searchPool.has(id);
+	/** 仅用于渲染；selection 按全量维护，筛选不误清已选项 */
+	const visible = $derived(filterItemsByQuery(importPool.items, query));
+	const filtering = $derived(query.trim().length > 0);
 	$effect(() => {
 		const next = importPool.source ? `${importPool.source.kind}:${importPool.source.label}` : null;
 		if (selectionSource !== next) {
@@ -44,7 +53,8 @@
 		isLoadingAll = true;
 		try {
 			await loadAllRemaining();
-			selectAllMutable(selection, importPool.items);
+			// 筛选态下"全选"只选中当前可见结果，符合所见即所得
+			selectAllMutable(selection, filtering ? visible : importPool.items);
 		} finally {
 			isLoadingAll = false;
 		}
@@ -90,6 +100,26 @@
 		</div>
 	</div>
 	{#if importPool.items.length > 0}
+		<div class="flex items-center gap-1.5 border-b-2 border-border px-2 py-1">
+			<Input
+				class="font-pixel h-7 min-w-0 flex-1 text-[9px]"
+				placeholder={m.pool_filter_placeholder()}
+				bind:value={query}
+				data-testid="import-filter-input"
+				aria-label={m.pool_filter_placeholder()}
+			/>
+			{#if filtering}
+				<span class="font-pixel shrink-0 text-[9px] text-muted-foreground"
+					>{m.pool_filtered_count({ shown: visible.length, total: importPool.items.length })}</span
+				>
+				<Button
+					variant="ghost"
+					size="sm"
+					class="font-pixel h-7 shrink-0 px-2 text-[8px]"
+					onclick={() => (query = '')}>{m.pool_filter_clear()}</Button
+				>
+			{/if}
+		</div>
 		<div class="flex flex-wrap items-center gap-1.5 border-b-2 border-border px-2 py-1">
 			<span class="font-pixel mr-auto text-[9px] text-muted-foreground"
 				>{m.pool_selected_count({ count: selection.size })}</span
@@ -114,7 +144,7 @@
 		</div>
 	{/if}
 	<VirtualPoolList
-		items={importPool.items}
+		items={visible}
 		{active}
 		testid="import-row"
 		checked={(id) => selection.has(id)}
@@ -122,6 +152,7 @@
 		actionVariant={(item) => (isAdded(item.id) ? 'secondary' : 'outline')}
 		actionLabel={(item) => (isAdded(item.id) ? m.pool_added() : m.pool_add())}
 		onAction={addItem}
+		emptyLabel={filtering ? m.pool_filter_no_match() : m.pool_empty()}
 	/>
 	{#if !itemLoader.isDone}
 		<div class="p-1.5 pt-0.5">
