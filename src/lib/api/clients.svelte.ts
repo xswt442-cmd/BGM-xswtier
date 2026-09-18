@@ -2,12 +2,20 @@ import createClient from 'openapi-fetch';
 import type { paths, Paged_SlimIndex } from '$lib/schemas/bgm-public-api';
 import { apiToken } from '$lib/states/token.svelte';
 
-// 在 fetch 层注入 token，业务代码无感；无 token 时静默降级匿名请求。
+/** 单请求默认超时：网络挂起时不能让 isLoading 永久为 true 卡死加载循环 */
+const REQUEST_TIMEOUT_MS = 15_000;
+
+// 在 fetch 层注入 token 与默认超时，业务代码无感；无 token 时静默降级匿名请求。
 // 请求时才读 apiToken.token（$state getter），不捕获模块加载时的值。
 const authFetch: typeof fetch = async (url, init) => {
 	const headers = new Headers(init?.headers);
 	if (apiToken.hasToken) headers.set('Authorization', `Bearer ${apiToken.token}`);
-	return fetch(url, { ...init, headers });
+	return fetch(url, {
+		...init,
+		headers,
+		// 调用方显式传了 signal（如 searchSubjects 的 AbortSignal.timeout）则尊重之
+		signal: init?.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+	});
 };
 
 export const pubClient = createClient<paths>({

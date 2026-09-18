@@ -34,11 +34,19 @@ export function subjectLikeToItemData(s: SubjectLike): ItemData | undefined {
 	};
 }
 
+/**
+ * 拉取单个 Subject 详情。
+ *
+ * 失败一律 **抛错**，不返回 undefined：调用方（BatchLoader）靠 rejection 判定失败并收入
+ * failedItems；若静默返回 undefined，展开后会得到无 name/image 的空壳条目并计入成功数，
+ * 限流（429）时表现为一池空白卡片且无从重试。
+ */
 export async function fetchSubject(subject_id: number): Promise<ItemData | undefined> {
 	const { data, error } = await pubClient.GET('/v0/subjects/{subject_id}', {
 		params: { path: { subject_id } },
 	});
-	if (error || !data) return undefined;
+	if (error) throw new Error(`subject ${subject_id} 请求失败: ${JSON.stringify(error)}`);
+	if (!data?.id) throw new Error(`subject ${subject_id} 返回空数据`);
 	return subjectLikeToItemData(data);
 }
 

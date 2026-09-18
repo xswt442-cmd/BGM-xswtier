@@ -46,7 +46,8 @@ export class BatchLoader {
 		if (this.failedItems.length === 0 || this.isLoading) return;
 		const failed = this.failedItems;
 		this.failedItems = [];
-		this.addItems(failed);
+		// 重试是同一批条目的二次投递，不计入 totalQueued，否则进度分母被重复累加、永远到不了 100%
+		this.addItems(failed, false);
 		void this.loadBatch();
 	}
 
@@ -61,9 +62,10 @@ export class BatchLoader {
 		this.addItems(list);
 	}
 
-	addItems(list: ItemIdentity[]) {
+	/** @param countTowardTotal 是否计入进度分母；重试旧条目应传 false */
+	addItems(list: ItemIdentity[], countTowardTotal = true) {
 		this.queue.push(...list);
-		this.totalQueued += list.length;
+		if (countTowardTotal) this.totalQueued += list.length;
 	}
 
 	/** 直接注入已映射的完整条目（搜索/本季/热门路径，无需再 fetchSubject）。内部去重。 */
@@ -92,6 +94,8 @@ export class BatchLoader {
 							queryKey: ['item', item.category, item.bgm_id], // 自带去重/缓存
 							queryFn: () => fetchItemByIdentity(item),
 						});
+						// 空结果一律按失败处理：展开 undefined 会得到无 name/image 的空壳条目
+						if (!data?.id) return undefined;
 						return { id: `${item.category}:${item.bgm_id}`, ...item, ...data } as ItemData;
 					} catch (error) {
 						console.warn(`[BatchLoader] Failed: ${item.bgm_id}`, error);

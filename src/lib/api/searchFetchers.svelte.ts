@@ -158,8 +158,12 @@ export async function fetchToday(concurrency = 6): Promise<ItemData[]> {
 	const detail = await Promise.all(
 		seeds.map((s) =>
 			limit(async () => {
-				const full = await fetchSubject(s.bgm_id); // calendar 无地区字段 → 取详情判 meta_tags
-				return full?.meta_tags?.includes('日本') ? full : undefined;
+				try {
+					const full = await fetchSubject(s.bgm_id); // calendar 无地区字段 → 取详情判 meta_tags
+					return full?.meta_tags?.includes('日本') ? full : undefined;
+				} catch {
+					return undefined; // 单条详情失败只跳过该条，不整组作废
+				}
 			}),
 		),
 	);

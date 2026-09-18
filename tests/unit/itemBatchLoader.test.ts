@@ -61,6 +61,30 @@ describe('itemBatchLoader state', () => {
 		expect(loader.failedItems[0]?.bgm_id).toBe(2);
 	});
 
+	// 回归：queryFn 曾返回 undefined（fetchSubject 静默吞错），展开后得到无 name/image 的
+	// 空壳条目并计入成功数、不进 failedItems → 限流时一池空白卡片且无从重试
+	it('queryFn 返回空数据时按失败处理，不产生空壳条目', async () => {
+		tierData.startSession([]);
+		fetchItemByIdentity.mockResolvedValue(undefined as unknown as ItemData);
+		loader.addItems([identity(1), identity(2)]);
+		await loader.loadBatch(15);
+		expect(loader.loadedCount).toBe(0);
+		expect(loader.failedCount).toBe(2);
+		expect(tierData.collection).toHaveLength(0);
+	});
+
+	it('retryFailed 不计入 totalQueued，进度分母不被重复累加', async () => {
+		tierData.startSession([]);
+		fetchItemByIdentity.mockRejectedValue(new Error('network down'));
+		loader.addItems([identity(7)]);
+		await loader.loadBatch(15);
+		expect(loader.totalQueued).toBe(1);
+
+		// 重试入队是同步的，分母当场就确定；不等整批跑完（retry 退避会拖到 1s 以上）
+		loader.retryFailed();
+		expect(loader.totalQueued).toBe(1); // 重试同一批，分母不变
+	});
+
 	it('retryFailed 重试成功后清空失败列表并补齐集合', async () => {
 		tierData.startSession([]);
 		// 持久拒绝：QueryClient retry:1 的两次尝试都失败，才会计入 failedItems
