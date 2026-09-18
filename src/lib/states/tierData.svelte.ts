@@ -5,6 +5,7 @@ import type { ItemData, TierDef, TierDraft, TierStore } from '$lib/schemas/item'
 import { TierHistory, type TierHistoryAction } from '$lib/utils/tierHistory';
 import { migrateStore } from '$lib/utils/tierSerialize';
 import { distributeByScore } from '$lib/utils/autoDistribute';
+import { sortItemsInTiers, DEFAULT_SORT_DIRECTION, type TierSortKey } from '$lib/utils/sortTierItems';
 import { storageWarning } from '$lib/states/storageWarning.svelte';
 import { m } from '$lib/paraglide/messages';
 
@@ -246,6 +247,12 @@ export const tierData = {
 		transact('move_item', () => {
 			tiers = distributeByScore(tiers, collection).tiers;
 			collection = [];
+		});
+	},
+	/** 档位内排序：只重排各档内部顺序，不跨档移动，单事务可撤销 */
+	sortTierItems(key: TierSortKey) {
+		transact('move_item', () => {
+			tiers = sortItemsInTiers(tiers, key, DEFAULT_SORT_DIRECTION[key]);
 		});
 	},
 	/** 拖拽完成后清除 shadow，并确保所有容器内 ID 全局唯一。 */

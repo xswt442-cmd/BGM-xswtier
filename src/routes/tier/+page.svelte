@@ -7,6 +7,13 @@
 	import TierBar from '$lib/components/TierBar.svelte';
 	import ItemList from '$lib/components/ItemList.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import {
+		DropdownMenu,
+		DropdownMenuTrigger,
+		DropdownMenuItem,
+		DropdownMenuLabel,
+		DropdownMenuSeparator,
+	} from '$lib/components/ui/dropdown-menu';
 	import { Popover, PopoverTrigger } from '$lib/components/ui/popover';
 	import { Sheet, SheetClose, SheetTitle } from '$lib/components/ui/sheet';
 	import { tierData } from '$lib/states/tierData.svelte';
@@ -14,6 +21,12 @@
 	import { sidebar } from '$lib/states/sidebar.svelte';
 	import { toProxiedImageUrl } from '$lib/utils/imageProxy';
 	import { toMarkdown, toBBCode } from '$lib/utils/tierExportText';
+	import {
+		countAffectedTiers,
+		TIER_SORT_KEYS,
+		DEFAULT_SORT_DIRECTION,
+		type TierSortKey,
+	} from '$lib/utils/sortTierItems';
 	import { fetchIndexById } from '$lib/api/indexFetchers.svelte';
 	import { fetchUserCollection } from '$lib/api/bgmFetchers.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -31,6 +44,8 @@
 	let exportNode: HTMLElement;
 	let statusMessage = $state('');
 	let isExporting = $state(false);
+	/** 档位内排序只在有条目可排时才有意义 */
+	const anyTierItems = $derived(tierData.tiers.some((tier) => tier.items.length > 0));
 	let exitDialog: HTMLDialogElement;
 	let shareDialog: HTMLDialogElement;
 	let copied = $state(false);
@@ -105,6 +120,24 @@
 	function autoDistribute() {
 		tierData.autoDistributeByScore();
 		statusMessage = m.auto_distribute_done();
+	}
+
+	const SORT_LABELS: Record<TierSortKey, () => string> = {
+		score: m.sort_by_score,
+		rating_total: m.sort_by_rating_total,
+		air_date: m.sort_by_air_date,
+		name: m.sort_by_name,
+	};
+
+	/** 档位内重排（不跨档移动），单事务可撤销；无变化时明确告知，避免"点了没反应" */
+	function sortTierItems(key: TierSortKey) {
+		const affected = countAffectedTiers(tierData.tiers, key, DEFAULT_SORT_DIRECTION[key]);
+		if (affected === 0) {
+			statusMessage = m.sort_no_change();
+			return;
+		}
+		tierData.sortTierItems(key);
+		statusMessage = m.sort_done({ sort: SORT_LABELS[key](), count: affected });
 	}
 
 	function redo() {
@@ -463,6 +496,33 @@
 					TIER LIST
 				</span>
 				<div class="ml-auto flex items-center gap-1" data-export-exclude>
+					<DropdownMenu>
+						<DropdownMenuTrigger>
+							{#snippet child({ props })}
+								<Button
+									variant="outline"
+									size="icon"
+									class="h-9 w-9"
+									disabled={!anyTierItems || isExporting}
+									aria-label={m.sort_tier_items()}
+									title={m.sort_tier_items()}
+									data-testid="sort-tier-button"
+									{...props}
+								>
+									<span class="icon-[pixelarticons--arrows-vertical] h-4 w-4"></span>
+								</Button>
+							{/snippet}
+						</DropdownMenuTrigger>
+						{#snippet content()}
+							<DropdownMenuLabel>{m.sort_tier_items()}</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							{#each TIER_SORT_KEYS as key (key)}
+								<DropdownMenuItem onSelect={() => sortTierItems(key)}>
+									{SORT_LABELS[key]()}
+								</DropdownMenuItem>
+							{/each}
+						{/snippet}
+					</DropdownMenu>
 					<Button
 						variant="outline"
 						size="icon"
