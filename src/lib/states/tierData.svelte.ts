@@ -6,18 +6,23 @@ import { TierHistory, type TierHistoryAction } from '$lib/utils/tierHistory';
 import { migrateStore } from '$lib/utils/tierSerialize';
 import { distributeByScore } from '$lib/utils/autoDistribute';
 import { storageWarning } from '$lib/states/storageWarning.svelte';
+import { m } from '$lib/paraglide/messages';
 
 export function uid(): string {
 	return crypto.randomUUID();
 }
 
+/**
+ * 默认档位。标签走 i18n（中文：夯/顶级/人上人/NPC/拉完了；英文：GOATED/TOP/…），
+ * 但只在**建会话这一刻**取一次——档位名是用户可改的数据，持久化后不再随语言切换变化。
+ */
 export function defaultTiers(): TierDef[] {
 	return [
-		{ id: uid(), label: '夯', color: 'var(--chart-1)', items: [] },
-		{ id: uid(), label: '顶级', color: 'var(--chart-2)', items: [] },
-		{ id: uid(), label: '人上人', color: 'var(--chart-3)', items: [] },
-		{ id: uid(), label: 'NPC', color: 'var(--chart-4)', items: [] },
-		{ id: uid(), label: '拉完了', color: 'var(--chart-5)', items: [] },
+		{ id: uid(), label: m.default_tier_1(), color: 'var(--chart-1)', items: [] },
+		{ id: uid(), label: m.default_tier_2(), color: 'var(--chart-2)', items: [] },
+		{ id: uid(), label: m.default_tier_3(), color: 'var(--chart-3)', items: [] },
+		{ id: uid(), label: m.default_tier_4(), color: 'var(--chart-4)', items: [] },
+		{ id: uid(), label: m.default_tier_5(), color: 'var(--chart-5)', items: [] },
 	];
 }
 
@@ -282,8 +287,8 @@ export const tierData = {
 		draftStorage.set(null);
 		resetHistory();
 	},
-	/** 添加新档，默认标签「新」，色取下一 chart 变量 */
-	addTier(label = '新') {
+	/** 添加新档，默认标签取当前语言（中「新」/ 英「NEW」），色取下一 chart 变量 */
+	addTier(label = m.new_tier_label()) {
 		const next = `var(--chart-${Math.min(tiers.length + 1, 8)})`;
 		const t: TierDef = { id: uid(), label, color: next, items: [] };
 		transact('add_tier', () => (tiers = [...tiers, t]));
