@@ -46,9 +46,7 @@ test-results/
 npm-debug.log*
 pnpm-debug.log*
 
-# AI agent
-CLAUDE.md
-AGENTS.md
+# AI agent（只忽略工具与机器级配置；CLAUDE.md / AGENTS.md 是入库的项目约定）
 .claude/
 .codex/
 .opencode/
