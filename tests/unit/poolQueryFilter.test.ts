@@ -1,3 +1,5 @@
+// 池内查询过滤专测：filterItemsByQuery 的匹配语义，以及它与多选状态的交互。
+// 与 pool-performance.test.ts 的分工——那边管虚拟化分列/行键/选中集增删，这边管「筛选只影响渲染、不影响选中」。
 import { describe, expect, it } from 'vitest';
 import type { ItemData } from '$lib/schemas/item';
 import { filterItemsByQuery, pruneMutableSelection } from '$lib/utils/poolPerformance';
