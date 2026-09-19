@@ -522,6 +522,18 @@
 					TIER LIST
 				</span>
 				<div class="ml-auto flex items-center gap-1" data-export-exclude>
+					<Button
+						variant="outline"
+						size="icon"
+						class="h-9 w-9"
+						onclick={() => goto('/profile')}
+						disabled={!anyTierItems}
+						aria-label={m.taste_profile()}
+						title={m.taste_profile()}
+						data-testid="taste-profile-button"
+					>
+						<span class="icon-[pixelarticons--chart] h-4 w-4"></span>
+					</Button>
 					<DropdownMenu>
 						<DropdownMenuTrigger>
 							{#snippet child({ props })}
