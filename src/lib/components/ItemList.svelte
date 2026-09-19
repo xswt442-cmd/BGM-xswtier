@@ -9,7 +9,22 @@
 	import { cleanFinalizedItems } from '$lib/utils/dndItems';
 	import { tierData } from '$lib/states/tierData.svelte';
 
-	let { items = $bindable([]), onLoadMore }: { items: ItemData[]; onLoadMore?: () => void } = $props();
+	import type { Snippet } from 'svelte';
+
+	let {
+		items = $bindable([]),
+		onLoadMore,
+		selection,
+		selectMode = $bindable(false),
+		bulkActions,
+	}: {
+		items: ItemData[];
+		onLoadMore?: () => void;
+		selection?: { has: (id: string) => boolean; toggle: (id: string) => void; clear: () => void; size: number };
+		selectMode?: boolean;
+		/** 多选工具条右侧的批量动作（由调用方注入，如"移入档位"） */
+		bulkActions?: Snippet;
+	} = $props();
 
 	const flipDurationMs = 300;
 	// svelte-dnd-action 跨容器拖拽：consider/finalize 都直接用原始 items
@@ -32,7 +47,42 @@
 				{m.loading_progress({ loaded: itemLoader.loadedCount, total: itemLoader.total })}
 			</span>
 		{/if}
+		{#if selection}
+			<Button
+				variant={selectMode ? 'default' : 'outline'}
+				size="sm"
+				class="font-pixel h-6 px-2 text-[8px]"
+				data-export-exclude
+				data-testid="toggle-select-mode"
+				onclick={() => {
+					selectMode = !selectMode;
+					selection.clear();
+				}}
+				disabled={items.length === 0}
+			>
+				{selectMode ? m.select_mode_exit() : m.select_mode_enter()}
+			</Button>
+		{/if}
 	</div>
+	{#if selectMode && selection}
+		<div
+			class="flex flex-wrap items-center gap-1.5 border-b border-border px-3 py-1"
+			data-export-exclude
+			data-testid="bulk-select-bar"
+		>
+			<span class="font-pixel mr-auto text-[9px] text-muted-foreground"
+				>{m.pool_selected_count({ count: selection.size })}</span
+			>
+			<Button
+				variant="ghost"
+				size="sm"
+				class="font-pixel h-6 px-2 text-[8px]"
+				onclick={() => selection.clear()}
+				disabled={selection.size === 0}>{m.pool_clear_selection()}</Button
+			>
+			{@render bulkActions?.()}
+		</div>
+	{/if}
 	<div class="bg-dotted relative flex-1 overflow-y-auto">
 		{#if items.length === 0 && !itemLoader.isLoading}
 			<p
@@ -42,7 +92,13 @@
 			</p>
 		{/if}
 		<section
-			use:dndzone={{ items, flipDurationMs, useCursorForDetection: true, delayTouchStart: true }}
+			use:dndzone={{
+				items,
+				flipDurationMs,
+				useCursorForDetection: true,
+				delayTouchStart: true,
+				dragDisabled: selectMode, // 多选态下禁用拖拽：点击用于勾选，避免与 dnd 抢手势
+			}}
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}
 			aria-label={m.unranked()}
@@ -55,7 +111,24 @@
 					data-is-dnd-shadow-item-hint={item.isDndShadowItem}
 					data-item-id={item.id}
 					aria-label={item.name_cn || item.name || ''}
+					class="relative"
 				>
+					{#if selectMode && selection}
+						<!-- 勾选层：整卡可点，覆盖在卡上，避免与卡片内部的 bgm.tv 外链冲突 -->
+						<button
+							type="button"
+							class="absolute inset-0 z-20 cursor-pointer rounded-lg ring-offset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring {selection.has(
+								item.id,
+							)
+								? 'ring-2 ring-primary'
+								: ''}"
+							data-export-exclude
+							data-testid="select-item"
+							aria-pressed={selection.has(item.id)}
+							aria-label={item.name_cn || item.name || ''}
+							onclick={() => selection?.toggle(item.id)}
+						></button>
+					{/if}
 					<ItemCard {item} titleMode="two-line" />
 				</div>
 			{/each}

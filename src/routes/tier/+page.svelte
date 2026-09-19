@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { dragHandleZone, SHADOW_PLACEHOLDER_ITEM_ID } from 'svelte-dnd-action';
 	import { goto, replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import TierBar from '$lib/components/TierBar.svelte';
 	import ItemList from '$lib/components/ItemList.svelte';
+	import BulkMoveMenu from '$lib/components/BulkMoveMenu.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import {
 		DropdownMenu,
@@ -27,6 +29,7 @@
 		DEFAULT_SORT_DIRECTION,
 		type TierSortKey,
 	} from '$lib/utils/sortTierItems';
+	import { toggleMutableSelection } from '$lib/utils/poolPerformance';
 	import { fetchIndexById } from '$lib/api/indexFetchers.svelte';
 	import { fetchUserCollection } from '$lib/api/bgmFetchers.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -46,6 +49,29 @@
 	let isExporting = $state(false);
 	/** 档位内排序只在有条目可排时才有意义 */
 	const anyTierItems = $derived(tierData.tiers.some((tier) => tier.items.length > 0));
+
+	// 未排名集合的多选批量入档（桌面 aside 与移动抽屉共用一份状态）
+	const bulkSelection = new SvelteSet<string>();
+	let selectMode = $state(false);
+	const bulkSelectionApi = {
+		has: (id: string) => bulkSelection.has(id),
+		toggle: (id: string) => toggleMutableSelection(bulkSelection, id),
+		clear: () => bulkSelection.clear(),
+		get size() {
+			return bulkSelection.size;
+		},
+	};
+
+	/** 把选中条目批量移入某档；完成后退出多选态 */
+	function moveSelectedTo(tierId: string) {
+		const moved = tierData.moveItemsToTier([...bulkSelection], tierId);
+		bulkSelection.clear();
+		selectMode = false;
+		if (moved > 0) {
+			const label = tierData.tiers.find((t) => t.id === tierId)?.label ?? '';
+			statusMessage = m.bulk_moved({ count: moved, tier: label });
+		}
+	}
 	let exitDialog: HTMLDialogElement;
 	let shareDialog: HTMLDialogElement;
 	let copied = $state(false);
@@ -609,7 +635,16 @@
 	{#if isDesktop}
 		<aside class="hidden xl:block">
 			<div class="sticky top-14 h-[calc(100svh-3.5rem)] border-l">
-				<ItemList bind:items={tierData.collection} onLoadMore={() => itemLoader.loadBatch()} />
+				<ItemList
+					bind:items={tierData.collection}
+					bind:selectMode
+					selection={bulkSelectionApi}
+					onLoadMore={() => itemLoader.loadBatch()}
+				>
+					{#snippet bulkActions()}
+						<BulkMoveMenu {moveSelectedTo} disabled={bulkSelection.size === 0} />
+					{/snippet}
+				</ItemList>
 			</div>
 		</aside>
 	{/if}
@@ -621,7 +656,16 @@
 		<SheetTitle class="sr-only">{m.unranked()}</SheetTitle>
 		<SheetClose class="right-6 top-6 z-10 h-11 w-11" aria-label={m.close_collection()} />
 		<div class="h-[60svh]">
-			<ItemList bind:items={tierData.collection} onLoadMore={() => itemLoader.loadBatch()} />
+			<ItemList
+				bind:items={tierData.collection}
+				bind:selectMode
+				selection={bulkSelectionApi}
+				onLoadMore={() => itemLoader.loadBatch()}
+			>
+				{#snippet bulkActions()}
+					<BulkMoveMenu {moveSelectedTo} disabled={bulkSelection.size === 0} />
+				{/snippet}
+			</ItemList>
 		</div>
 	{/snippet}
 </Sheet>

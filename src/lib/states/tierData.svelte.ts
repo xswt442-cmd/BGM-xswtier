@@ -249,6 +249,27 @@ export const tierData = {
 			collection = [];
 		});
 	},
+	/**
+	 * 批量把未排名条目移入指定档位（单事务可撤销）。
+	 *
+	 * 目标顺序取**未排名集合的现有顺序**而非 ids 的传入顺序：多选是逐个点击的，
+	 * 按点击顺序排会让档内出现随机序；按列表序移入后视觉上与原来一致。
+	 * 追加到目标档末尾；id 不存在于未排名集合时静默跳过。
+	 * @returns 实际移动的条目数
+	 */
+	moveItemsToTier(ids: string[], tierId: string): number {
+		const wanted = new Set(ids);
+		const moving = collection.filter((item) => wanted.has(item.id));
+		if (moving.length === 0) return 0;
+		const movingIds = new Set(moving.map((item) => item.id));
+		transact('move_item', () => {
+			tiers = tiers.map((tier) =>
+				tier.id === tierId ? { ...tier, items: [...tier.items, ...moving] } : tier,
+			);
+			collection = collection.filter((item) => !movingIds.has(item.id));
+		});
+		return moving.length;
+	},
 	/** 档位内排序：只重排各档内部顺序，不跨档移动，单事务可撤销 */
 	sortTierItems(key: TierSortKey) {
 		transact('move_item', () => {
