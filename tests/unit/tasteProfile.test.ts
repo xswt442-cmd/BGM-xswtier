@@ -74,8 +74,22 @@ describe('buildTasteProfile', () => {
 		const tiers = [tier('S', [item(1, { score: 8 }), item(2, { score: 6 })]), tier('F', [item(3)])];
 		const p = buildTasteProfile(tiers);
 		expect(p.avgScore).toBeCloseTo(7);
-		expect(p.tierStats[0]).toEqual({ label: 'S', count: 2, avgScore: 7 });
-		expect(p.tierStats[1]).toEqual({ label: 'F', count: 1, avgScore: null });
+		expect(p.tierStats[0]).toEqual({ id: 't-S', label: 'S', count: 2, avgScore: 7 });
+		expect(p.tierStats[1]).toEqual({ id: 't-F', label: 'F', count: 1, avgScore: null });
+	});
+
+	// 档位名可被用户改成重复值。Svelte 5 的 keyed each 遇到重复 key 会直接抛错、整页白屏，
+	// 所以 tierStats 必须自带唯一 id 供渲染做 key（原先用 label 做 key 是个真 bug）。
+	// 夹具里两个档位同名不同 id，正是真实场景（id 由 uid() 生成，label 由用户随意改）
+	it('档位重名时 tierStats 仍各带唯一 id', () => {
+		const duplicateNamed = [
+			{ id: 'tier-a', label: 'S', color: 'var(--chart-1)', items: [item(1, { score: 8 })] },
+			{ id: 'tier-b', label: 'S', color: 'var(--chart-2)', items: [item(2, { score: 6 })] },
+		] as TierDef[];
+		const p = buildTasteProfile(duplicateNamed);
+		expect(p.tierStats.map((s) => s.label)).toEqual(['S', 'S']); // label 重名
+		expect(p.tierStats.map((s) => s.id)).toEqual(['tier-a', 'tier-b']); // id 仍可区分
+		expect(new Set(p.tierStats.map((s) => s.id)).size).toBe(2);
 	});
 
 	it('空会话不炸', () => {

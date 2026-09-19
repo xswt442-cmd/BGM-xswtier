@@ -259,6 +259,7 @@
 	"undo_success": "Undid {action}",
 	"redo_success": "Redid {action}",
 	"history_move_item": "item move",
+	"history_sort_tier": "tier sort",
 	"history_reorder_tier": "tier reorder",
 	"history_add_tier": "tier addition",
 	"history_delete_tier": "tier deletion",

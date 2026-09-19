@@ -23,6 +23,8 @@ export type ProfileDelta = {
 };
 
 export type TierStat = {
+	/** 档位 id：档位名可被用户改成重复值，渲染时必须用 id 做 key（Svelte 5 对重复 key 直接抛错） */
+	id: string;
 	label: string;
 	count: number;
 	avgScore: number | null;
@@ -129,6 +131,7 @@ export function buildTasteProfile(tiers: TierDef[]): TasteProfile {
 		tierStats: tiers.map((tier) => {
 			const vals = tier.items.map((i) => i.score).filter((s): s is number => typeof s === 'number');
 			return {
+				id: tier.id,
 				label: tier.label,
 				count: tier.items.length,
 				avgScore: vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null,

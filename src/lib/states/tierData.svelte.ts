@@ -270,7 +270,7 @@ export const tierData = {
 	},
 	/** 档位内排序：只重排各档内部顺序，不跨档移动，单事务可撤销 */
 	sortTierItems(key: TierSortKey) {
-		transact('move_item', () => {
+		transact('sort_tier', () => {
 			tiers = sortItemsInTiers(tiers, key, DEFAULT_SORT_DIRECTION[key]);
 		});
 	},

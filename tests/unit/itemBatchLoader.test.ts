@@ -61,9 +61,10 @@ describe('itemBatchLoader state', () => {
 		expect(loader.failedItems[0]?.bgm_id).toBe(2);
 	});
 
-	// 回归：queryFn 曾返回 undefined（fetchSubject 静默吞错），展开后得到无 name/image 的
-	// 空壳条目并计入成功数、不进 failedItems → 限流时一池空白卡片且无从重试
-	it('queryFn 返回空数据时按失败处理，不产生空壳条目', async () => {
+	// loadBatch 不得把"取到空数据"当成功：空壳条目会无 name/image 却计入 loadedCount。
+	// 注意 TanStack Query 5 自身对 queryFn resolve undefined 也会抛错，所以此用例锁的是
+	// loadBatch 的归类行为（异常→failedItems），不是 fetchSubject 的具体返回约定。
+	it('queryFn 返回 undefined 时按失败处理，不产生空壳条目', async () => {
 		tierData.startSession([]);
 		fetchItemByIdentity.mockResolvedValue(undefined as unknown as ItemData);
 		loader.addItems([identity(1), identity(2)]);

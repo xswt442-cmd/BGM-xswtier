@@ -121,7 +121,7 @@
 
 				<!-- 高估 / 低估 -->
 				<div class="mb-4 grid gap-3 sm:grid-cols-2">
-					{#each [{ title: m.taste_overrated(), rows: profile.overrated }, { title: m.taste_underrated(), rows: profile.underrated }] as group (group.title)}
+					{#each [{ key: 'over', title: m.taste_overrated(), rows: profile.overrated }, { key: 'under', title: m.taste_underrated(), rows: profile.underrated }] as group (group.key)}
 						<div class="border-2 border-border bg-background/60 p-2">
 							<p class="font-pixel mb-2 text-[10px]">{group.title}</p>
 							<ul class="grid gap-1.5">
@@ -200,7 +200,7 @@
 				<div class="border-2 border-border bg-background/60 p-2">
 					<p class="font-pixel mb-2 text-[10px]">{m.taste_tier_breakdown()}</p>
 					<ul class="grid gap-1">
-						{#each profile.tierStats as stat (stat.label)}
+						{#each profile.tierStats as stat (stat.id)}
 							<li class="flex items-center gap-2 text-[11px]">
 								<span class="w-20 shrink-0 truncate">{stat.label}</span>
 								<span class="font-pixel w-8 shrink-0 text-right text-[10px] tabular-nums">{stat.count}</span>

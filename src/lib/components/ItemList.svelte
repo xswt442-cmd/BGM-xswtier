@@ -58,7 +58,7 @@
 					selectMode = !selectMode;
 					selection.clear();
 				}}
-				disabled={items.length === 0}
+				disabled={items.length === 0 && !selectMode}
 			>
 				{selectMode ? m.select_mode_exit() : m.select_mode_enter()}
 			</Button>

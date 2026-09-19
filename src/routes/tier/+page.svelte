@@ -29,7 +29,7 @@
 		DEFAULT_SORT_DIRECTION,
 		type TierSortKey,
 	} from '$lib/utils/sortTierItems';
-	import { toggleMutableSelection } from '$lib/utils/poolPerformance';
+	import { pruneMutableSelection, toggleMutableSelection } from '$lib/utils/poolPerformance';
 	import { fetchIndexById } from '$lib/api/indexFetchers.svelte';
 	import { fetchUserCollection } from '$lib/api/bgmFetchers.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -61,6 +61,9 @@
 			return bulkSelection.size;
 		},
 	};
+	// 集合会被 mark 之外的路径改动（自动分档清空、undo 回滚），选中集必须跟着收敛，
+	// 否则残留的失效 id 会虚增计数、让"移入档位"空转
+	$effect(() => pruneMutableSelection(bulkSelection, tierData.collection));
 
 	/** 把选中条目批量移入某档；完成后退出多选态 */
 	function moveSelectedTo(tierId: string) {
@@ -128,6 +131,7 @@
 	function historyActionLabel(action: TierHistoryAction) {
 		return {
 			move_item: m.history_move_item(),
+			sort_tier: m.history_sort_tier(),
 			reorder_tier: m.history_reorder_tier(),
 			add_tier: m.history_add_tier(),
 			delete_tier: m.history_delete_tier(),

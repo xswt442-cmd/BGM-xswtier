@@ -94,7 +94,8 @@ export class BatchLoader {
 							queryKey: ['item', item.category, item.bgm_id], // 自带去重/缓存
 							queryFn: () => fetchItemByIdentity(item),
 						});
-						// 空结果一律按失败处理：展开 undefined 会得到无 name/image 的空壳条目
+						// 第二道闸：TanStack Query 5 对 queryFn resolve undefined 已会抛错（query.js），
+						// 这里再挡一次"返回了对象但缺 id"的情形，杜绝空壳条目混进集合
 						if (!data?.id) return undefined;
 						// data.id 由 subjectLikeToItemData 保证 = `${category}:${bgm_id}`，直接以它为准
 						return { ...item, ...data } as ItemData;

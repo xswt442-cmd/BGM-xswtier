@@ -1,7 +1,7 @@
 import type { ItemData, TierStore } from '$lib/schemas/item';
 
 export type TierHistoryAction =
-	'move_item' | 'reorder_tier' | 'add_tier' | 'delete_tier' | 'rename_tier' | 'recolor_tier';
+	'move_item' | 'sort_tier' | 'reorder_tier' | 'add_tier' | 'delete_tier' | 'rename_tier' | 'recolor_tier';
 
 export type TierHistoryEntry = {
 	store: TierStore;

@@ -259,6 +259,7 @@
 	"undo_success": "已撤销{action}",
 	"redo_success": "已重做{action}",
 	"history_move_item": "条目移动",
+	"history_sort_tier": "档位内排序",
 	"history_reorder_tier": "档位排序",
 	"history_add_tier": "新增档位",
 	"history_delete_tier": "删除档位",
