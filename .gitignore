@@ -67,6 +67,9 @@ REBUILD.md
 *.jpg
 *.png
 !static/og-cover.png
+# 主题背景图是构建必需资源：sun/night/sky 现已被跟踪，但新增配色时若不打开例外，
+# 新图会被上面的 *.jpg 静默忽略，只在生产环境 404
+!src/lib/assets/*.jpg
 *.jpeg
 *.mp4
 *.mkv
