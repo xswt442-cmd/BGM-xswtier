@@ -69,11 +69,8 @@
 				aria-label={m.pool_filter_placeholder()}
 			/>
 			{#if filtering}
-				<Button
-					variant="ghost"
-					size="sm"
-					class="font-pixel h-7 shrink-0 px-2 text-[8px]"
-					onclick={() => (query = '')}>{m.pool_filter_clear()}</Button
+				<Button variant="ghost" size="sm" class="font-pixel h-7 shrink-0 px-2 text-[8px]" onclick={() => (query = '')}
+					>{m.pool_filter_clear()}</Button
 				>
 			{/if}
 		</div>

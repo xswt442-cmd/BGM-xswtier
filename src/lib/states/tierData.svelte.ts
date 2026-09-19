@@ -263,9 +263,7 @@ export const tierData = {
 		if (moving.length === 0) return 0;
 		const movingIds = new Set(moving.map((item) => item.id));
 		transact('move_item', () => {
-			tiers = tiers.map((tier) =>
-				tier.id === tierId ? { ...tier, items: [...tier.items, ...moving] } : tier,
-			);
+			tiers = tiers.map((tier) => (tier.id === tierId ? { ...tier, items: [...tier.items, ...moving] } : tier));
 			collection = collection.filter((item) => !movingIds.has(item.id));
 		});
 		return moving.length;

@@ -39,7 +39,5 @@ export function pruneMutableSelection(selection: Set<string>, items: ItemData[])
 export function filterItemsByQuery(items: ItemData[], query: string): ItemData[] {
 	const q = query.trim().toLowerCase();
 	if (!q) return items;
-	return items.filter(
-		(item) => item.name?.toLowerCase().includes(q) || item.name_cn?.toLowerCase().includes(q),
-	);
+	return items.filter((item) => item.name?.toLowerCase().includes(q) || item.name_cn?.toLowerCase().includes(q));
 }

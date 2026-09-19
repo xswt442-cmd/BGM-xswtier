@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ItemData, TierDef } from '$lib/schemas/item';
-import {
-	countAffectedTiers,
-	DEFAULT_SORT_DIRECTION,
-	sortItemsInTiers,
-} from '$lib/utils/sortTierItems';
+import { countAffectedTiers, DEFAULT_SORT_DIRECTION, sortItemsInTiers } from '$lib/utils/sortTierItems';
 
 function item(id: number, extra: Partial<ItemData> = {}): ItemData {
 	return { id: `subject:${id}`, bgm_id: id, category: 'subject', name: `n${id}`, ...extra };
@@ -22,10 +18,7 @@ const ids = (t: TierDef[]) => t.map((x) => x.items.map((i) => i.bgm_id));
 describe('sortItemsInTiers', () => {
 	it('按评分降序重排（自然方向），不跨档移动', () => {
 		const next = sortItemsInTiers(tiers, 'score');
-		expect(ids(next)).toEqual([
-			[2, 3, 1],
-			[4],
-		]);
+		expect(ids(next)).toEqual([[2, 3, 1], [4]]);
 		expect(next[0].label).toBe('S'); // 档位本身不动
 	});
 

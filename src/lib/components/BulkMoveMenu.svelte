@@ -11,8 +11,7 @@
 	import { tierData } from '$lib/states/tierData.svelte';
 
 	/** 未排名集合的多选批量入档入口：下拉列出全部档位，选一个即批量移入 */
-	let { moveSelectedTo, disabled = false }: { moveSelectedTo: (tierId: string) => void; disabled?: boolean } =
-		$props();
+	let { moveSelectedTo, disabled = false }: { moveSelectedTo: (tierId: string) => void; disabled?: boolean } = $props();
 </script>
 
 <DropdownMenu>

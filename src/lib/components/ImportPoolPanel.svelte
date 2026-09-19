@@ -8,11 +8,7 @@
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { ItemData } from '$lib/schemas/item';
-	import {
-		filterItemsByQuery,
-		selectAllMutable,
-		toggleMutableSelection,
-	} from '$lib/utils/poolPerformance';
+	import { filterItemsByQuery, selectAllMutable, toggleMutableSelection } from '$lib/utils/poolPerformance';
 
 	let { active = true }: { active?: boolean } = $props();
 	const selection = new SvelteSet<string>();
@@ -112,11 +108,8 @@
 				<span class="font-pixel shrink-0 text-[9px] text-muted-foreground"
 					>{m.pool_filtered_count({ shown: visible.length, total: importPool.items.length })}</span
 				>
-				<Button
-					variant="ghost"
-					size="sm"
-					class="font-pixel h-7 shrink-0 px-2 text-[8px]"
-					onclick={() => (query = '')}>{m.pool_filter_clear()}</Button
+				<Button variant="ghost" size="sm" class="font-pixel h-7 shrink-0 px-2 text-[8px]" onclick={() => (query = '')}
+					>{m.pool_filter_clear()}</Button
 				>
 			{/if}
 		</div>

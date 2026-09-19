@@ -10,16 +10,13 @@
 
 	const profile = $derived(buildTasteProfile(tierData.tiers));
 	/** 一致度展示成百分比；样本不足（null）时不显示数字，只说样本不够 */
-	const agreementPct = $derived(
-		profile.agreement === null ? null : Math.round(((profile.agreement + 1) / 2) * 100),
-	);
+	const agreementPct = $derived(profile.agreement === null ? null : Math.round(((profile.agreement + 1) / 2) * 100));
 
 	let exportNode = $state<HTMLElement | null>(null);
 	let isExporting = $state(false);
 	let statusMessage = $state('');
 
-	const displayName = (item: ItemData) =>
-		getLocale() === 'zh' && item.name_cn ? item.name_cn : item.name;
+	const displayName = (item: ItemData) => (getLocale() === 'zh' && item.name_cn ? item.name_cn : item.name);
 
 	function barWidth(count: number, max: number) {
 		return `${Math.max(4, Math.round((count / Math.max(1, max)) * 100))}%`;
@@ -105,10 +102,7 @@
 						<p class="font-pixel text-lg tabular-nums">{profile.rankedCount}</p>
 						<p class="mt-1 text-[10px] text-muted-foreground">{m.taste_ranked()}</p>
 					</div>
-					<div
-						class="border-2 border-border bg-background/60 p-2.5 text-center"
-						title={m.taste_agreement_hint()}
-					>
+					<div class="border-2 border-border bg-background/60 p-2.5 text-center" title={m.taste_agreement_hint()}>
 						<p class="font-pixel text-lg tabular-nums">
 							{agreementPct === null ? '—' : `${agreementPct}%`}
 						</p>
@@ -143,10 +137,8 @@
 										<div class="min-w-0 flex-1">
 											<p class="truncate text-[11px]">{displayName(row.item)}</p>
 											<p class="text-[10px] text-muted-foreground">
-												{m.taste_your_tier()}: {
-													tierData.tiers.find((t) => t.items.some((i) => i.id === row.item.id))
-														?.label ?? ''
-												} · {m.taste_bgm_score()}: {row.item.score?.toFixed(1)}
+												{m.taste_your_tier()}: {tierData.tiers.find((t) => t.items.some((i) => i.id === row.item.id))
+													?.label ?? ''} · {m.taste_bgm_score()}: {row.item.score?.toFixed(1)}
 											</p>
 										</div>
 										<span
