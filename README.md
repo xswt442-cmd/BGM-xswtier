@@ -4,7 +4,7 @@
 
 # BGM-xswtier
 
-An anime tier-list builder for Bangumi. Search by keyword, load a Bangumi index ID or username, then drag titles into ranked tiers. Your rankings are saved locally in the browser — no backend required.
+An anime tier-list builder for Bangumi. Search by keyword, load a Bangumi index ID or username, then drag titles into ranked tiers. Your rankings are saved locally in the browser — no account, no database. The only server-side code is a handful of thin serverless endpoints (cover-image proxy, error reporting, p1 API relay) that work around upstream CORS limits.
 
 [![License: MIT](https://img.shields.io/github/license/xswt442-cmd/BGM-xswtier)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/demo-bgm--xswtier-black?logo=vercel&logoColor=white)](https://bgm-xswtier.xswt.fyi/)
@@ -20,6 +20,7 @@ An anime tier-list builder for Bangumi. Search by keyword, load a Bangumi index 
 - **Share & backup** — copy a shareable link (the ranking is encoded into the URL, works on any device without an account) or export/import a JSON backup file.
 - **Three-axis visual system** — color scheme (sun / night / sky) × VFX (neon / CRT) × UI feedback (arcade / pulse), freely combinable.
 - **Bilingual UI** — Simplified Chinese / English, switched instantly.
+- **Offline-capable** — a service worker precaches the app shell (self-hosted fonts included), so routes you have already visited reopen without a network.
 - **Privacy-friendly** — all data stays in your browser; an optional Bangumi access token raises the API rate limit.
 
 ## Getting Started

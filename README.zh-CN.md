@@ -4,7 +4,7 @@
 
 # BGM-xswtier
 
-Bangumi 动漫 Tier 排名工具。支持关键词搜索、按目录 ID / 用户名加载条目，拖拽到各档位排名，排名自动保存在本地浏览器，无需后端。
+Bangumi 动漫 Tier 排名工具。支持关键词搜索、按目录 ID / 用户名加载条目，拖拽到各档位排名，排名自动保存在本地浏览器，无需账号与数据库。服务端只有几个轻量 serverless 端点（封面图代理、错误上报、p1 接口转发），用于绕开上游的 CORS 限制。
 
 [![License: MIT](https://img.shields.io/github/license/xswt442-cmd/BGM-xswtier)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/demo-bgm--xswtier-black?logo=vercel&logoColor=white)](https://bgm-xswtier.xswt.fyi/)
@@ -20,6 +20,7 @@ Bangumi 动漫 Tier 排名工具。支持关键词搜索、按目录 ID / 用户
 - **分享与备份** —— 一键复制分享链接（排名编码进 URL，任意设备免登录打开），或导出 / 导入 JSON 备份文件。
 - **三轴视觉系统** —— 配色（暖阳 / 黑夜 / 蓝天）× 特效（霓虹 / CRT）× 界面反馈（街机 / 呼吸），任意组合。
 - **中英双语** —— 界面即时切换简体中文 / English。
+- **离线可用** —— service worker 预缓存应用外壳（含自托管字体），访问过的路由断网也能重开。
 - **隐私友好** —— 数据全部留在浏览器；可选的 Bangumi access token 用于提高 API 限流额度。
 
 ## 快速开始
