@@ -31,7 +31,6 @@
 		? 'h-32'
 		: 'h-28'} {isFocused ? 'ring-4 ring-accent' : ''}"
 	title={cardTitle}
-	data-item-id={item.id}
 >
 	<div
 		class="relative w-full overflow-hidden {titleMode === 'two-line'
@@ -62,20 +61,23 @@
 		<!-- 详情入口：与左上角外链对称的右上角小按钮。刻意不做整卡点击——
 		     卡片同时是 dnd 拖拽源，整卡绑定 click 会在拖拽落点误触发浮层。
 		     触摸设备没有 hover，用 pointer:coarse 让它常显，否则手机上点不到。 -->
-		<button
-			type="button"
-			class="absolute right-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-sm border border-white/40 bg-black/70 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 [@media(pointer:coarse)]:opacity-100"
+		<span
+			role="button"
+			tabindex="0"
+			class="absolute right-1 top-1 z-10 flex h-5 w-5 cursor-pointer items-center justify-center rounded-sm border border-white/40 bg-black/70 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 [@media(pointer:coarse)]:opacity-100"
 			aria-label={m.item_detail({ name: displayName })}
 			title={m.item_detail({ name: displayName })}
 			data-export-exclude
-			onclick={(e) => {
-				// 别让点击冒泡到 dnd 容器
-				e.stopPropagation();
-				subjectDetail.open(item);
+			onclick={() => subjectDetail.open(item)}
+			onkeydown={(e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					subjectDetail.open(item);
+				}
 			}}
 		>
 			<span class="icon-[pixelarticons--list-box] h-3 w-3"></span>
-		</button>
+		</span>
 		{#if item.score !== undefined}
 			<span
 				class="absolute bottom-1 right-1 min-w-8 border-2 border-white bg-black px-1 py-0.5 text-center font-mono text-[11px] font-black leading-none tracking-normal tabular-nums text-white shadow-sm"
