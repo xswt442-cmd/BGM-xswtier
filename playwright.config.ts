@@ -22,6 +22,9 @@ export default defineConfig({
 		command:
 			'node node_modules/vite/bin/vite.js build && node node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 4173',
 		url: 'http://127.0.0.1:4173',
+		// Windows 本地：adapter-vercel 打 serverless bundle 时会先建悬空目录软链，Windows 拒绝 → build 必挂。
+		// E2E 只需要 .svelte-kit/output，故本地跳过 adapter 阶段；Linux 的 CI 不改，仍走真实 adapter。
+		env: process.platform === 'win32' ? { SKIP_VERCEL_ADAPTER: '1' } : {},
 		reuseExistingServer: !process.env.CI,
 		timeout: 180_000,
 	},
