@@ -6,6 +6,7 @@
 	import { locale } from '$lib/states/locale.svelte';
 	import StatusBar from '$lib/components/StatusBar.svelte';
 	import DomainMigrationNotice from '$lib/components/DomainMigrationNotice.svelte';
+	import SubjectDetailSheet from '$lib/components/SubjectDetailSheet.svelte';
 	import { applyAriaStrings } from '$lib/dndAria';
 	import { createErrorReporter, installGlobalErrorReporting } from '$lib/utils/errorReport';
 
@@ -59,3 +60,5 @@
 </div>
 
 <DomainMigrationNotice />
+<!-- 条目详情浮层挂全局：任意页面的 ItemCard 都能打开，各页无需各挂一份 -->
+<SubjectDetailSheet />

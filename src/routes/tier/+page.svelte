@@ -21,8 +21,10 @@
 	import { tierData } from '$lib/states/tierData.svelte';
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { sidebar } from '$lib/states/sidebar.svelte';
+	import { uiFocus } from '$lib/states/uiFocus.svelte';
 	import { toProxiedImageUrl } from '$lib/utils/imageProxy';
 	import { toMarkdown, toBBCode } from '$lib/utils/tierExportText';
+	import type { ThresholdPreset } from '$lib/utils/autoDistribute';
 	import {
 		countAffectedTiers,
 		TIER_SORT_KEYS,
@@ -93,6 +95,28 @@
 	// `hidden xl:block` 只是视觉隐藏，几百个 ItemCard 仍会照常渲染
 	let isDesktop = $state(typeof window !== 'undefined' && window.matchMedia('(min-width: 1280px)').matches);
 
+	/**
+	 * 画像页「定位」跳过来的高亮：滚到目标条目，停留片刻后自动清除。
+	 * 延后一帧再查询，等档位/池的 DOM 完成渲染；条目可能在虚拟列表里，
+	 * 命中不到时静默跳过（高亮只是引导，不该为它做额外渲染）。
+	 */
+	let focusClearTimer: ReturnType<typeof setTimeout> | undefined;
+
+	$effect(() => {
+		const id = uiFocus.id;
+		if (!id) return;
+		clearTimeout(focusClearTimer);
+		const scrollTimer = setTimeout(() => {
+			document
+				.querySelector(`[data-item-id="${CSS.escape(id)}"]`)
+				?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		}, 120);
+		focusClearTimer = setTimeout(() => uiFocus.clear(), 2600);
+		return () => clearTimeout(scrollTimer);
+	});
+
+	onDestroy(() => clearTimeout(focusClearTimer));
+
 	function askShareReplace(count: number): Promise<boolean> {
 		shareReplaceCount = count;
 		shareDialog.showModal();
@@ -146,9 +170,17 @@
 		return action;
 	}
 
-	/** 按评分把未排名集合预分档（单事务可撤销），完成后播报结果 */
-	function autoDistribute() {
-		tierData.autoDistributeByScore();
+	/** 有未排名条目才谈得上预分档 */
+	const canDistribute = $derived(tierData.collection.length > 0);
+	/** 阈值预设是 4 个分界（5 档）的口径，档位数不符时该项无意义，置灰 */
+	const thresholdsUsable = $derived(tierData.tiers.length === 5);
+
+	/**
+	 * 未排名条目预分档（单事务可撤销），完成后播报结果。
+	 * 不传 preset 走「按条数均分」，传 preset 走「按评分阈值」。
+	 */
+	function autoDistribute(preset?: ThresholdPreset) {
+		tierData.autoDistribute(preset);
 		statusMessage = m.auto_distribute_done();
 	}
 
@@ -320,15 +352,20 @@
 		saveDraft(true);
 	}
 
-	function exportFilename() {
+	function exportFilename(format: 'png' | 'svg') {
 		const stamp = new Date().toISOString().slice(0, 16).replace(/[-T:]/g, '');
-		return `bgm-xswtier-${stamp}.png`;
+		return `bgm-xswtier-${stamp}.${format}`;
 	}
 
-	async function exportPng() {
+	/**
+	 * 导出榜单图片。format 决定光栅（2× PNG）还是矢量（SVG，印刷/无损缩放用）。
+	 * skipEmpty 时把没有任何条目的档位整行排除掉——利用渲染层已有的 data-export-exclude
+	 * 过滤机制打临时标记，比克隆 DOM 再删节点简单，也不会产生截图前后布局抖动。
+	 */
+	async function exportImage(format: 'png' | 'svg', skipEmpty = false) {
 		if (!exportNode || isExporting) return;
 		isExporting = true;
-		statusMessage = m.exporting_png();
+		statusMessage = format === 'svg' ? m.exporting_svg() : m.exporting_png();
 		// lain CDN 无 CORS 头，html-to-image 跨域 fetch 取不到封面字节 → 导出图缺封面。
 		// 导出期间把节点内图片临时改写为同源代理地址，完成后在 finally 恢复原图。
 		const imgs = [...exportNode.querySelectorAll('img')];
@@ -337,28 +374,44 @@
 			const proxied = toProxiedImageUrl(originalSrcs[i]);
 			if (proxied) img.setAttribute('src', proxied);
 		});
+
+		const markedEmpty: HTMLElement[] = [];
+		if (skipEmpty) {
+			for (const zone of exportNode.querySelectorAll<HTMLElement>('[data-testid="tier-zone"]')) {
+				// 档位里没有条目卡片（drag shadow 只在拖拽瞬间出现，导出时不会命中）
+				if (!zone.querySelector('[data-item-id]')) {
+					zone.setAttribute('data-export-exclude', '');
+					markedEmpty.push(zone);
+				}
+			}
+		}
+
 		try {
 			await document.fonts.ready;
 			await Promise.all(imgs.map((img) => img.decode().catch(() => {})));
-			// 动态引入：PNG 导出非进页必需，避免 html-to-image 计入 tier 页首包
-			const { toPng } = await import('html-to-image');
-			const dataUrl = await toPng(exportNode, {
-				pixelRatio: 2,
+			// 动态引入：导出非进页必需，避免 html-to-image 计入 tier 页首包
+			const { toPng, toSvg } = await import('html-to-image');
+			const baseOptions = {
 				cacheBust: true,
 				// 字体已全部同源自托管（Press Start 2P + Fusion Pixel），可安全嵌入导出图，
 				// 保持像素观感；此前 skipFonts:true 是 Google Fonts 外链时代的权宜之计
 				backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--background').trim(),
-				filter: (node) => !(node instanceof HTMLElement && node.hasAttribute('data-export-exclude')),
-			});
+				filter: (node: Node) => !(node instanceof HTMLElement && node.hasAttribute('data-export-exclude')),
+			};
+			const dataUrl =
+				format === 'svg'
+					? await toSvg(exportNode, baseOptions)
+					: await toPng(exportNode, { ...baseOptions, pixelRatio: 2 });
 			const link = document.createElement('a');
-			link.download = exportFilename();
+			link.download = exportFilename(format);
 			link.href = dataUrl;
 			link.click();
-			statusMessage = m.export_png_success();
+			statusMessage = format === 'svg' ? m.export_svg_success() : m.export_png_success();
 		} catch (error) {
 			console.error('[Tier export] Failed', error);
-			statusMessage = m.export_png_failed();
+			statusMessage = format === 'svg' ? m.export_svg_failed() : m.export_png_failed();
 		} finally {
+			for (const zone of markedEmpty) zone.removeAttribute('data-export-exclude');
 			imgs.forEach((img, i) => {
 				const src = originalSrcs[i];
 				if (src === null) img.removeAttribute('src');
@@ -501,9 +554,28 @@
 					</div>
 				{/snippet}
 			</Popover>
-			<Button class="font-pixel h-11 text-[10px] sm:h-9" onclick={exportPng} disabled={isExporting}>
-				{isExporting ? m.exporting_png() : m.save_png()}
-			</Button>
+			<DropdownMenu>
+				<DropdownMenuTrigger>
+					{#snippet child({ props })}
+						<Button class="font-pixel h-11 text-[10px] sm:h-9" disabled={isExporting} {...props}>
+							{isExporting ? m.exporting_image() : m.save_png()}
+						</Button>
+					{/snippet}
+				</DropdownMenuTrigger>
+				{#snippet content()}
+					<DropdownMenuLabel>{m.export_image()}</DropdownMenuLabel>
+					<DropdownMenuSeparator />
+					<DropdownMenuItem onSelect={() => exportImage('png')}>
+						{m.export_png_all()}
+					</DropdownMenuItem>
+					<DropdownMenuItem onSelect={() => exportImage('png', true)}>
+						{m.export_png_skip_empty()}
+					</DropdownMenuItem>
+					<DropdownMenuItem onSelect={() => exportImage('svg')}>
+						{m.export_svg_all()}
+					</DropdownMenuItem>
+				{/snippet}
+			</DropdownMenu>
 		</div>
 		{#if shareWarning}
 			<p class="font-pixel mb-1 text-[10px] text-destructive">{shareWarning}</p>
@@ -565,18 +637,45 @@
 							{/each}
 						{/snippet}
 					</DropdownMenu>
-					<Button
-						variant="outline"
-						size="icon"
-						class="h-9 w-9"
-						onclick={autoDistribute}
-						disabled={tierData.collection.length === 0 || isExporting}
-						aria-label={m.auto_distribute()}
-						title={m.auto_distribute()}
-						data-testid="auto-distribute-button"
-					>
-						<span class="icon-[pixelarticons--sort] h-4 w-4"></span>
-					</Button>
+					<DropdownMenu>
+						<DropdownMenuTrigger>
+							{#snippet child({ props })}
+								<Button
+									variant="outline"
+									size="icon"
+									class="h-9 w-9"
+									disabled={!canDistribute || isExporting}
+									aria-label={m.auto_distribute()}
+									title={m.auto_distribute()}
+									data-testid="auto-distribute-button"
+									{...props}
+								>
+									<span class="icon-[pixelarticons--sort] h-4 w-4"></span>
+								</Button>
+							{/snippet}
+						</DropdownMenuTrigger>
+						{#snippet content()}
+							<DropdownMenuLabel>{m.auto_distribute()}</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem onSelect={() => autoDistribute()}>
+								{m.auto_distribute_even()}
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							{#if thresholdsUsable}
+								<DropdownMenuItem onSelect={() => autoDistribute('strict')}>
+									{m.auto_distribute_strict()}
+								</DropdownMenuItem>
+								<DropdownMenuItem onSelect={() => autoDistribute('standard')}>
+									{m.auto_distribute_standard()}
+								</DropdownMenuItem>
+								<DropdownMenuItem onSelect={() => autoDistribute('loose')}>
+									{m.auto_distribute_loose()}
+								</DropdownMenuItem>
+							{:else}
+								<DropdownMenuItem disabled>{m.auto_distribute_need_five()}</DropdownMenuItem>
+							{/if}
+						{/snippet}
+					</DropdownMenu>
 					<Button
 						variant="outline"
 						size="icon"

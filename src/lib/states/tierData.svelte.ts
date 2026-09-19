@@ -4,7 +4,12 @@ import { SHADOW_PLACEHOLDER_ITEM_ID } from 'svelte-dnd-action';
 import type { ItemData, TierDef, TierDraft, TierStore } from '$lib/schemas/item';
 import { TierHistory, type TierHistoryAction } from '$lib/utils/tierHistory';
 import { migrateStore } from '$lib/utils/tierSerialize';
-import { distributeByScore } from '$lib/utils/autoDistribute';
+import {
+	distributeByScore,
+	distributeByThresholds,
+	THRESHOLD_PRESETS,
+	type ThresholdPreset,
+} from '$lib/utils/autoDistribute';
 import { sortItemsInTiers, DEFAULT_SORT_DIRECTION, type TierSortKey } from '$lib/utils/sortTierItems';
 import { storageWarning } from '$lib/states/storageWarning.svelte';
 import { m } from '$lib/paraglide/messages';
@@ -243,9 +248,20 @@ export const tierData = {
 		}
 	},
 	/** 按评分预分档：未排名集合降序均匀切到当前各档（无分垫底），单事务可撤销 */
-	autoDistributeByScore() {
+	/**
+	 * 未排名条目预分档（单事务可撤销）。
+	 * - 不传 preset：按条数均分（相对口径，"排名前 N% 进首档"）
+	 * - 传 preset：按该预设的绝对评分阈值分档（"X 分以上进首档"，跨榜单口径一致）
+	 */
+	autoDistribute(preset?: ThresholdPreset) {
+		const result = preset
+			? distributeByThresholds(tiers, collection, THRESHOLD_PRESETS[preset])
+			: distributeByScore(tiers, collection);
+		// 阈值与档位数不匹配时返回的是原 tiers 引用（未分档）。提前返回，既不能清空
+		// collection（条目会凭空消失），也不该进事务（会留下一个撤销了但看不出变化的历史步）。
+		if (result.tiers === tiers) return;
 		transact('move_item', () => {
-			tiers = distributeByScore(tiers, collection).tiers;
+			tiers = result.tiers;
 			collection = [];
 		});
 	},

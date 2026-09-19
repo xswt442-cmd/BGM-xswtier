@@ -28,6 +28,15 @@ export interface SubjectRating {
 	score: number;
 }
 
+/** 收藏统计（v0 subject 详情返回；只手写本工具用到的 5 类） */
+export interface SubjectCollection {
+	wish: number;
+	collect: number;
+	doing: number;
+	on_hold: number;
+	dropped: number;
+}
+
 export interface Subject {
 	id: number;
 	type: number & SubjectType;
@@ -41,6 +50,7 @@ export interface Subject {
 	eps: number;
 	total_episodes: number;
 	rating: SubjectRating;
+	collection?: SubjectCollection;
 }
 
 export interface SlimSubject {

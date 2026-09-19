@@ -57,6 +57,28 @@ export async function fetchItemByIdentity(item: ItemIdentity): Promise<ItemData 
 }
 
 /**
+ * 详情浮层专用：拉取完整 Subject，**不映射成 ItemData**。
+ *
+ * 与 fetchSubject 的错误策略刻意相反——这里失败返回 undefined 而不抛错：详情是只读的附加
+ * 信息，拉不到就只让浮层显示「取不到详情」，不该把异常抛给浏览路径。反过来 fetchSubject
+ * 服务于批量入池，必须靠 rejection 让调用方计入 failedItems，静默 undefined 会产出空壳条目。
+ *
+ * summary / rating.rank / rating.count / collection 只用于展示，**不落 ItemData**，
+ * 免得把长文本塞进 localStorage 与分享链接。
+ */
+export async function fetchSubjectDetail(subject_id: number): Promise<Subject | undefined> {
+	try {
+		const { data, error } = await pubClient.GET('/v0/subjects/{subject_id}', {
+			params: { path: { subject_id } },
+		});
+		if (error || !data?.id) return undefined;
+		return data;
+	} catch {
+		return undefined;
+	}
+}
+
+/**
  * 用户名模式：拉取该用户「已看完」的动画收藏（type=2 看过, subject_type=2 动画），全量不分年份。
  * 早期版本只收「当前年」条目（subject.date 以当年开头）导致 pool 几乎为空，改为全量。
  * 分页：先取首页拿 total，再并发拉剩余页。并发用 p-limit 压制（匿名 ~30 req/min，

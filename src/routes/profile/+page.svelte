@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { tierData } from '$lib/states/tierData.svelte';
+	import { uiFocus } from '$lib/states/uiFocus.svelte';
 	import { buildTasteProfile } from '$lib/utils/tasteProfile';
 	import { toProxiedImageUrl } from '$lib/utils/imageProxy';
 	import { getLocale } from '$lib/paraglide/runtime';
@@ -20,6 +21,12 @@
 
 	function barWidth(count: number, max: number) {
 		return `${Math.max(4, Math.round((count / Math.max(1, max)) * 100))}%`;
+	}
+
+	/** 跳回 tier 页并滚动定位+高亮该条目（跨页瞬态焦点，tier 页读完即清） */
+	function locateInTier(id: string) {
+		uiFocus.focus(id);
+		void goto('/tier');
 	}
 
 	async function exportPng() {
@@ -126,27 +133,35 @@
 							<p class="font-pixel mb-2 text-[10px]">{group.title}</p>
 							<ul class="grid gap-1.5">
 								{#each group.rows as row (row.item.id)}
-									<li class="flex items-center gap-2" data-testid="profile-delta-row">
-										<img
-											src={row.item.image ?? 'https://lain.bgm.tv/img/no_icon_subject.png'}
-											alt={displayName(row.item)}
-											draggable="false"
-											loading="lazy"
-											class="h-10 w-8 shrink-0 rounded-sm border border-border object-cover object-top"
-										/>
-										<div class="min-w-0 flex-1">
-											<p class="truncate text-[11px]">{displayName(row.item)}</p>
-											<p class="text-[10px] text-muted-foreground">
-												{m.taste_your_tier()}: {tierData.tiers.find((t) => t.items.some((i) => i.id === row.item.id))
-													?.label ?? ''} · {m.taste_bgm_score()}: {row.item.score?.toFixed(1)}
-											</p>
-										</div>
-										<span
-											class="font-pixel shrink-0 text-[10px] tabular-nums"
-											style="color: {row.delta > 0 ? 'var(--chart-1)' : 'var(--chart-3)'};"
+									<li data-testid="profile-delta-row">
+										<button
+											type="button"
+											class="flex w-full items-center gap-2 rounded-sm px-1 py-1 text-left transition-colors hover:bg-muted/60 focus-visible:bg-muted/60"
+											aria-label={m.taste_locate({ name: displayName(row.item) })}
+											title={m.taste_locate({ name: displayName(row.item) })}
+											onclick={() => locateInTier(row.item.id)}
 										>
-											{row.delta > 0 ? '+' : ''}{row.delta}
-										</span>
+											<img
+												src={row.item.image ?? 'https://lain.bgm.tv/img/no_icon_subject.png'}
+												alt={displayName(row.item)}
+												draggable="false"
+												loading="lazy"
+												class="h-10 w-8 shrink-0 rounded-sm border border-border object-cover object-top"
+											/>
+											<div class="min-w-0 flex-1">
+												<p class="truncate text-[11px]">{displayName(row.item)}</p>
+												<p class="text-[10px] text-muted-foreground">
+													{m.taste_your_tier()}: {tierData.tiers.find((t) => t.items.some((i) => i.id === row.item.id))
+														?.label ?? ''} · {m.taste_bgm_score()}: {row.item.score?.toFixed(1)}
+												</p>
+											</div>
+											<span
+												class="font-pixel shrink-0 text-[10px] tabular-nums"
+												style="color: {row.delta > 0 ? 'var(--chart-1)' : 'var(--chart-3)'};"
+											>
+												{row.delta > 0 ? '+' : ''}{row.delta}
+											</span>
+										</button>
 									</li>
 								{/each}
 							</ul>
