@@ -45,6 +45,7 @@
 		URL_MAX_LENGTH,
 		SHARE_HASH_PREFIX,
 	} from '$lib/utils/tierSerialize';
+	import { referenceRangeText, referenceTrendline } from '$lib/utils/scoreRefs';
 
 	let exportNode: HTMLElement;
 	let statusMessage = $state('');
@@ -174,14 +175,22 @@
 	const canDistribute = $derived(tierData.collection.length > 0);
 	/** 阈值预设是 4 个分界（5 档）的口径，档位数不符时该项无意义，置灰 */
 	const thresholdsUsable = $derived(tierData.tiers.length === 5);
+	/**
+	 * 评分阈值菜单的参照线：由首档现况反推（首档是用户亲手划的，就是他自己心里的标准）。
+	 * 首档标签是用户可改的，文案里带出来才能让人一眼认出参照的是哪一档。
+	 */
+	const topTierLabel = $derived(tierData.tiers[0]?.label ?? '');
+	const thresholdRef = $derived(referenceTrendline(tierData.tiers[0]?.items ?? []));
 
 	/**
 	 * 未排名条目预分档（单事务可撤销），完成后播报结果。
 	 * 不传 preset 走「按条数均分」，传 preset 走「按评分阈值」。
+	 * 播报带上参照线快照：榜单被改过之后回头听播报，才知道当时是拿什么当标准的。
 	 */
 	function autoDistribute(preset?: ThresholdPreset) {
+		const ref = thresholdRef ? referenceRangeText(thresholdRef) : '';
 		tierData.autoDistribute(preset);
-		statusMessage = m.auto_distribute_done();
+		statusMessage = ref ? m.auto_distribute_done_ref({ range: ref }) : m.auto_distribute_done();
 	}
 
 	const SORT_LABELS: Record<TierSortKey, () => string> = {
@@ -662,6 +671,13 @@
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							{#if thresholdsUsable}
+								<DropdownMenuLabel class="font-normal opacity-70">
+									{#if thresholdRef}
+										{m.auto_distribute_ref({ tier: topTierLabel, range: referenceRangeText(thresholdRef) })}
+									{:else}
+										{m.auto_distribute_ref_unknown()}
+									{/if}
+								</DropdownMenuLabel>
 								<DropdownMenuItem onSelect={() => autoDistribute('strict')}>
 									{m.auto_distribute_strict()}
 								</DropdownMenuItem>
