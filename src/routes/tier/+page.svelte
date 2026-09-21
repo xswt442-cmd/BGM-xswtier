@@ -16,7 +16,6 @@
 		DropdownMenuLabel,
 		DropdownMenuSeparator,
 	} from '$lib/components/ui/dropdown-menu';
-	import { Popover, PopoverTrigger } from '$lib/components/ui/popover';
 	import { Sheet, SheetClose, SheetTitle } from '$lib/components/ui/sheet';
 	import { tierData } from '$lib/states/tierData.svelte';
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
@@ -530,50 +529,33 @@
 			>
 				{importing ? m.importing() : m.import_tier()}
 			</Button>
-			<Popover>
-				<PopoverTrigger
-					class="font-pixel inline-flex h-11 items-center justify-center gap-1 rounded-md text-[10px] text-black transition-opacity hover:opacity-85 disabled:pointer-events-none disabled:opacity-50 sm:h-9"
-					style="background-color: var(--chart-5)"
-					disabled={!hasSessionItems}
-				>
-					{m.export_menu()}
-					<span class="icon-[pixelarticons--chevron-down] h-3.5 w-3.5"></span>
-				</PopoverTrigger>
-				{#snippet content()}
-					<div class="grid gap-1">
-						<Button variant="ghost" size="sm" class="font-pixel justify-start text-[10px]" onclick={exportTierJson}>
-							{m.export_tier()}
-						</Button>
-						<Button
-							variant="ghost"
-							size="sm"
-							class="font-pixel justify-start text-[10px]"
-							onclick={() => exportText('markdown')}
-						>
-							{m.export_markdown()}
-						</Button>
-						<Button
-							variant="ghost"
-							size="sm"
-							class="font-pixel justify-start text-[10px]"
-							onclick={() => exportText('bbcode')}
-						>
-							{m.export_bbcode()}
-						</Button>
-					</div>
-				{/snippet}
-			</Popover>
 			<DropdownMenu>
 				<DropdownMenuTrigger>
 					{#snippet child({ props })}
-						<Button class="font-pixel h-11 text-[10px] sm:h-9" disabled={isExporting} {...props}>
-							{isExporting ? m.exporting_image() : m.save_png()}
+						<Button
+							class="font-pixel inline-flex h-11 items-center justify-center gap-1 text-[10px] text-black transition-opacity hover:opacity-85 disabled:pointer-events-none disabled:opacity-50 sm:h-9"
+							style="background-color: var(--chart-5)"
+							disabled={isExporting}
+							{...props}
+						>
+							{isExporting ? m.exporting_image() : m.export_menu()}
+							<span class="icon-[pixelarticons--chevron-down] h-3.5 w-3.5"></span>
 						</Button>
 					{/snippet}
 				</DropdownMenuTrigger>
 				{#snippet content()}
-					<DropdownMenuLabel>{m.export_image()}</DropdownMenuLabel>
+					<DropdownMenuLabel class="font-normal opacity-70">{m.export_group_data()}</DropdownMenuLabel>
+					<DropdownMenuItem onSelect={exportTierJson}>
+						{m.export_tier()}
+					</DropdownMenuItem>
+					<DropdownMenuItem onSelect={() => exportText('markdown')}>
+						{m.export_markdown()}
+					</DropdownMenuItem>
+					<DropdownMenuItem onSelect={() => exportText('bbcode')}>
+						{m.export_bbcode()}
+					</DropdownMenuItem>
 					<DropdownMenuSeparator />
+					<DropdownMenuLabel class="font-normal opacity-70">{m.export_group_image()}</DropdownMenuLabel>
 					<DropdownMenuItem onSelect={() => exportImage('png')}>
 						{m.export_png_all()}
 					</DropdownMenuItem>
@@ -585,6 +567,9 @@
 					</DropdownMenuItem>
 				{/snippet}
 			</DropdownMenu>
+			<Button variant="outline" class="font-pixel h-11 text-[10px] opacity-50 sm:h-9" disabled>
+				{m.save_tier()}
+			</Button>
 		</div>
 		{#if shareWarning}
 			<p class="font-pixel mb-1 text-[10px] text-destructive">{shareWarning}</p>
