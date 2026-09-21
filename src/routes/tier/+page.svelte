@@ -6,6 +6,8 @@
 	import { goto, replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import TierBar from '$lib/components/TierBar.svelte';
+	import TierToolbar from '$lib/components/TierToolbar.svelte';
+	import TierActionBar from '$lib/components/TierActionBar.svelte';
 	import ItemList from '$lib/components/ItemList.svelte';
 	import BulkMoveMenu from '$lib/components/BulkMoveMenu.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -21,15 +23,10 @@
 	import { itemLoader } from '$lib/states/itemBatchLoader.svelte';
 	import { sidebar } from '$lib/states/sidebar.svelte';
 	import { uiFocus } from '$lib/states/uiFocus.svelte';
-	import { toProxiedImageUrl } from '$lib/utils/imageProxy';
 	import { toMarkdown, toBBCode } from '$lib/utils/tierExportText';
-	import type { ThresholdPreset } from '$lib/utils/autoDistribute';
-	import {
-		countAffectedTiers,
-		TIER_SORT_KEYS,
-		DEFAULT_SORT_DIRECTION,
-		type TierSortKey,
-	} from '$lib/utils/sortTierItems';
+	import { downloadTextFile, dateStamp } from '$lib/utils/download';
+	import { exportTierImage } from '$lib/utils/tierImageExport';
+	import { hasOpenOverlay, isEditableTarget } from '$lib/utils/dom';
 	import { pruneMutableSelection, toggleMutableSelection } from '$lib/utils/poolPerformance';
 	import { fetchIndexById } from '$lib/api/indexFetchers.svelte';
 	import { fetchUserCollection } from '$lib/api/bgmFetchers.svelte';
@@ -44,13 +41,10 @@
 		URL_MAX_LENGTH,
 		SHARE_HASH_PREFIX,
 	} from '$lib/utils/tierSerialize';
-	import { referenceRangeText, referenceTrendline } from '$lib/utils/scoreRefs';
 
 	let exportNode: HTMLElement;
 	let statusMessage = $state('');
 	let isExporting = $state(false);
-	/** 档位内排序只在有条目可排时才有意义 */
-	const anyTierItems = $derived(tierData.tiers.some((tier) => tier.items.length > 0));
 
 	// 未排名集合的多选批量入档（桌面 aside 与移动抽屉共用一份状态）
 	const bulkSelection = new SvelteSet<string>();
@@ -170,61 +164,15 @@
 		return action;
 	}
 
-	/** 有未排名条目才谈得上预分档 */
-	const canDistribute = $derived(tierData.collection.length > 0);
-	/** 阈值预设是 4 个分界（5 档）的口径，档位数不符时该项无意义，置灰 */
-	const thresholdsUsable = $derived(tierData.tiers.length === 5);
-	/**
-	 * 评分阈值菜单的参照线：由首档现况反推（首档是用户亲手划的，就是他自己心里的标准）。
-	 * 首档标签是用户可改的，文案里带出来才能让人一眼认出参照的是哪一档。
-	 */
-	const topTierLabel = $derived(tierData.tiers[0]?.label ?? '');
-	const thresholdRef = $derived(referenceTrendline(tierData.tiers[0]?.items ?? []));
-
-	/**
-	 * 未排名条目预分档（单事务可撤销），完成后播报结果。
-	 * 不传 preset 走「按条数均分」，传 preset 走「按评分阈值」。
-	 * 播报带上参照线快照：榜单被改过之后回头听播报，才知道当时是拿什么当标准的。
-	 */
-	function autoDistribute(preset?: ThresholdPreset) {
-		const ref = thresholdRef ? referenceRangeText(thresholdRef) : '';
-		tierData.autoDistribute(preset);
-		statusMessage = ref ? m.auto_distribute_done_ref({ range: ref }) : m.auto_distribute_done();
-	}
-
-	const SORT_LABELS: Record<TierSortKey, () => string> = {
-		score: m.sort_by_score,
-		rating_total: m.sort_by_rating_total,
-		air_date: m.sort_by_air_date,
-		name: m.sort_by_name,
-	};
-
-	/** 档位内重排（不跨档移动），单事务可撤销；无变化时明确告知，避免"点了没反应" */
-	function sortTierItems(key: TierSortKey) {
-		const affected = countAffectedTiers(tierData.tiers, key, DEFAULT_SORT_DIRECTION[key]);
-		if (affected === 0) {
-			statusMessage = m.sort_no_change();
-			return;
-		}
-		tierData.sortTierItems(key);
-		statusMessage = m.sort_done({ sort: SORT_LABELS[key](), count: affected });
-	}
-
 	function redo() {
 		const action = tierData.redo();
 		if (action) statusMessage = m.redo_success({ action: historyActionLabel(action) });
 		return action;
 	}
 
-	function isEditableTarget(target: EventTarget | null) {
-		return target instanceof Element && Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
-	}
-
 	function handleHistoryShortcut(event: KeyboardEvent) {
 		if (!(event.ctrlKey || event.metaKey) || event.altKey || isEditableTarget(event.target)) return;
-		if (document.querySelector('dialog[open]')) return;
-		// bits-ui 浮层不是原生 dialog（Popover/Sheet 内容 role=dialog、Select=listbox、Menu=menu），同样要避让
-		if (document.querySelector('[role="dialog"], [role="listbox"], [role="menu"]')) return;
+		if (hasOpenOverlay()) return;
 
 		const key = event.key.toLowerCase();
 		const isUndo = key === 'z' && !event.shiftKey;
@@ -263,27 +211,18 @@
 		if (!hasSessionItems) return;
 		try {
 			const json = exportJSON(tierData.snapshot());
-			downloadTextFile(`bgm-xswtier-tier-${new Date().toISOString().slice(0, 10)}.json`, json, 'application/json');
+			downloadTextFile(`bgm-xswtier-tier-${dateStamp()}.json`, json, 'application/json');
 			statusMessage = m.export_json_success();
 		} catch {
 			statusMessage = m.export_json_failed();
 		}
 	}
 
-	function downloadTextFile(filename: string, text: string, mime = 'text/plain') {
-		const url = URL.createObjectURL(new Blob([text], { type: `${mime};charset=utf-8` }));
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = filename;
-		a.click();
-		URL.revokeObjectURL(url);
-	}
-
 	/** 发帖向文本导出：Markdown / BBCode（文件名带当日日期） */
 	function exportText(format: 'markdown' | 'bbcode') {
 		if (!hasSessionItems) return;
 		const store = tierData.snapshot();
-		const stamp = new Date().toISOString().slice(0, 10);
+		const stamp = dateStamp();
 		if (format === 'markdown') {
 			downloadTextFile(`bgm-xswtier-${stamp}.md`, toMarkdown(store), 'text/markdown');
 		} else {
@@ -360,71 +299,23 @@
 		saveDraft(true);
 	}
 
-	function exportFilename(format: 'png' | 'svg') {
-		const stamp = new Date().toISOString().slice(0, 16).replace(/[-T:]/g, '');
-		return `bgm-xswtier-${stamp}.${format}`;
-	}
-
 	/**
-	 * 导出榜单图片。format 决定光栅（2× PNG）还是矢量（SVG，印刷/无损缩放用）。
-	 * skipEmpty 时把没有任何条目的档位整行排除掉——利用渲染层已有的 data-export-exclude
-	 * 过滤机制打临时标记，比克隆 DOM 再删节点简单，也不会产生截图前后布局抖动。
+	 * 导出榜单图片。format 决定光栅（2× PNG）还是矢量（SVG，印刷/无损缩放用）；
+	 * skipEmpty 跳过没有任何条目的档位整行。
+	 * DOM 改写（封面代理、空档标记）与还原都在 tierImageExport 里完成，
+	 * 这里只管导出态和给用户的反馈。
 	 */
 	async function exportImage(format: 'png' | 'svg', skipEmpty = false) {
 		if (!exportNode || isExporting) return;
 		isExporting = true;
 		statusMessage = format === 'svg' ? m.exporting_svg() : m.exporting_png();
-		// lain CDN 无 CORS 头，html-to-image 跨域 fetch 取不到封面字节 → 导出图缺封面。
-		// 导出期间把节点内图片临时改写为同源代理地址，完成后在 finally 恢复原图。
-		const imgs = [...exportNode.querySelectorAll('img')];
-		const originalSrcs = imgs.map((img) => img.getAttribute('src'));
-		imgs.forEach((img, i) => {
-			const proxied = toProxiedImageUrl(originalSrcs[i]);
-			if (proxied) img.setAttribute('src', proxied);
-		});
-
-		const markedEmpty: HTMLElement[] = [];
-		if (skipEmpty) {
-			for (const zone of exportNode.querySelectorAll<HTMLElement>('[data-testid="tier-zone"]')) {
-				// 档位里没有条目卡片（drag shadow 只在拖拽瞬间出现，导出时不会命中）
-				if (!zone.querySelector('[data-item-id]')) {
-					zone.setAttribute('data-export-exclude', '');
-					markedEmpty.push(zone);
-				}
-			}
-		}
-
 		try {
-			await document.fonts.ready;
-			await Promise.all(imgs.map((img) => img.decode().catch(() => {})));
-			// 动态引入：导出非进页必需，避免 html-to-image 计入 tier 页首包
-			const { toPng, toSvg } = await import('html-to-image');
-			const baseOptions = {
-				cacheBust: true,
-				// 字体已全部同源自托管（Press Start 2P + Fusion Pixel），可安全嵌入导出图，
-				// 保持像素观感；此前 skipFonts:true 是 Google Fonts 外链时代的权宜之计
-				backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--background').trim(),
-				filter: (node: Node) => !(node instanceof HTMLElement && node.hasAttribute('data-export-exclude')),
-			};
-			const dataUrl =
-				format === 'svg'
-					? await toSvg(exportNode, baseOptions)
-					: await toPng(exportNode, { ...baseOptions, pixelRatio: 2 });
-			const link = document.createElement('a');
-			link.download = exportFilename(format);
-			link.href = dataUrl;
-			link.click();
+			await exportTierImage(exportNode, { format, skipEmpty });
 			statusMessage = format === 'svg' ? m.export_svg_success() : m.export_png_success();
 		} catch (error) {
 			console.error('[Tier export] Failed', error);
 			statusMessage = format === 'svg' ? m.export_svg_failed() : m.export_png_failed();
 		} finally {
-			for (const zone of markedEmpty) zone.removeAttribute('data-export-exclude');
-			imgs.forEach((img, i) => {
-				const src = originalSrcs[i];
-				if (src === null) img.removeAttribute('src');
-				else img.setAttribute('src', src);
-			});
 			isExporting = false;
 		}
 	}
@@ -503,74 +394,19 @@
 
 <div class="mx-auto grid min-h-svh w-full max-w-7xl xl:grid-cols-[minmax(0,1fr)_340px]">
 	<main class="p-4 pt-6 pb-32 xl:pb-4">
-		<div class="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3" data-export-exclude>
-			<Button variant="outline" class="font-pixel h-11 text-[10px] sm:h-9" onclick={() => saveDraft(false)}>
-				{m.save_draft()}
-			</Button>
-			<Button
-				class="font-pixel h-11 text-[10px] text-black hover:opacity-85 sm:h-9"
-				style="background-color: var(--chart-3)"
-				onclick={copyShareLink}
-				disabled={!hasSessionItems}
-			>
-				{copied ? m.share_copied() : m.share_tier()}
-			</Button>
-			<Button
-				class="font-pixel h-11 bg-accent text-[10px] text-accent-foreground hover:bg-accent/85 sm:h-9"
-				onclick={() => exitDialog.showModal()}
-			>
-				{m.exit_tier()}
-			</Button>
-			<Button
-				class="font-pixel h-11 text-[10px] text-black hover:opacity-85 sm:h-9"
-				style="background-color: var(--chart-4)"
-				onclick={() => importInput?.click()}
-				disabled={importing}
-			>
-				{importing ? m.importing() : m.import_tier()}
-			</Button>
-			<DropdownMenu>
-				<DropdownMenuTrigger>
-					{#snippet child({ props })}
-						<Button
-							class="font-pixel inline-flex h-11 items-center justify-center gap-1 text-[10px] text-black transition-opacity hover:opacity-85 disabled:pointer-events-none disabled:opacity-50 sm:h-9"
-							style="background-color: var(--chart-5)"
-							disabled={isExporting}
-							{...props}
-						>
-							{isExporting ? m.exporting_image() : m.export_menu()}
-							<span class="icon-[pixelarticons--chevron-down] h-3.5 w-3.5"></span>
-						</Button>
-					{/snippet}
-				</DropdownMenuTrigger>
-				{#snippet content()}
-					<DropdownMenuLabel class="font-normal opacity-70">{m.export_group_data()}</DropdownMenuLabel>
-					<DropdownMenuItem onSelect={exportTierJson}>
-						{m.export_tier()}
-					</DropdownMenuItem>
-					<DropdownMenuItem onSelect={() => exportText('markdown')}>
-						{m.export_markdown()}
-					</DropdownMenuItem>
-					<DropdownMenuItem onSelect={() => exportText('bbcode')}>
-						{m.export_bbcode()}
-					</DropdownMenuItem>
-					<DropdownMenuSeparator />
-					<DropdownMenuLabel class="font-normal opacity-70">{m.export_group_image()}</DropdownMenuLabel>
-					<DropdownMenuItem onSelect={() => exportImage('png')}>
-						{m.export_png_all()}
-					</DropdownMenuItem>
-					<DropdownMenuItem onSelect={() => exportImage('png', true)}>
-						{m.export_png_skip_empty()}
-					</DropdownMenuItem>
-					<DropdownMenuItem onSelect={() => exportImage('svg')}>
-						{m.export_svg_all()}
-					</DropdownMenuItem>
-				{/snippet}
-			</DropdownMenu>
-			<Button variant="outline" class="font-pixel h-11 text-[10px] opacity-50 sm:h-9" disabled>
-				{m.save_tier()}
-			</Button>
-		</div>
+		<TierToolbar
+			{hasSessionItems}
+			{copied}
+			{importing}
+			{isExporting}
+			onSaveDraft={() => saveDraft(false)}
+			onShare={copyShareLink}
+			onExit={() => exitDialog.showModal()}
+			onImport={() => importInput?.click()}
+			onExportJson={exportTierJson}
+			onExportText={exportText}
+			onExportImage={exportImage}
+		/>
 		{#if shareWarning}
 			<p class="font-pixel mb-1 text-[10px] text-destructive">{shareWarning}</p>
 		{/if}
@@ -591,117 +427,7 @@
 				>
 					TIER LIST
 				</span>
-				<div class="ml-auto flex items-center gap-1" data-export-exclude>
-					<Button
-						variant="outline"
-						size="icon"
-						class="h-9 w-9"
-						onclick={() => goto('/profile')}
-						disabled={!anyTierItems}
-						aria-label={m.taste_profile()}
-						title={m.taste_profile()}
-						data-testid="taste-profile-button"
-					>
-						<span class="icon-[pixelarticons--chart] h-4 w-4"></span>
-					</Button>
-					<DropdownMenu>
-						<DropdownMenuTrigger>
-							{#snippet child({ props })}
-								<Button
-									variant="outline"
-									size="icon"
-									class="h-9 w-9"
-									disabled={!anyTierItems || isExporting}
-									aria-label={m.sort_tier_items()}
-									title={m.sort_tier_items()}
-									data-testid="sort-tier-button"
-									{...props}
-								>
-									<span class="icon-[pixelarticons--arrows-vertical] h-4 w-4"></span>
-								</Button>
-							{/snippet}
-						</DropdownMenuTrigger>
-						{#snippet content()}
-							<DropdownMenuLabel>{m.sort_tier_items()}</DropdownMenuLabel>
-							<DropdownMenuSeparator />
-							{#each TIER_SORT_KEYS as key (key)}
-								<DropdownMenuItem onSelect={() => sortTierItems(key)}>
-									{SORT_LABELS[key]()}
-								</DropdownMenuItem>
-							{/each}
-						{/snippet}
-					</DropdownMenu>
-					<DropdownMenu>
-						<DropdownMenuTrigger>
-							{#snippet child({ props })}
-								<Button
-									variant="outline"
-									size="icon"
-									class="h-9 w-9"
-									disabled={!canDistribute || isExporting}
-									aria-label={m.auto_distribute()}
-									title={m.auto_distribute()}
-									data-testid="auto-distribute-button"
-									{...props}
-								>
-									<span class="icon-[pixelarticons--sort] h-4 w-4"></span>
-								</Button>
-							{/snippet}
-						</DropdownMenuTrigger>
-						{#snippet content()}
-							<DropdownMenuLabel>{m.auto_distribute()}</DropdownMenuLabel>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem onSelect={() => autoDistribute()}>
-								{m.auto_distribute_even()}
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							{#if thresholdsUsable}
-								<DropdownMenuLabel class="font-normal opacity-70">
-									{#if thresholdRef}
-										{m.auto_distribute_ref({ tier: topTierLabel, range: referenceRangeText(thresholdRef) })}
-									{:else}
-										{m.auto_distribute_ref_unknown()}
-									{/if}
-								</DropdownMenuLabel>
-								<DropdownMenuItem onSelect={() => autoDistribute('strict')}>
-									{m.auto_distribute_strict()}
-								</DropdownMenuItem>
-								<DropdownMenuItem onSelect={() => autoDistribute('standard')}>
-									{m.auto_distribute_standard()}
-								</DropdownMenuItem>
-								<DropdownMenuItem onSelect={() => autoDistribute('loose')}>
-									{m.auto_distribute_loose()}
-								</DropdownMenuItem>
-							{:else}
-								<DropdownMenuItem disabled>{m.auto_distribute_need_five()}</DropdownMenuItem>
-							{/if}
-						{/snippet}
-					</DropdownMenu>
-					<Button
-						variant="outline"
-						size="icon"
-						class="h-9 w-9"
-						onclick={undo}
-						disabled={!tierData.canUndo}
-						aria-label={m.undo_available({ count: tierData.undoDepth })}
-						title={m.undo_available({ count: tierData.undoDepth })}
-						data-testid="undo-button"
-					>
-						<span class="icon-[pixelarticons--undo] h-4 w-4"></span>
-					</Button>
-					<Button
-						variant="outline"
-						size="icon"
-						class="h-9 w-9"
-						onclick={redo}
-						disabled={!tierData.canRedo}
-						aria-label={m.redo_available({ count: tierData.redoDepth })}
-						title={m.redo_available({ count: tierData.redoDepth })}
-						data-testid="redo-button"
-					>
-						<span class="icon-[pixelarticons--redo] h-4 w-4"></span>
-					</Button>
-				</div>
+				<TierActionBar {isExporting} onStatus={(msg) => (statusMessage = msg)} onUndo={undo} onRedo={redo} />
 			</div>
 			<section
 				use:dragHandleZone={{
