@@ -110,7 +110,7 @@ export const searchPool = {
 		replacePool([]);
 	},
 	has(id: string) {
-		// Keep callers reactive to pool replacements while membership stays O(1).
+		// 让调用方对池替换保持响应式，同时成员判断仍是 O(1)
 		void pool;
 		return idIndex.has(id);
 	},

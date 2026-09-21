@@ -55,7 +55,7 @@ export class BatchLoader {
 		this.destination = d;
 	}
 
-	/** Starts a new queue generation so late responses from an older source are ignored. */
+	/** 开启新一轮队列代次，旧来源迟到的响应会被丢弃 */
 	startImport(list: ItemIdentity[]) {
 		this.clear();
 		this.destination = 'importPool';

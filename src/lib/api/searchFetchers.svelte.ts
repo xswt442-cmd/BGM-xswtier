@@ -140,7 +140,7 @@ export async function fetchSeason(): Promise<ItemData[]> {
 	return all.filter((i) => i.platform === 'TV' && (seen.has(i.id) ? false : (seen.add(i.id), true)));
 }
 
-/** JS getDay()(0=Sun) → BGM weekday.id(1=Mon..7=Sun) */
+/** 把 JS getDay()（0=周日）换算成 BGM weekday.id（1=周一 … 7=周日） */
 export function getTodayWeekday(): number {
 	const d = new Date().getDay();
 	return d === 0 ? 7 : d;

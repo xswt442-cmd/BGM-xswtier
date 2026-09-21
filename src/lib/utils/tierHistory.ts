@@ -125,7 +125,7 @@ export class TierHistory {
 		return { store: cloneStore(next.store), action: next.action };
 	}
 
-	/** New loader results are baseline data, so replay them into every reachable snapshot. */
+	/** loader 的新结果是基线数据，要重放进每个还能到达的快照 */
 	rebaseItems(items: ItemData[]) {
 		if (items.length === 0) return;
 		// merge 后实际体积略增，size 仍按原值近似（淘汰是启发式，不追求精确）

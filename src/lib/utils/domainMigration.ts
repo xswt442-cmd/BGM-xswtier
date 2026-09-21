@@ -174,7 +174,7 @@ export function restoreOriginMigrationBackup(storage: StorageLike, text: string)
 				else storage.setItem(key, value);
 			}
 		} catch {
-			// Best-effort rollback: a quota or browser policy may reject both operations.
+			// 回滚是尽力而为的：配额或浏览器策略可能把写入与还原一起拒掉
 		}
 		return false;
 	}

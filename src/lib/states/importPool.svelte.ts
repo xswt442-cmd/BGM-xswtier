@@ -18,7 +18,7 @@ export const importPool = {
 	get loaded(): boolean {
 		return hasLoaded;
 	},
-	/** A successful source request replaces the previous import result atomically. */
+	/** 一次成功的来源请求会整体替换上一次的导入结果，中途不暴露半成品状态 */
 	replaceSource(nextSource: ImportSource, initial: ItemData[] = []) {
 		source = nextSource;
 		items = freshById([], initial);
