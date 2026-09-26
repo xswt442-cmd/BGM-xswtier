@@ -16,7 +16,7 @@ An anime tier-list builder for Bangumi. Search by keyword, load a Bangumi index 
 - **Quick entries** — this season's lineup and today's updates in one click.
 - **Index & user loading** — rank the entries of any Bangumi index by ID, or a user's collection by username.
 - **Drag-and-drop ranking** — rename, recolor, or delete tiers; adjust the tier label size; everything persists to localStorage.
-- **Session management** — save a draft, exit and resume later, or export the finished tier as a 2× PNG.
+- **Session management** — save a draft, exit and resume later, or export the finished tier as a 2× PNG (with an option to skip empty tiers) or SVG.
 - **Share & backup** — copy a shareable link (the ranking is encoded into the URL, works on any device without an account) or export/import a JSON backup file.
 - **Three-axis visual system** — color scheme (sun / night / sky) × VFX (neon / CRT) × UI feedback (arcade / pulse), freely combinable.
 - **Bilingual UI** — Simplified Chinese / English, switched instantly.

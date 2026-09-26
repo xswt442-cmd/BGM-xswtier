@@ -1,3 +1,5 @@
+import { build, files, version } from '$service-worker';
+
 // 离线壳 service worker（SvelteKit 原生支持：src/service-worker.js → /service-worker.js）。
 // 策略：
 // - install 预缓存全部构建产物（hashed immutable）与 static 资源（含自托管字体）
